@@ -1,0 +1,98 @@
+code_root_dir: ${oc.env:VSR_CODE_ROOT,.}
+data_root_dir: ${oc.env:VSR_DATA_ROOT,./data_root}
+checkpoint_path: ${code_root_dir}/pretrained_models/model_avg_cncvs_4s_30s.pth
+stream_manifest: ${code_root_dir}/data/continual/cnvsrc_multi_stream.jsonl
+output_dir: ${code_root_dir}/exp/rsp_vsr
+resume_adaptation_checkpoint: null
+save_adaptation_checkpoint: true
+device: ${oc.env:RSP_VSR_DEVICE,cuda:0}
+seed: 42
+max_samples: null
+log_every: 100
+
+model:
+  visual_backbone:
+    adim: 768
+    aheads: 12
+    eunits: 3072
+    elayers: 12
+    transformer_input_layer: conv3d
+    dropout_rate: 0.1
+    transformer_attn_dropout_rate: 0.1
+    transformer_encoder_attn_layer_type: rel_mha
+    macaron_style: true
+    use_cnn_module: true
+    cnn_module_kernel: 31
+    zero_triu: false
+    a_upsample_ratio: 1
+    relu_type: swish
+    ddim: 768
+    dheads: 12
+    dunits: 3072
+    dlayers: 6
+    r_dlayers: 3
+    lsm_weight: 0.1
+    transformer_length_normalized_loss: false
+    mtlalpha: 0.1
+    mtlbeta: 0.3
+    ctc_type: builtin
+    rel_pos_type: latest
+
+decoder:
+  beam_size: 12
+  ctc_weight: 0.3
+
+feedback:
+  every: 0
+  noise_rate: 0.0
+
+plasticity:
+  mode: expert_bank
+  adapter_bottleneck: 48
+  adapter_dropout: 0.0
+  max_experts: 8
+  allow_growth: true
+  feedback_confirms_growth: true
+  route_threshold: 0.9
+  growth_patience: 6
+  pending_similarity: 0.95
+  prototype_momentum: 0.98
+  signature_motion_order: 2
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  adaptation_steps: 1
+  gradient_clip: 1.0
+  reliability_enabled: true
+  rollback_enabled: true
+  view:
+    noise_std: 0.01
+    temporal_mask_ratio: 0.05
+  loss:
+    pseudo_ctc: 1.0
+    consistency: 0.5
+    entropy: 0.01
+    feature_anchor: 0.1
+  rollback:
+    max_anchor_kl: 0.08
+    max_reliability_drop: 0.03
+    max_target_loss_increase: 0.02
+  reliability:
+    blank_id: 0
+    min_score: 0.72
+    min_confidence: 0.55
+    min_view_agreement: 0.5
+    min_emission_rate: 0.02
+    max_emission_rate: 0.95
+    min_pseudo_tokens: 1
+    consistency_temperature: 0.08
+    confidence_weight: 0.3
+    consistency_weight: 0.25
+    view_agreement_weight: 0.25
+    decoder_agreement_weight: 0.2
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

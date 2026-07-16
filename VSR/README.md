@@ -1,5 +1,13 @@
 <h1 align="center">CNVSRC 2025 VSR Baseline</h1>
 
+## RSP-VSR 持续适应扩展
+
+本分支在不改动官方 checkpoint 结构的前提下，增加了面向中文连续唇读的
+可靠性门控结构可塑性实验。方法、无数据泄漏协议、消融矩阵和服务器命令见
+[docs/RSP_VSR.md](docs/RSP_VSR.md)。入口为 `continual_adapt.py`，默认配置为
+`conf/continual_adapt.yaml`。创新最近邻与投稿门槛见
+[docs/NOVELTY_REVIEW.md](docs/NOVELTY_REVIEW.md)。
+
 ## Introduction
 
 This repository is the VSR baseline code for CNVSRC2025 (Chinese Continuous Visual Speech Recognition Challenge 2025).
