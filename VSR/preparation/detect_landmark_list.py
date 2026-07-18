@@ -2,6 +2,7 @@ import torch
 import cv2
 import torchvision
 from detector import LandmarksDetector
+from video_io import write_video
 from video_process import VideoProcess
 import numpy as np
 import random
@@ -19,7 +20,7 @@ def extract_lip(landmarks_detector, video_process, src, vfn, dst, landmark_path)
     video = load_video(f"{src}/{vfn}.mp4")
     landmarks = landmarks_detector(f"{src}/{vfn}.mp4")
     video = video_process(video, landmarks)
-    torchvision.io.write_video(f"{dst}/{vfn}.mp4", video, fps=25)
+    write_video(f"{dst}/{vfn}.mp4", video, fps=25)
     np.save(f"{landmark_path}/{vfn}.npy", landmarks)
 
 parser = argparse.ArgumentParser()

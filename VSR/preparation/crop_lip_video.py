@@ -1,4 +1,5 @@
 import torchvision
+from video_io import write_video
 from video_process import VideoProcess
 import numpy as np
 from tqdm import tqdm
@@ -18,7 +19,7 @@ def extract_lip(video_process, src, vfn, dst, landmark_path):
         landmarks = np.load(landmark_path, allow_pickle=True)
         video = video_process(video, landmarks)
         Path(os.path.dirname(f"{dst}/{vfn}")).mkdir(exist_ok=True, parents=True)
-        torchvision.io.write_video(f"{dst}/{vfn}", video, fps=25)
+        write_video(f"{dst}/{vfn}", video, fps=25)
     except Exception as e:
         print(e)
         return [vfn]
