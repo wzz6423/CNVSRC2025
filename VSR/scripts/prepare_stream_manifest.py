@@ -33,7 +33,7 @@ def domain_from_path(relative_path, pattern):
         return parts[0] if parts else "unknown"
     match = pattern.search(relative_path)
     if match is None:
-        return "unknown"
+        raise ValueError(f"视频路径与域正则不匹配：{relative_path}")
     if "domain" in match.groupdict():
         return match.group("domain")
     if match.groups():

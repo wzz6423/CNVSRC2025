@@ -212,7 +212,7 @@ Chinese-LiPS 官方预处理视频和六列 CSV 可以直接生成未见说话�
 python scripts/prepare_stream_manifest.py \
   --csv /data/chinese_lips/labels/test.csv \
   --output /data/manifests/chinese_lips_test_seed42.jsonl \
-  --domain-regex '^(?P<domain>[0-9]+)_' \
+  --domain-regex '(?:^|/)(?P<domain>[0-9]+)_' \
   --order domain-block \
   --shuffle-domains \
   --shuffle-within-domain \

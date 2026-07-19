@@ -1,5 +1,6 @@
 import json
 import random
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -23,7 +24,7 @@ from plasticity.engine import ContinualAdaptationEngine
 from plasticity.metrics import StreamMetrics
 from plasticity.objectives import ctc_sequence_loss, ctc_target_error
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
-from scripts.prepare_stream_manifest import ordered_rows
+from scripts.prepare_stream_manifest import domain_from_path, ordered_rows
 
 
 class MockEncoder(nn.Module):
@@ -388,6 +389,14 @@ def main():
     )
     assert first_order == repeated_order
     assert [row["domain"] for row in first_order[::2]] != ["a", "b", "c", "d"]
+    speaker_pattern = re.compile(r"(?:^|/)(?P<domain>[0-9]+)_")
+    assert domain_from_path("processed_test/078_sample.mp4", speaker_pattern) == "078"
+    try:
+        domain_from_path("processed_test/no_speaker.mp4", speaker_pattern)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("域正则不匹配时应该拒绝生成清单")
 
     short_log_probs = torch.log_softmax(torch.randn(1, 2, 5), dim=-1)
     assert ctc_target_error(short_log_probs, [1, 1]) == "insufficient_ctc_frames"
