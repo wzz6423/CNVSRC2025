@@ -180,7 +180,8 @@ bash scripts/download_checkpoint.sh
 bash scripts/download_checkpoint.sh model_avg_cncvs_2_3_cnvsrc.pth
 ```
 
-从四列 CSV 生成 speaker-block 流，正则要按真实路径调整：
+清单工具读取 CSV 的前四列，并允许数据集在尾部保留扩展列。生成
+speaker-block 流时，域正则要按真实路径调整：
 
 ```bash
 python scripts/prepare_stream_manifest.py \
@@ -188,6 +189,7 @@ python scripts/prepare_stream_manifest.py \
   --output data/continual/cnvsrc_multi_stream.jsonl \
   --domain-regex '^(?P<domain>[^/]+)' \
   --order domain-block \
+  --shuffle-domains \
   --shuffle-within-domain \
   --seed 42
 ```
@@ -203,6 +205,41 @@ python continual_adapt.py \
   plasticity.mode=expert_bank \
   output_dir=exp/rsp_vsr/full_seed42
 ```
+
+Chinese-LiPS 官方预处理视频和六列 CSV 可以直接生成未见说话人流：
+
+```bash
+python scripts/prepare_stream_manifest.py \
+  --csv /data/chinese_lips/labels/test.csv \
+  --output /data/manifests/chinese_lips_test_seed42.jsonl \
+  --domain-regex '^(?P<domain>[0-9]+)_' \
+  --order domain-block \
+  --shuffle-domains \
+  --shuffle-within-domain \
+  --seed 42
+```
+
+长时实验用 supervisor 绑定单卡并在异常退出或长时无进度时续跑：
+
+```bash
+PYTHON_BIN=/path/to/python scripts/run_continual_experiment.sh \
+  /data/experiments/chinese_lips/static_seed42 0 \
+  data_root_dir=/data/chinese_lips \
+  stream_manifest=/data/manifests/chinese_lips_test_seed42.jsonl \
+  plasticity.mode=static \
+  seed=42
+
+PYTHON_BIN=/path/to/python scripts/run_continual_experiment.sh \
+  /data/experiments/chinese_lips/full_seed42 1 \
+  data_root_dir=/data/chinese_lips \
+  stream_manifest=/data/manifests/chinese_lips_test_seed42.jsonl \
+  plasticity.mode=expert_bank \
+  seed=42
+```
+
+supervisor 默认每 60 秒更新 `supervisor_status.tsv`，连续 45 分钟没有
+新结果才判定卡死，并最多自动恢复 3 次。它不会跳过样本或修改实验
+超参数；确定性错误连续复现后会停止，避免产生不可比较的结果。
 
 单 adapter 和两个关键消融：
 
@@ -238,4 +275,22 @@ python continual_adapt.py \
 ```
 
 每个目录会保存逐样本 `stream_results.jsonl`、汇总 `summary.json` 和可恢复的
-`adaptation_state.pt`。真实运行时要同时记录 GPU 型号、依赖版本、commit、随机种子和流清单哈希。
+`adaptation_state.pt`。默认每 100 条原子刷新一次 checkpoint，其中包含
+adapter、优化器、累积指标、RNG 和流清单哈希。从同一输出目录续跑：
+
+```bash
+python continual_adapt.py \
+  resume_adaptation_checkpoint=exp/rsp_vsr/adaptation_state.pt \
+  output_dir=exp/rsp_vsr
+```
+
+续跑会丢弃 checkpoint 之后已写入但未持久化的结果尾部，再从确切的
+`processed_samples` 继续，避免重放样本。流清单哈希不同时会拒绝恢复。
+
+Apple Silicon 本机会先检查 MPS 是否支持视觉前端的 Conv3D；不支持时
+`device=auto` 会回退 CPU。支持时，MPS 未实现的 CTC loss 在 CPU
+上计算，其余前向和 adapter 更新保留在 MPS。可用
+`RSP_VSR_DEVICE=cpu` 强制 CPU。视频读写需要 PyAV；`imageio-ffmpeg`
+会提供跨平台 ffmpeg 回退，也可用 `FFMPEG_BINARY` 指定系统二进制。
+本地仍需使用项目声明的 Python 3.10；系统 Python 3.14 不兼容当前 Hydra。
+完整服务器实验仍需记录 GPU 型号、依赖版本、commit、随机种子和流清单哈希。

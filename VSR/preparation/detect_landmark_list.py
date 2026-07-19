@@ -27,6 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--list', required=True, help='path contains source video files')
 parser.add_argument('--rank', default=0, type=int, help='index of current run')
 parser.add_argument('--shard', default=2, type=int, help='size of multiprocessing pool')
+parser.add_argument('--device', default=None, help='landmark detector device')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -40,7 +41,8 @@ if __name__ == '__main__':
             vfn, src_dir, dst_dir, landmark_dir = line.strip().split('\t')
             filelist.append((vfn, src_dir, dst_dir, landmark_dir))
             
-    landmarks_detector = LandmarksDetector(device="cuda:0")
+    device = args.device or ("cuda:0" if torch.cuda.is_available() else "cpu")
+    landmarks_detector = LandmarksDetector(device=device)
     video_process = VideoProcess(convert_gray=False, window_margin=1)
     psize = math.ceil(len(filelist) / shard)
     filelist = filelist[rank*psize: (rank+1)*psize]

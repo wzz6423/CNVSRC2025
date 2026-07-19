@@ -7,6 +7,8 @@
 [docs/RSP_VSR.md](docs/RSP_VSR.md)。入口为 `continual_adapt.py`，默认配置为
 `conf/continual_adapt.yaml`。创新最近邻与投稿门槛见
 [docs/NOVELTY_REVIEW.md](docs/NOVELTY_REVIEW.md)。
+持续适应入口的 `device=auto` 会依次选择 CUDA、支持 Conv3D 的
+MPS 和 CPU；官方训练仍应使用下文的 Python 3.10/CUDA 环境。
 
 ## Introduction
 

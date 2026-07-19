@@ -147,6 +147,19 @@ class ContinualAdaptationEngine:
             )
         return self._optimizers[expert_index]
 
+    def optimizer_state_dict(self):
+        return {
+            str(index): optimizer.state_dict()
+            for index, optimizer in self._optimizers.items()
+        }
+
+    def load_optimizer_state_dict(self, states):
+        for raw_index, state in states.items():
+            index = int(raw_index)
+            if not 0 <= index < self.expert_bank.expert_count:
+                raise ValueError(f"优化器状态引用了不存在的专家：{index}")
+            self._optimizer_for(index).load_state_dict(state)
+
     def _decode(self, adapted_features, ctc_tokens):
         if self.decoder is None:
             return " ".join(map(str, ctc_tokens)), list(ctc_tokens)
@@ -171,7 +184,6 @@ class ContinualAdaptationEngine:
         teacher_log_probs,
         target_tokens,
         pre_reliability,
-        decoder_tokens,
         supervision,
     ):
         adapter = self.expert_bank.experts[expert_index]
@@ -257,8 +269,16 @@ class ContinualAdaptationEngine:
             anchor_kl = float(
                 posterior_kl(base_log_probs, post_clean_log_probs).item()
             )
+            post_ctc_tokens, _ = self.reliability_gate.evaluate(
+                post_clean_log_probs, post_augmented_log_probs
+            )
+            _, post_decoder_tokens = self._decode(
+                post_clean.detach(), post_ctc_tokens
+            )
             _, post_reliability = self.reliability_gate.evaluate(
-                post_clean_log_probs, post_augmented_log_probs, decoder_tokens
+                post_clean_log_probs,
+                post_augmented_log_probs,
+                post_decoder_tokens,
             )
 
         if not all(
@@ -280,10 +300,15 @@ class ContinualAdaptationEngine:
             rejection_reasons.append("target_loss_regressed")
         if anchor_kl > self.max_anchor_kl:
             rejection_reasons.append("anchor_divergence_exceeded")
-        if pre_reliability.accepted and not post_reliability.accepted:
+        if (
+            self.reliability_enabled
+            and pre_reliability.accepted
+            and not post_reliability.accepted
+        ):
             rejection_reasons.append("post_update_unreliable")
         if (
-            supervision == "pseudo"
+            self.reliability_enabled
+            and supervision == "pseudo"
             and post_reliability.score
             < pre_reliability.score - self.max_reliability_drop
         ):
@@ -379,7 +404,6 @@ class ContinualAdaptationEngine:
                 clean_log_probs.detach(),
                 target_tokens,
                 reliability,
-                decoder_tokens,
                 supervision,
             )
             if update.status == "accepted":

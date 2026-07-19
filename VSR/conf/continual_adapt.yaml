@@ -5,7 +5,8 @@ stream_manifest: ${code_root_dir}/data/continual/cnvsrc_multi_stream.jsonl
 output_dir: ${code_root_dir}/exp/rsp_vsr
 resume_adaptation_checkpoint: null
 save_adaptation_checkpoint: true
-device: ${oc.env:RSP_VSR_DEVICE,cuda:0}
+checkpoint_every: 100
+device: ${oc.env:RSP_VSR_DEVICE,auto}
 seed: 42
 max_samples: null
 log_every: 100

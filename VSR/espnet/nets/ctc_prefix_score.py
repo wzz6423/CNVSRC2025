@@ -37,11 +37,7 @@ class CTCPrefixScoreTH(object):
         self.input_length = x.size(1)
         self.odim = x.size(2)
         self.dtype = x.dtype
-        self.device = (
-            torch.device("cuda:%d" % x.get_device())
-            if x.is_cuda
-            else torch.device("cpu")
-        )
+        self.device = x.device
         # Pad the rest of posteriors in the batch
         # TODO(takaaki-hori): need a better way without for-loops
         for i, l in enumerate(xlens):
@@ -52,7 +48,7 @@ class CTCPrefixScoreTH(object):
         xn = x.transpose(0, 1)  # (B, T, O) -> (T, B, O)
         xb = xn[:, :, self.blank].unsqueeze(2).expand(-1, -1, self.odim)
         self.x = torch.stack([xn, xb])  # (2, T, B, O)
-        self.end_frames = torch.as_tensor(xlens) - 1
+        self.end_frames = torch.as_tensor(xlens, device=self.device) - 1
 
         # Setup CTC windowing
         self.margin = margin

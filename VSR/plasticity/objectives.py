@@ -27,17 +27,20 @@ def ctc_sequence_loss(log_probs, target_tokens, blank_id=0):
     target_error = ctc_target_error(log_probs, target_tokens, blank_id)
     if target_error is not None:
         raise ValueError(f"无效 CTC 目标：{target_error}")
+    loss_device = (
+        torch.device("cpu") if log_probs.device.type == "mps" else log_probs.device
+    )
     target = torch.as_tensor(
-        target_tokens, dtype=torch.long, device=log_probs.device
+        target_tokens, dtype=torch.long, device=loss_device
     ).flatten()
     input_lengths = torch.tensor(
-        [log_probs.size(1)], dtype=torch.long, device=log_probs.device
+        [log_probs.size(1)], dtype=torch.long, device=loss_device
     )
     target_lengths = torch.tensor(
-        [target.numel()], dtype=torch.long, device=log_probs.device
+        [target.numel()], dtype=torch.long, device=loss_device
     )
-    return F.ctc_loss(
-        log_probs.transpose(0, 1),
+    loss = F.ctc_loss(
+        log_probs.to(loss_device).transpose(0, 1),
         target,
         input_lengths,
         target_lengths,
@@ -45,6 +48,7 @@ def ctc_sequence_loss(log_probs, target_tokens, blank_id=0):
         reduction="mean",
         zero_infinity=True,
     )
+    return loss.to(log_probs.device)
 
 
 def posterior_kl(teacher_log_probs, student_log_probs):

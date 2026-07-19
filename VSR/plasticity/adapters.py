@@ -189,7 +189,7 @@ class ExpertBank(nn.Module):
         if self.expert_count >= self.max_experts:
             self._reset_pending()
             self.route_counts[best_index] += 1
-            return RouteDecision(best_index, False, similarity_value, 0, False)
+            return RouteDecision(best_index, False, similarity_value, 0, True)
 
         self._observe_shift(signature)
         pending_count = int(self.pending_count.item())

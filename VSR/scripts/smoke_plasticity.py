@@ -1,3 +1,5 @@
+import json
+import random
 import sys
 import tempfile
 from pathlib import Path
@@ -8,14 +10,20 @@ from torch import nn
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from continual_adapt import _prepare_result_file, _resolve_device, _write_json_atomic
+from espnet.nets.ctc_prefix_score import CTCPrefixScoreTH
 from plasticity.adapters import ExpertBank, sequence_signature
 from plasticity.checkpoint import (
+    capture_rng_state,
     load_adaptation_checkpoint,
+    restore_rng_state,
     save_adaptation_checkpoint,
 )
 from plasticity.engine import ContinualAdaptationEngine
-from plasticity.objectives import ctc_target_error
+from plasticity.metrics import StreamMetrics
+from plasticity.objectives import ctc_sequence_loss, ctc_target_error
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
+from scripts.prepare_stream_manifest import ordered_rows
 
 
 class MockEncoder(nn.Module):
@@ -70,8 +78,18 @@ class PostUpdateCollapseGate:
         )
 
 
+class CountingDecoder:
+    def __init__(self):
+        self.calls = 0
+
+    def __call__(self, _features):
+        self.calls += 1
+        return "1", [1]
+
+
 def main():
     torch.manual_seed(7)
+    assert _resolve_device("auto").type in {"cpu", "cuda", "mps"}
     model = MockModel()
     bank = ExpertBank(
         feature_dim=8,
@@ -89,12 +107,13 @@ def main():
         min_emission_rate=0.0,
         max_emission_rate=1.0,
     )
+    decoder = CountingDecoder()
     engine = ContinualAdaptationEngine(
         model,
         bank,
         gate,
         device="cpu",
-        decoder=None,
+        decoder=decoder,
         rollback_enabled=False,
         view_noise_std=0.0,
         temporal_mask_ratio=0.0,
@@ -109,6 +128,7 @@ def main():
     }
     outcome = engine.process(video)
     assert outcome.update.status == "accepted"
+    assert decoder.calls == 4
     assert bank.expert_count == 1
     assert all(not parameter.requires_grad for parameter in model.parameters())
     assert any(
@@ -145,6 +165,11 @@ def main():
     decision = routing_bank.route(shifted)
     assert decision.created
     assert routing_bank.expert_count == 2
+    third_domain = torch.zeros(8)
+    third_domain[2] = 1.0
+    at_capacity = routing_bank.route(third_domain)
+    assert at_capacity.quarantined
+    assert not at_capacity.created
 
     feedback_bank = ExpertBank(
         feature_dim=4,
@@ -168,7 +193,18 @@ def main():
 
     with tempfile.TemporaryDirectory() as temporary_directory:
         checkpoint_path = Path(temporary_directory) / "adaptation_state.pt"
-        save_adaptation_checkpoint(checkpoint_path, feedback_bank, {}, 2)
+        metrics = StreamMetrics()
+        metrics.update("a", "b", "domain-a", 0.5, "accepted")
+        rng_state = capture_rng_state()
+        save_adaptation_checkpoint(
+            checkpoint_path,
+            feedback_bank,
+            {},
+            2,
+            metrics_state=metrics.state_dict(),
+            rng_state=rng_state,
+            stream_state={"manifest_sha256": "test"},
+        )
         restored_bank = ExpertBank(
             feature_dim=4,
             bottleneck_dim=2,
@@ -182,11 +218,31 @@ def main():
             checkpoint_path, restored_bank, "cpu"
         )
         assert restored["processed_samples"] == 2
+        assert restored["metrics_state"] == metrics.state_dict()
         assert restored_bank.expert_count == feedback_bank.expert_count
         assert all(
             torch.equal(value, restored_bank.state_dict()[name])
             for name, value in feedback_bank.state_dict().items()
         )
+
+        random.seed(123)
+        torch.manual_seed(123)
+        saved_rng = capture_rng_state()
+        expected_python = random.random()
+        expected_torch = torch.rand(3)
+        restore_rng_state(saved_rng)
+        assert random.random() == expected_python
+        assert torch.equal(torch.rand(3), expected_torch)
+
+        result_path = Path(temporary_directory) / "stream_results.jsonl"
+        result_path.write_text("0\n1\n2\n", encoding="utf-8")
+        assert _prepare_result_file(result_path, 2) == "a"
+        assert result_path.read_text(encoding="utf-8") == "0\n1\n"
+
+        summary_path = Path(temporary_directory) / "summary.json"
+        _write_json_atomic(summary_path, {"samples": 2, "mode": "static"})
+        assert json.loads(summary_path.read_text(encoding="utf-8"))["samples"] == 2
+        assert not (Path(temporary_directory) / ".summary.json.tmp").exists()
 
     rollback_model = MockModel()
     rollback_bank = ExpertBank(
@@ -256,6 +312,83 @@ def main():
         for name, value in collapse_bank.experts[0].state_dict().items()
     )
 
+    disabled_model = MockModel()
+    disabled_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    disabled_gate = PostUpdateCollapseGate()
+    disabled_engine = ContinualAdaptationEngine(
+        disabled_model,
+        disabled_bank,
+        disabled_gate,
+        device="cpu",
+        decoder=None,
+        reliability_enabled=False,
+        rollback_enabled=True,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    disabled_outcome = disabled_engine.process(video)
+    assert disabled_outcome.update.status == "accepted"
+
+    optimizer_states = engine.optimizer_state_dict()
+    assert optimizer_states
+    restored_optimizer_model = MockModel()
+    restored_optimizer_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=3,
+        route_threshold=0.95,
+        growth_patience=2,
+        pending_similarity=0.9,
+        signature_motion_order=2,
+    )
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        checkpoint_path = Path(temporary_directory) / "optimizer_state.pt"
+        save_adaptation_checkpoint(
+            checkpoint_path,
+            bank,
+            {},
+            2,
+            optimizer_states=optimizer_states,
+        )
+        checkpoint = load_adaptation_checkpoint(
+            checkpoint_path, restored_optimizer_bank, "cpu"
+        )
+        restored_optimizer_engine = ContinualAdaptationEngine(
+            restored_optimizer_model,
+            restored_optimizer_bank,
+            gate,
+            device="cpu",
+            decoder=None,
+            rollback_enabled=False,
+            view_noise_std=0.0,
+            temporal_mask_ratio=0.0,
+            max_anchor_kl=100.0,
+            max_target_loss_increase=100.0,
+        )
+        restored_optimizer_engine.load_optimizer_state_dict(
+            checkpoint["optimizer_states"]
+        )
+        assert restored_optimizer_engine.optimizer_state_dict()
+
+    rows = [
+        {"domain": domain, "value": value}
+        for domain in ("a", "b", "c", "d")
+        for value in range(2)
+    ]
+    first_order = ordered_rows(rows, "domain-block", False, True, random.Random(42))
+    repeated_order = ordered_rows(
+        rows, "domain-block", False, True, random.Random(42)
+    )
+    assert first_order == repeated_order
+    assert [row["domain"] for row in first_order[::2]] != ["a", "b", "c", "d"]
+
     short_log_probs = torch.log_softmax(torch.randn(1, 2, 5), dim=-1)
     assert ctc_target_error(short_log_probs, [1, 1]) == "insufficient_ctc_frames"
     invalid_log_probs = short_log_probs.clone()
@@ -263,6 +396,27 @@ def main():
     _, invalid_reliability = gate.evaluate(invalid_log_probs, short_log_probs)
     assert not invalid_reliability.accepted
     assert invalid_reliability.score == 0.0
+    if torch.backends.mps.is_available():
+        mps_logits = torch.randn(1, 8, 5, device="mps", requires_grad=True)
+        mps_loss = ctc_sequence_loss(
+            torch.log_softmax(mps_logits, dim=-1), [1, 2, 3]
+        )
+        mps_loss.backward()
+        assert mps_loss.device.type == "mps"
+        assert torch.isfinite(mps_logits.grad).all()
+        prefix_scorer = CTCPrefixScoreTH(
+            torch.log_softmax(torch.randn(1, 8, 5, device="mps"), dim=-1),
+            torch.tensor([8]),
+            blank=0,
+            eos=4,
+        )
+        prefix_scores, _ = prefix_scorer(
+            torch.tensor([[4]], device="mps"),
+            None,
+            scoring_ids=torch.tensor([[1, 2]], device="mps"),
+        )
+        assert prefix_scores.device.type == "mps"
+        assert torch.isfinite(prefix_scores[:, 1:3]).all()
     print("RSP-VSR plasticity smoke 通过")
 
 

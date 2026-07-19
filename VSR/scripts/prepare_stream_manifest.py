@@ -21,6 +21,7 @@ def parse_args():
         default="domain-block",
     )
     parser.add_argument("--shuffle-within-domain", action="store_true")
+    parser.add_argument("--shuffle-domains", action="store_true")
     parser.add_argument("--feedback-every", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
@@ -40,7 +41,7 @@ def domain_from_path(relative_path, pattern):
     return match.group(0)
 
 
-def ordered_rows(rows, order, shuffle_within_domain, rng):
+def ordered_rows(rows, order, shuffle_within_domain, shuffle_domains, rng):
     if order == "original":
         return rows
     grouped = defaultdict(list)
@@ -50,6 +51,8 @@ def ordered_rows(rows, order, shuffle_within_domain, rng):
         for values in grouped.values():
             rng.shuffle(values)
     domains = sorted(grouped)
+    if shuffle_domains:
+        rng.shuffle(domains)
     if order == "domain-block":
         return [row for domain in domains for row in grouped[domain]]
     queues = {domain: deque(grouped[domain]) for domain in domains}
@@ -68,9 +71,9 @@ def main():
     rows = []
     with Path(args.csv).open(encoding="utf-8", newline="") as handle:
         for index, values in enumerate(csv.reader(handle)):
-            if len(values) != 4:
-                raise ValueError(f"第 {index + 1} 行不是四列 CNVSRC 清单")
-            dataset, relative_path, _, token_string = values
+            if len(values) < 4:
+                raise ValueError(f"第 {index + 1} 行少于四列")
+            dataset, relative_path, _, token_string = values[:4]
             relative_without_suffix = Path(relative_path).with_suffix("").as_posix()
             rows.append(
                 {
@@ -81,7 +84,13 @@ def main():
                     "feedback": False,
                 }
             )
-    rows = ordered_rows(rows, args.order, args.shuffle_within_domain, rng)
+    rows = ordered_rows(
+        rows,
+        args.order,
+        args.shuffle_within_domain,
+        args.shuffle_domains,
+        rng,
+    )
     if args.feedback_every > 0:
         for index, row in enumerate(rows, start=1):
             row["feedback"] = index % args.feedback_every == 0
