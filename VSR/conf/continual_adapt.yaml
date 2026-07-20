@@ -2,10 +2,15 @@ code_root_dir: ${oc.env:VSR_CODE_ROOT,.}
 data_root_dir: ${oc.env:VSR_DATA_ROOT,./data_root}
 checkpoint_path: ${code_root_dir}/pretrained_models/model_avg_cncvs_4s_30s.pth
 stream_manifest: ${code_root_dir}/data/continual/cnvsrc_multi_stream.jsonl
+require_manifest_metadata: true
 output_dir: ${code_root_dir}/exp/rsp_vsr
 resume_adaptation_checkpoint: null
 save_adaptation_checkpoint: true
 checkpoint_every: 100
+checkpoint_file_limit: 3
+checkpoint_selection_metric: mean_reliability
+checkpoint_selection_mode: max
+metrics_history_every: 25
 device: ${oc.env:RSP_VSR_DEVICE,auto}
 seed: 42
 max_samples: null

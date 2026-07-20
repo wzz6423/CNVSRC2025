@@ -1,3 +1,4 @@
+import math
 from collections import defaultdict
 
 from .reliability import edit_distance
@@ -11,6 +12,9 @@ class StreamMetrics:
         self.update_counts = defaultdict(int)
         self.domain_totals = defaultdict(lambda: [0, 0, 0])
         self.reliability_sum = 0.0
+        self.video_load_seconds = 0.0
+        self.process_seconds = 0.0
+        self.total_seconds = 0.0
 
     def state_dict(self):
         return {
@@ -20,6 +24,9 @@ class StreamMetrics:
             "update_counts": dict(self.update_counts),
             "domain_totals": dict(self.domain_totals),
             "reliability_sum": self.reliability_sum,
+            "video_load_seconds": self.video_load_seconds,
+            "process_seconds": self.process_seconds,
+            "total_seconds": self.total_seconds,
         }
 
     def load_state_dict(self, state):
@@ -35,11 +42,34 @@ class StreamMetrics:
             },
         )
         self.reliability_sum = float(state["reliability_sum"])
+        self.video_load_seconds = float(state.get("video_load_seconds", 0.0))
+        self.process_seconds = float(state.get("process_seconds", 0.0))
+        self.total_seconds = float(state.get("total_seconds", 0.0))
 
-    def update(self, prediction, target, domain, reliability, update_status):
+    def update(
+        self,
+        prediction,
+        target,
+        domain,
+        reliability,
+        update_status,
+        *,
+        video_load_seconds=0.0,
+        process_seconds=0.0,
+        total_seconds=0.0,
+    ):
+        timing = tuple(
+            float(value)
+            for value in (video_load_seconds, process_seconds, total_seconds)
+        )
+        if any(not math.isfinite(value) or value < 0 for value in timing):
+            raise ValueError("样本耗时必须是非负有限数值")
         self.samples += 1
         self.reliability_sum += float(reliability)
         self.update_counts[update_status] += 1
+        self.video_load_seconds += timing[0]
+        self.process_seconds += timing[1]
+        self.total_seconds += timing[2]
         if target is None:
             return
         edits = edit_distance(list(prediction), list(target))
@@ -82,5 +112,19 @@ class StreamMetrics:
             "accepted_update_rate": (
                 accepted_updates / attempted_updates if attempted_updates else 0.0
             ),
+            "timing": {
+                "total_video_load_seconds": self.video_load_seconds,
+                "total_process_seconds": self.process_seconds,
+                "total_seconds": self.total_seconds,
+                "mean_video_load_seconds": (
+                    self.video_load_seconds / self.samples if self.samples else 0.0
+                ),
+                "mean_process_seconds": (
+                    self.process_seconds / self.samples if self.samples else 0.0
+                ),
+                "mean_total_seconds": (
+                    self.total_seconds / self.samples if self.samples else 0.0
+                ),
+            },
             "domains": domains,
         }

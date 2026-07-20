@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import random
+import time
 import warnings
 from pathlib import Path
 
@@ -9,9 +10,15 @@ import hydra
 import torch
 from omegaconf import DictConfig, OmegaConf
 
-from datamodule.transforms import TextTransform
+from datamodule.transforms import DICT_PATH, TextTransform
 from espnet.nets.pytorch_backend.e2e_asr_transformer import E2E
 from plasticity.adapters import ExpertBank
+from plasticity.artifacts import (
+    append_metrics_history,
+    prepare_metrics_history,
+    retain_best_checkpoints,
+    reset_best_checkpoints,
+)
 from plasticity.checkpoint import (
     CHECKPOINT_VERSION,
     capture_rng_state,
@@ -84,6 +91,13 @@ def _mps_supports_conv3d():
         return False
 
 
+def _synchronize_device(device):
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+    elif device.type == "mps" and hasattr(torch.mps, "synchronize"):
+        torch.mps.synchronize()
+
+
 def _file_sha256(path):
     digest = hashlib.sha256()
     with Path(path).open("rb") as handle:
@@ -134,6 +148,120 @@ def _write_json_atomic(path, value):
         os.replace(temporary_path, path)
     finally:
         temporary_path.unlink(missing_ok=True)
+
+
+def _stream_state(manifest_path, require_metadata=True):
+    manifest_path = Path(manifest_path)
+    state = {"manifest_sha256": _file_sha256(manifest_path)}
+    metadata_path = Path(f"{manifest_path}.meta.json")
+    if not metadata_path.is_file():
+        if require_metadata:
+            raise ValueError(f"流清单缺少 sidecar：{metadata_path}")
+        return state
+
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"流清单元数据不是有效 JSON：{metadata_path}") from error
+    if metadata.get("schema_version") != 1:
+        raise ValueError(f"流清单元数据版本不受支持：{metadata_path}")
+    label_mode = metadata.get("label_mode")
+    if label_mode not in {"metadata_reencoded", "token_passthrough"}:
+        raise ValueError(f"流清单元数据缺少有效 label_mode：{metadata_path}")
+    source_csv_hash = metadata.get("source_csv_sha256")
+    if not isinstance(source_csv_hash, str) or len(source_csv_hash) != 64:
+        raise ValueError(f"流清单元数据缺少 source_csv_sha256：{metadata_path}")
+    if label_mode == "metadata_reencoded":
+        required_metadata = {
+            "text_metadata_csv_sha256",
+            "oov_policy",
+            "raw_characters",
+            "target_characters",
+            "dropped_characters",
+            "dropped_rate",
+            "distinct_dropped_characters",
+            "dropped_character_counts",
+        }
+        if not required_metadata.issubset(metadata):
+            raise ValueError(f"重编码流清单元数据字段不完整：{metadata_path}")
+        metadata_hash = metadata["text_metadata_csv_sha256"]
+        if not isinstance(metadata_hash, str) or len(metadata_hash) != 64:
+            raise ValueError(f"文本元数据 SHA-256 无效：{metadata_path}")
+        if metadata["oov_policy"] not in {"error", "drop"}:
+            raise ValueError(f"流清单 OOV 策略无效：{metadata_path}")
+        counts = (
+            metadata["raw_characters"],
+            metadata["target_characters"],
+            metadata["dropped_characters"],
+            metadata["distinct_dropped_characters"],
+        )
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+            for value in counts
+        ):
+            raise ValueError(f"流清单字符统计无效：{metadata_path}")
+        if counts[0] != counts[1] + counts[2]:
+            raise ValueError(f"流清单字符统计不守恒：{metadata_path}")
+        dropped_counts = metadata["dropped_character_counts"]
+        if (
+            not isinstance(dropped_counts, dict)
+            or len(dropped_counts) != counts[3]
+            or any(
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < 1
+                for value in dropped_counts.values()
+            )
+            or sum(dropped_counts.values()) != counts[2]
+        ):
+            raise ValueError(f"流清单 OOV 统计无效：{metadata_path}")
+        dropped_rate = metadata["dropped_rate"]
+        expected_rate = counts[2] / counts[0] if counts[0] else 0.0
+        if (
+            not isinstance(dropped_rate, (int, float))
+            or isinstance(dropped_rate, bool)
+            or abs(float(dropped_rate) - expected_rate) > 1e-12
+        ):
+            raise ValueError(f"流清单 OOV 比例无效：{metadata_path}")
+    metadata_samples = metadata.get("samples")
+    if not isinstance(metadata_samples, int) or isinstance(metadata_samples, bool):
+        raise ValueError(f"流清单元数据缺少有效 samples：{metadata_path}")
+    with manifest_path.open(encoding="utf-8") as handle:
+        manifest_samples = sum(1 for line in handle if line.strip())
+    if metadata_samples != manifest_samples:
+        raise ValueError("流清单元数据样本数与 JSONL 不一致")
+    expected_vocab_hash = metadata.get("target_vocab_sha256")
+    if not isinstance(expected_vocab_hash, str):
+        raise ValueError(f"流清单元数据缺少 target_vocab_sha256：{metadata_path}")
+    actual_vocab_hash = _file_sha256(DICT_PATH)
+    if expected_vocab_hash != actual_vocab_hash:
+        raise ValueError("流清单目标词表与当前模型词表不一致")
+    state.update(
+        {
+            "manifest_metadata_sha256": _file_sha256(metadata_path),
+            "target_vocab_sha256": actual_vocab_hash,
+        }
+    )
+    return state
+
+
+def _validate_stream_state(saved_state, current_state):
+    if saved_state != current_state:
+        raise ValueError("恢复 checkpoint 的流式清单与当前清单不一致")
+
+
+def _experiment_config_sha256(cfg):
+    value = {
+        "seed": int(cfg.seed),
+        "model": OmegaConf.to_container(cfg.model, resolve=True),
+        "decoder": OmegaConf.to_container(cfg.decoder, resolve=True),
+        "feedback": OmegaConf.to_container(cfg.feedback, resolve=True),
+        "plasticity": OmegaConf.to_container(cfg.plasticity, resolve=True),
+    }
+    payload = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _build_engine(cfg, model, token_list, device):
@@ -191,6 +319,16 @@ def _build_engine(cfg, model, token_list, device):
 
 @hydra.main(config_path="conf", config_name="continual_adapt", version_base=None)
 def main(cfg: DictConfig):
+    if int(cfg.metrics_history_every) < 1:
+        raise ValueError("metrics_history_every 必须大于 0")
+    if bool(cfg.save_adaptation_checkpoint) and int(cfg.checkpoint_file_limit) < 2:
+        raise ValueError("保存 checkpoint 时 checkpoint_file_limit 至少为 2")
+    checkpoint_metric = str(cfg.checkpoint_selection_metric)
+    if checkpoint_metric not in {"cer", "mean_reliability"}:
+        raise ValueError("checkpoint_selection_metric 仅支持 cer 或 mean_reliability")
+    checkpoint_mode = str(cfg.checkpoint_selection_mode)
+    if checkpoint_mode not in {"min", "max"}:
+        raise ValueError("checkpoint_selection_mode 仅支持 min 或 max")
     random.seed(int(cfg.seed))
     torch.manual_seed(int(cfg.seed))
     if torch.cuda.is_available():
@@ -206,12 +344,20 @@ def main(cfg: DictConfig):
     output_dir = Path(cfg.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     result_path = output_dir / "stream_results.jsonl"
+    metrics_history_path = output_dir / "metrics_history.jsonl"
     checkpoint_path = output_dir / "adaptation_state.pt"
+    best_checkpoint_directory = output_dir / "best_checkpoints"
     metrics = StreamMetrics()
     processed = 0
-    stream_state = {
-        "manifest_sha256": _file_sha256(cfg.stream_manifest),
-    }
+    stream_state = _stream_state(
+        cfg.stream_manifest, require_metadata=bool(cfg.require_manifest_metadata)
+    )
+    stream_state.update(
+        {
+            "base_checkpoint_sha256": _file_sha256(cfg.checkpoint_path),
+            "experiment_config_sha256": _experiment_config_sha256(cfg),
+        }
+    )
     if cfg.resume_adaptation_checkpoint:
         checkpoint = load_adaptation_checkpoint(
             cfg.resume_adaptation_checkpoint, engine.expert_bank, device
@@ -219,8 +365,7 @@ def main(cfg: DictConfig):
         if int(checkpoint.get("version", 1)) < CHECKPOINT_VERSION:
             raise ValueError("旧版 checkpoint 缺少精确恢复所需的运行状态")
         saved_stream_state = checkpoint.get("stream_state") or {}
-        if saved_stream_state.get("manifest_sha256") != stream_state["manifest_sha256"]:
-            raise ValueError("恢复 checkpoint 的流式清单与当前清单不一致")
+        _validate_stream_state(saved_stream_state, stream_state)
         processed = int(checkpoint["processed_samples"])
         if processed and checkpoint.get("metrics_state") is None:
             raise ValueError("checkpoint 缺少累积指标，无法精确恢复")
@@ -230,8 +375,30 @@ def main(cfg: DictConfig):
         restore_rng_state(checkpoint.get("rng_state"))
 
     result_mode = _prepare_result_file(result_path, processed)
+    if not processed:
+        reset_best_checkpoints(best_checkpoint_directory)
+    last_history_sample = prepare_metrics_history(metrics_history_path, processed)
 
-    def save_state():
+    def history_record(checkpoint=False, resumed=False):
+        return {
+            "processed_samples": processed,
+            "checkpoint": bool(checkpoint),
+            "resumed": bool(resumed),
+            **metrics.summary(),
+            "expert_bank": engine.expert_bank.summary(),
+        }
+
+    def record_history(checkpoint=False, resumed=False):
+        nonlocal last_history_sample
+        if processed <= last_history_sample:
+            return
+        append_metrics_history(
+            metrics_history_path,
+            history_record(checkpoint=checkpoint, resumed=resumed),
+        )
+        last_history_sample = processed
+
+    def save_state(retain_best=True):
         save_adaptation_checkpoint(
             checkpoint_path,
             engine.expert_bank,
@@ -242,6 +409,25 @@ def main(cfg: DictConfig):
             rng_state=capture_rng_state(),
             stream_state=stream_state,
         )
+        checkpoint_score = metrics.summary()[checkpoint_metric]
+        if (
+            retain_best
+            and checkpoint_score is not None
+        ):
+            retain_best_checkpoints(
+                checkpoint_path,
+                best_checkpoint_directory,
+                score=checkpoint_score,
+                processed_samples=processed,
+                keep=int(cfg.checkpoint_file_limit) - 1,
+                metric_name=checkpoint_metric,
+                mode=checkpoint_mode,
+            )
+
+    if processed:
+        record_history(checkpoint=True, resumed=True)
+        if bool(cfg.save_adaptation_checkpoint):
+            save_state()
 
     stream = iter_stream_manifest(
         cfg.stream_manifest, cfg.data_root_dir, text_transform
@@ -266,9 +452,32 @@ def main(cfg: DictConfig):
                     len(text_transform.token_list),
                 )
 
-            outcome = engine.process(
-                load_stream_video(item), feedback_tokens=feedback_tokens
-            )
+            sample_started = time.perf_counter()
+            video_started = time.perf_counter()
+            video = load_stream_video(item)
+            video_load_seconds = time.perf_counter() - video_started
+            _synchronize_device(device)
+            process_started = time.perf_counter()
+            outcome = engine.process(video, feedback_tokens=feedback_tokens)
+            _synchronize_device(device)
+            process_seconds = time.perf_counter() - process_started
+            total_seconds = time.perf_counter() - sample_started
+            runtime = {
+                "video_load_seconds": video_load_seconds,
+                "process_seconds": process_seconds,
+                "total_seconds": total_seconds,
+            }
+            if device.type == "cuda":
+                runtime.update(
+                    {
+                        "gpu_memory_allocated_bytes": torch.cuda.memory_allocated(
+                            device
+                        ),
+                        "gpu_max_memory_allocated_bytes": (
+                            torch.cuda.max_memory_allocated(device)
+                        ),
+                    }
+                )
             row = {
                 "index": index,
                 "uid": item.uid,
@@ -276,6 +485,7 @@ def main(cfg: DictConfig):
                 "domain": item.domain,
                 "target": item.target_text,
                 "feedback_used": use_feedback,
+                "runtime": runtime,
                 **outcome.to_dict(),
             }
             result_file.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -286,13 +496,22 @@ def main(cfg: DictConfig):
                 item.domain,
                 outcome.reliability.score,
                 outcome.update.status,
+                video_load_seconds=video_load_seconds,
+                process_seconds=process_seconds,
+                total_seconds=total_seconds,
             )
             processed += 1
-            if (
+            is_checkpoint = (
                 bool(cfg.save_adaptation_checkpoint)
                 and int(cfg.checkpoint_every) > 0
                 and processed % int(cfg.checkpoint_every) == 0
+            )
+            if (
+                int(cfg.metrics_history_every) > 0
+                and processed % int(cfg.metrics_history_every) == 0
             ):
+                record_history(checkpoint=is_checkpoint)
+            if is_checkpoint:
                 result_file.flush()
                 os.fsync(result_file.fileno())
                 save_state()
@@ -311,8 +530,22 @@ def main(cfg: DictConfig):
     summary["mode"] = str(cfg.plasticity.mode)
     summary["base_checkpoint"] = str(cfg.checkpoint_path)
     summary["stream_manifest"] = str(cfg.stream_manifest)
+    summary["stream_state"] = stream_state
+    record_history(checkpoint=bool(cfg.save_adaptation_checkpoint))
     if cfg.save_adaptation_checkpoint:
         save_state()
+    best_checkpoint_index = best_checkpoint_directory / "index.json"
+    summary["artifacts"] = {
+        "stream_results": str(result_path),
+        "metrics_history": str(metrics_history_path),
+        "latest_checkpoint": str(checkpoint_path)
+        if bool(cfg.save_adaptation_checkpoint)
+        else None,
+        "best_checkpoint_index": str(best_checkpoint_index)
+        if best_checkpoint_index.is_file()
+        else None,
+        "checkpoint_file_limit": int(cfg.checkpoint_file_limit),
+    }
     _write_json_atomic(output_dir / "summary.json", summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 

@@ -46,16 +46,61 @@ file_size() {
 
 summary_is_valid() {
   [[ -s "${summary_file}" ]] || return 1
-  "${python_bin}" - "${summary_file}" <<'PY'
+  [[ -s "${checkpoint_file}" ]] || return 1
+  [[ -s "${result_file}" ]] || return 1
+  "${python_bin}" - "${summary_file}" "${checkpoint_file}" "${result_file}" <<'PY'
 import json
+import hashlib
 import sys
+from pathlib import Path
+
+import torch
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 with open(sys.argv[1], encoding="utf-8") as handle:
     summary = json.load(handle)
-required = {"samples", "mode", "stream_manifest", "expert_bank"}
+required = {
+    "samples",
+    "mode",
+    "stream_manifest",
+    "base_checkpoint",
+    "stream_state",
+    "expert_bank",
+}
 if not isinstance(summary, dict) or not required.issubset(summary):
     raise SystemExit(1)
 if not isinstance(summary["samples"], int) or summary["samples"] < 0:
+    raise SystemExit(1)
+checkpoint = torch.load(sys.argv[2], map_location="cpu", weights_only=True)
+if checkpoint.get("processed_samples") != summary["samples"]:
+    raise SystemExit(1)
+stream_state = summary["stream_state"]
+if not isinstance(stream_state, dict) or checkpoint.get("stream_state") != stream_state:
+    raise SystemExit(1)
+manifest_path = Path(summary["stream_manifest"])
+if sha256(manifest_path) != stream_state.get("manifest_sha256"):
+    raise SystemExit(1)
+if "manifest_metadata_sha256" in stream_state:
+    metadata_path = Path(f"{manifest_path}.meta.json")
+    if sha256(metadata_path) != stream_state["manifest_metadata_sha256"]:
+        raise SystemExit(1)
+if "target_vocab_sha256" in stream_state:
+    if sha256("datamodule/char_units.txt") != stream_state["target_vocab_sha256"]:
+        raise SystemExit(1)
+if sha256(summary["base_checkpoint"]) != stream_state.get(
+    "base_checkpoint_sha256"
+):
+    raise SystemExit(1)
+with open(sys.argv[3], encoding="utf-8") as handle:
+    result_rows = sum(1 for line in handle if line.strip())
+if result_rows != summary["samples"]:
     raise SystemExit(1)
 PY
 }

@@ -30,8 +30,19 @@ def iter_stream_manifest(manifest_path, data_root, text_transform):
                 video_path = data_root / video_path
             tokens = tuple(int(token) for token in row.get("target_tokens", []))
             target_text = row.get("target_text")
-            if target_text is None and tokens:
-                target_text = text_transform.post_process(tokens)
+            if tokens:
+                maximum_target_id = len(text_transform.token_list) - 2
+                if any(token < 1 or token > maximum_target_id for token in tokens):
+                    raise ValueError(
+                        f"流清单第 {line_number} 行包含无效目标 token"
+                    )
+                decoded_target = text_transform.post_process(tokens)
+                if target_text is None:
+                    target_text = decoded_target
+                elif target_text != decoded_target:
+                    raise ValueError(
+                        f"流清单第 {line_number} 行 target_text 与目标 token 反解不一致"
+                    )
             yield StreamItem(
                 uid=str(row.get("uid", f"sample-{line_number:08d}")),
                 video_path=video_path,

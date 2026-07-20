@@ -11,9 +11,23 @@ from torch import nn
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from continual_adapt import _prepare_result_file, _resolve_device, _write_json_atomic
+from continual_adapt import (
+    _file_sha256,
+    _prepare_result_file,
+    _resolve_device,
+    _stream_state,
+    _validate_stream_state,
+    _write_json_atomic,
+)
+from datamodule.transforms import DICT_PATH
 from espnet.nets.ctc_prefix_score import CTCPrefixScoreTH
 from plasticity.adapters import ExpertBank, sequence_signature
+from plasticity.artifacts import (
+    append_metrics_history,
+    prepare_metrics_history,
+    retain_best_checkpoints,
+    reset_best_checkpoints,
+)
 from plasticity.checkpoint import (
     capture_rng_state,
     load_adaptation_checkpoint,
@@ -24,6 +38,7 @@ from plasticity.engine import ContinualAdaptationEngine
 from plasticity.metrics import StreamMetrics
 from plasticity.objectives import ctc_sequence_loss, ctc_target_error
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
+from plasticity.stream import iter_stream_manifest
 from scripts.prepare_stream_manifest import domain_from_path, ordered_rows
 
 
@@ -195,7 +210,20 @@ def main():
     with tempfile.TemporaryDirectory() as temporary_directory:
         checkpoint_path = Path(temporary_directory) / "adaptation_state.pt"
         metrics = StreamMetrics()
-        metrics.update("a", "b", "domain-a", 0.5, "accepted")
+        metrics.update(
+            "a",
+            "b",
+            "domain-a",
+            0.5,
+            "accepted",
+            video_load_seconds=0.1,
+            process_seconds=0.2,
+            total_seconds=0.3,
+        )
+        timing = metrics.summary()["timing"]
+        assert timing["mean_video_load_seconds"] == 0.1
+        assert timing["mean_process_seconds"] == 0.2
+        assert timing["mean_total_seconds"] == 0.3
         rng_state = capture_rng_state()
         save_adaptation_checkpoint(
             checkpoint_path,
@@ -244,6 +272,205 @@ def main():
         _write_json_atomic(summary_path, {"samples": 2, "mode": "static"})
         assert json.loads(summary_path.read_text(encoding="utf-8"))["samples"] == 2
         assert not (Path(temporary_directory) / ".summary.json.tmp").exists()
+
+        history_path = Path(temporary_directory) / "metrics_history.jsonl"
+        append_metrics_history(history_path, {"processed_samples": 25, "cer": 0.6})
+        append_metrics_history(history_path, {"processed_samples": 50, "cer": 0.5})
+        append_metrics_history(history_path, {"processed_samples": 75, "cer": 0.4})
+        assert prepare_metrics_history(history_path, 50) == 50
+        history = [
+            json.loads(line)
+            for line in history_path.read_text(encoding="utf-8").splitlines()
+        ]
+        assert [row["processed_samples"] for row in history] == [25, 50]
+
+        best_directory = Path(temporary_directory) / "best_checkpoints"
+        expected_contents = {}
+        for step, score in ((100, 0.5), (200, 0.4), (300, 0.6), (400, 0.3)):
+            checkpoint_path.write_text(f"checkpoint-{step}", encoding="utf-8")
+            expected_contents[step] = checkpoint_path.read_text(encoding="utf-8")
+            retain_best_checkpoints(
+                checkpoint_path,
+                best_directory,
+                score=score,
+                processed_samples=step,
+                keep=3,
+                metric_name="cer",
+            )
+        index = json.loads(
+            (best_directory / "index.json").read_text(encoding="utf-8")
+        )
+        assert [entry["processed_samples"] for entry in index["checkpoints"]] == [
+            400,
+            200,
+            100,
+        ]
+        assert [entry["score"] for entry in index["checkpoints"]] == [0.3, 0.4, 0.5]
+        retained = sorted(best_directory.glob("*.pt"))
+        assert len(retained) == 3
+        assert {
+            path.read_text(encoding="utf-8") for path in retained
+        } == {expected_contents[step] for step in (100, 200, 400)}
+
+        checkpoint_path.write_text("checkpoint-400-rewritten", encoding="utf-8")
+        retain_best_checkpoints(
+            checkpoint_path,
+            best_directory,
+            score=0.35,
+            processed_samples=400,
+            keep=3,
+            metric_name="cer",
+        )
+        index = json.loads(
+            (best_directory / "index.json").read_text(encoding="utf-8")
+        )
+        assert len(index["checkpoints"]) == 3
+        assert sum(
+            entry["processed_samples"] == 400 for entry in index["checkpoints"]
+        ) == 1
+        reset_best_checkpoints(best_directory)
+        assert not (best_directory / "index.json").exists()
+        assert not list(best_directory.glob("*.pt"))
+        for step, score in ((100, 0.5), (200, 0.8), (300, 0.6)):
+            checkpoint_path.write_text(f"checkpoint-{step}", encoding="utf-8")
+            retain_best_checkpoints(
+                checkpoint_path,
+                best_directory,
+                score=score,
+                processed_samples=step,
+                keep=2,
+                metric_name="mean_reliability",
+                mode="max",
+            )
+        index = json.loads(
+            (best_directory / "index.json").read_text(encoding="utf-8")
+        )
+        assert [entry["processed_samples"] for entry in index["checkpoints"]] == [
+            200,
+            300,
+        ]
+        assert len(list(best_directory.glob("*.pt"))) == 2
+        assert checkpoint_path.is_file()
+        reset_best_checkpoints(best_directory)
+
+        class FakeTextTransform:
+            token_list = ["<blank>", "你", "好", "<eos>"]
+
+            def post_process(self, token_ids):
+                return "".join(self.token_list[token] for token in token_ids)
+
+        manifest_path = Path(temporary_directory) / "stream.jsonl"
+        stream_row = {
+            "uid": "sample-1",
+            "video": "sample.mp4",
+            "target_tokens": [1, 2],
+            "target_text": "你好",
+            "domain": "speaker-1",
+            "feedback": True,
+        }
+        manifest_path.write_text(
+            json.dumps(stream_row, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        items = list(
+            iter_stream_manifest(manifest_path, temporary_directory, FakeTextTransform())
+        )
+        assert items[0].target_text == "你好"
+        stream_row["target_text"] = "好你"
+        manifest_path.write_text(
+            json.dumps(stream_row, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        try:
+            list(
+                iter_stream_manifest(
+                    manifest_path, temporary_directory, FakeTextTransform()
+                )
+            )
+        except ValueError as error:
+            assert "反解" in str(error)
+        else:
+            raise AssertionError("target_text 与 token 反解不一致时必须拒绝清单")
+        stream_row["target_text"] = "你好"
+        stream_row["target_tokens"] = [0, 2]
+        manifest_path.write_text(
+            json.dumps(stream_row, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        try:
+            list(
+                iter_stream_manifest(
+                    manifest_path, temporary_directory, FakeTextTransform()
+                )
+            )
+        except ValueError as error:
+            assert "目标 token" in str(error)
+        else:
+            raise AssertionError("目标 token 包含 blank 时必须拒绝清单")
+
+        sidecar_path = Path(f"{manifest_path}.meta.json")
+        sidecar_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "label_mode": "token_passthrough",
+                    "samples": 2,
+                    "source_csv_sha256": "0" * 64,
+                    "target_vocab_sha256": _file_sha256(DICT_PATH),
+                }
+            ),
+            encoding="utf-8",
+        )
+        try:
+            _stream_state(manifest_path)
+        except ValueError as error:
+            assert "样本数" in str(error)
+        else:
+            raise AssertionError("sidecar 样本数与 JSONL 不一致时必须拒绝清单")
+
+        provenance_manifest = Path(temporary_directory) / "provenance.jsonl"
+        provenance_manifest.write_text(
+            json.dumps(
+                {
+                    "uid": "sample-1",
+                    "video": "sample.mp4",
+                    "target_tokens": [1],
+                    "target_text": "你",
+                    "domain": "speaker-1",
+                    "feedback": False,
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        provenance_sidecar = Path(f"{provenance_manifest}.meta.json")
+        provenance_sidecar.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "label_mode": "token_passthrough",
+                    "samples": 1,
+                    "source_csv_sha256": "0" * 64,
+                    "target_vocab_sha256": _file_sha256(DICT_PATH),
+                }
+            ),
+            encoding="utf-8",
+        )
+        saved_stream_state = _stream_state(provenance_manifest)
+        provenance_sidecar.unlink()
+        try:
+            _stream_state(provenance_manifest)
+        except ValueError as error:
+            assert "sidecar" in str(error)
+        else:
+            raise AssertionError("正式流缺少 sidecar 时必须拒绝运行")
+        current_stream_state = _stream_state(
+            provenance_manifest, require_metadata=False
+        )
+        try:
+            _validate_stream_state(saved_stream_state, current_stream_state)
+        except ValueError as error:
+            assert "不一致" in str(error)
+        else:
+            raise AssertionError("删除 sidecar 后必须拒绝恢复")
 
     rollback_model = MockModel()
     rollback_bank = ExpertBank(

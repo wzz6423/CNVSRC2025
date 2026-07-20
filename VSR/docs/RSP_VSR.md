@@ -181,11 +181,13 @@ bash scripts/download_checkpoint.sh model_avg_cncvs_2_3_cnvsrc.pth
 ```
 
 清单工具读取 CSV 的前四列，并允许数据集在尾部保留扩展列。生成
-speaker-block 流时，域正则要按真实路径调整：
+speaker-block 流时，域正则要按真实路径调整。即使 CSV token 已属于模型词表，
+正式实验也必须传入 `--target-vocab` 生成可校验 sidecar：
 
 ```bash
 python scripts/prepare_stream_manifest.py \
   --csv data/cnvsrc-multi/valid.csv \
+  --target-vocab datamodule/char_units.txt \
   --output data/continual/cnvsrc_multi_stream.jsonl \
   --domain-regex '^(?P<domain>[^/]+)' \
   --order domain-block \
@@ -206,11 +208,17 @@ python continual_adapt.py \
   output_dir=exp/rsp_vsr/full_seed42
 ```
 
-Chinese-LiPS 官方预处理视频和六列 CSV 可以直接生成未见说话人流：
+Chinese-LiPS 的标签 ID 使用独立词表，不能直接作为 CNVSRC 模型 token。
+必须从元数据 CSV 读取原文，再按当前模型词表重新编码：
 
 ```bash
 python scripts/prepare_stream_manifest.py \
   --csv /data/chinese_lips/labels/test.csv \
+  --text-metadata-csv /data/chinese_lips/meta_test.csv \
+  --metadata-id-column ID \
+  --metadata-text-column TEXT \
+  --target-vocab datamodule/char_units.txt \
+  --oov-policy drop \
   --output /data/manifests/chinese_lips_test_seed42.jsonl \
   --domain-regex '(?:^|/)(?P<domain>[0-9]+)_' \
   --order domain-block \
@@ -218,6 +226,15 @@ python scripts/prepare_stream_manifest.py \
   --shuffle-within-domain \
   --seed 42
 ```
+
+生成器会在每条记录中同时保存 `raw_target_text`、规范化后的
+`target_text` 和模型词表中的 `target_tokens`，并生成
+`chinese_lips_test_seed42.jsonl.meta.json`。sidecar 记录源 CSV、文本元数据、
+目标词表的 SHA-256 以及 OOV 删除明细；运行时会再次核对 sidecar 样本数、
+目标词表哈希和逐行 token 反解。`--oov-policy drop` 只能用于预先固定的
+模型词表规范化，并必须在论文中报告删除比例，不能看 test 结果后调整规则。
+阈值与超参数用 `labels/train.csv`/`meta_train.csv` 和
+`labels/val.csv`/`meta_valid.csv` 生成的开发流确定，test 流只运行最终冻结配置。
 
 长时实验用 supervisor 绑定单卡并在异常退出或长时无进度时续跑：
 
@@ -274,9 +291,25 @@ python continual_adapt.py \
   output_dir=exp/rsp_vsr/feedback_noise20_seed42
 ```
 
-每个目录会保存逐样本 `stream_results.jsonl`、汇总 `summary.json` 和可恢复的
-`adaptation_state.pt`。默认每 100 条原子刷新一次 checkpoint，其中包含
-adapter、优化器、累积指标、RNG 和流清单哈希。从同一输出目录续跑：
+每个目录会保存以下可复现实验产物：
+
+- `stream_results.jsonl`：逐样本目标、预测、可靠性、更新/回滚、路由、耗时和
+  CUDA 当前/峰值显存，可用于样本级配对分析。
+- `metrics_history.jsonl`：默认每 25 条记录累计与分域 CER、更新统计、平均耗时和
+  专家状态，尾段不足 25 条时也会记录，可直接绘制流式曲线。
+- `summary.json`：最终汇总及上述产物路径。
+- `adaptation_state.pt`：始终覆盖写的最新恢复点。
+- `best_checkpoints/index.json` 与最多 2 个历史 adapter checkpoint：test 流默认按
+  无标签累计 `mean_reliability` 排序；与最新恢复点合计严格不超过 3 个物理
+  checkpoint。基础模型不会重复复制，因此每个快照只有 adapter、优化器、指标和
+  恢复状态。
+
+默认每 100 条原子刷新最新恢复点并更新历史 top-2。test 上的内部可靠性排序只用于
+故障回溯，不能反向选择论文结果；需要按 CER 选择 checkpoint 时必须在独立
+validation/calibration 流显式设置 `checkpoint_selection_metric=cer` 与
+`checkpoint_selection_mode=min`。配置可通过 `metrics_history_every`、
+`checkpoint_every` 和 `checkpoint_file_limit` 调整，正式实验固定物理上限为 3。
+从同一输出目录续跑：
 
 ```bash
 python continual_adapt.py \
@@ -284,8 +317,11 @@ python continual_adapt.py \
   output_dir=exp/rsp_vsr
 ```
 
-续跑会丢弃 checkpoint 之后已写入但未持久化的结果尾部，再从确切的
-`processed_samples` 继续，避免重放样本。流清单哈希不同时会拒绝恢复。
+续跑会丢弃 checkpoint 之后已写入但未持久化的结果和指标历史尾部，再从确切的
+`processed_samples` 继续，避免重放样本。正式配置默认
+`require_manifest_metadata=true`；流清单、sidecar、目标词表、基础 checkpoint 或
+影响预测/更新轨迹的配置哈希不同时都会拒绝恢复。只有复查不带 sidecar 的历史产物时
+才允许显式设为 `false`，这种运行不能进入论文结果。
 
 Apple Silicon 本机会先检查 MPS 是否支持视觉前端的 Conv3D；不支持时
 `device=auto` 会回退 CPU。支持时，MPS 未实现的 CTC loss 在 CPU
