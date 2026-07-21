@@ -59,6 +59,7 @@ plasticity:
   max_experts: 8
   allow_growth: true
   feedback_confirms_growth: true
+  feedback_correct_span_kl_enabled: false
   route_threshold: 0.9
   growth_patience: 6
   pending_similarity: 0.95

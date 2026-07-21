@@ -314,6 +314,9 @@ def _build_engine(cfg, model, token_list, device):
         view_noise_std=cfg.plasticity.view.noise_std,
         temporal_mask_ratio=cfg.plasticity.view.temporal_mask_ratio,
         feedback_confirms_growth=cfg.plasticity.feedback_confirms_growth,
+        feedback_correct_span_kl_enabled=(
+            cfg.plasticity.feedback_correct_span_kl_enabled
+        ),
     )
 
 

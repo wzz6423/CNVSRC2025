@@ -35,9 +35,10 @@ from plasticity.checkpoint import (
     restore_rng_state,
     save_adaptation_checkpoint,
 )
+from plasticity.corrections import localize_feedback_correction
 from plasticity.engine import ContinualAdaptationEngine
 from plasticity.metrics import StreamMetrics
-from plasticity.objectives import ctc_sequence_loss, ctc_target_error
+from plasticity.objectives import ctc_sequence_loss, ctc_target_error, posterior_kl
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
 from plasticity.routing_diagnostics import summarize_route_records
 from plasticity.stream import iter_stream_manifest
@@ -107,6 +108,41 @@ class CountingDecoder:
 
 def main():
     torch.manual_seed(7)
+    alignment_logits = torch.full((1, 8, 6), -8.0)
+    for frame_index, token in enumerate((0, 1, 1, 0, 2, 2, 0, 3)):
+        alignment_logits[0, frame_index, token] = 8.0
+    alignment_log_probs = torch.log_softmax(alignment_logits, dim=-1)
+    correction, correct_frame_mask = localize_feedback_correction(
+        alignment_log_probs, [1, 4, 3, 5]
+    )
+    assert correction.to_dict() == {
+        "predicted_tokens": 3,
+        "target_tokens": 4,
+        "matched_tokens": 2,
+        "substituted_tokens": 1,
+        "missing_target_tokens": 1,
+        "extra_prediction_tokens": 0,
+        "token_error_rate": 0.5,
+        "matched_frame_rate": 0.375,
+    }
+    assert correct_frame_mask[0].tolist() == [
+        False,
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+        True,
+    ]
+    teacher = torch.log_softmax(torch.randn(1, 3, 5), dim=-1)
+    student = torch.log_softmax(torch.randn(1, 3, 5), dim=-1).requires_grad_()
+    empty_kl = posterior_kl(
+        teacher, student, frame_mask=torch.zeros((1, 3), dtype=torch.bool)
+    )
+    empty_kl.backward()
+    assert empty_kl.item() == 0.0
+    assert student.grad is not None
     assert _resolve_device("auto").type in {"cpu", "cuda", "mps"}
     model = MockModel()
     bank = ExpertBank(
@@ -137,6 +173,7 @@ def main():
         temporal_mask_ratio=0.0,
         max_anchor_kl=100.0,
         max_target_loss_increase=100.0,
+        feedback_correct_span_kl_enabled=True,
     )
     video = torch.randn(12, 1, 8, 8)
     engine.process(video)
@@ -153,6 +190,10 @@ def main():
         not torch.equal(adapter_before[name], value)
         for name, value in bank.experts[0].state_dict().items()
     )
+    feedback_outcome = engine.process(video, feedback_tokens=[1])
+    assert feedback_outcome.update.status == "accepted"
+    assert feedback_outcome.update.correction is not None
+    assert feedback_outcome.to_dict()["update"]["correction"]["target_tokens"] == 1
 
     slow = torch.tensor([0.0, 0.0, 1.0, 1.0]).view(1, 4, 1)
     alternating = torch.tensor([0.0, 1.0, 0.0, 1.0]).view(1, 4, 1)

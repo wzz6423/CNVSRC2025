@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 import torch
 
 from .adapters import ExpertBank, RouteDecision, sequence_signature
+from .corrections import CorrectionDiagnostics, localize_feedback_correction
 from .objectives import (
     ctc_sequence_loss,
     ctc_target_error,
@@ -23,6 +24,7 @@ class UpdateOutcome:
     loss_after: float | None
     anchor_kl: float | None
     reasons: tuple[str, ...]
+    correction: CorrectionDiagnostics | None = None
 
     def to_dict(self):
         value = asdict(self)
@@ -76,6 +78,7 @@ class ContinualAdaptationEngine:
         temporal_mask_ratio=0.05,
         blank_id=0,
         feedback_confirms_growth=True,
+        feedback_correct_span_kl_enabled=False,
     ):
         self.device = torch.device(device)
         self.base_model = base_model.to(self.device)
@@ -105,6 +108,9 @@ class ContinualAdaptationEngine:
         self.temporal_mask_ratio = float(temporal_mask_ratio)
         self.blank_id = int(blank_id)
         self.feedback_confirms_growth = bool(feedback_confirms_growth)
+        self.feedback_correct_span_kl_enabled = bool(
+            feedback_correct_span_kl_enabled
+        )
         if self.adaptation_steps < 1:
             raise ValueError("每次适应的更新步数必须大于 0")
         if self.gradient_clip <= 0:
@@ -205,6 +211,14 @@ class ContinualAdaptationEngine:
             name: value.detach().clone() for name, value in adapter.state_dict().items()
         }
         optimizer_snapshot = copy.deepcopy(optimizer.state_dict())
+        correction = None
+        consistency_mask = None
+        if supervision == "feedback":
+            correction, correct_frame_mask = localize_feedback_correction(
+                teacher_log_probs, target_tokens, self.blank_id
+            )
+            if self.feedback_correct_span_kl_enabled:
+                consistency_mask = correct_frame_mask
 
         def restore_snapshot():
             adapter.load_state_dict(adapter_snapshot)
@@ -234,7 +248,11 @@ class ContinualAdaptationEngine:
                     augmented_log_probs, target_tokens, self.blank_id
                 )
             )
-            consistency = posterior_kl(teacher_log_probs, augmented_log_probs)
+            consistency = posterior_kl(
+                teacher_log_probs,
+                augmented_log_probs,
+                frame_mask=consistency_mask,
+            )
             entropy = posterior_entropy(clean_log_probs)
             feature_anchor = feature_anchor_loss(clean_adapted, clean_features)
             total_loss = (
@@ -264,6 +282,7 @@ class ContinualAdaptationEngine:
                 loss_after=None,
                 anchor_kl=None,
                 reasons=(failure_reason,),
+                correction=correction,
             )
 
         adapter.eval()
@@ -306,6 +325,7 @@ class ContinualAdaptationEngine:
                 loss_after=loss_after,
                 anchor_kl=anchor_kl,
                 reasons=("non_finite_post_update_metric",),
+                correction=correction,
             )
 
         rejection_reasons = []
@@ -336,6 +356,7 @@ class ContinualAdaptationEngine:
                 loss_after=loss_after,
                 anchor_kl=anchor_kl,
                 reasons=tuple(rejection_reasons),
+                correction=correction,
             )
 
         return UpdateOutcome(
@@ -345,6 +366,7 @@ class ContinualAdaptationEngine:
             loss_after=loss_after,
             anchor_kl=anchor_kl,
             reasons=tuple(rejection_reasons),
+            correction=correction,
         )
 
     def process(self, video, feedback_tokens=None):

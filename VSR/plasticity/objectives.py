@@ -51,11 +51,19 @@ def ctc_sequence_loss(log_probs, target_tokens, blank_id=0):
     return loss.to(log_probs.device)
 
 
-def posterior_kl(teacher_log_probs, student_log_probs):
+def posterior_kl(teacher_log_probs, student_log_probs, frame_mask=None):
     length = min(teacher_log_probs.size(1), student_log_probs.size(1))
     teacher = teacher_log_probs[:, :length].detach()
     student = student_log_probs[:, :length]
-    return (teacher.exp() * (teacher - student)).sum(dim=-1).mean()
+    per_frame = (teacher.exp() * (teacher - student)).sum(dim=-1)
+    if frame_mask is None:
+        return per_frame.mean()
+    if frame_mask.ndim != 2 or frame_mask.size(0) != per_frame.size(0):
+        raise ValueError("KL 帧掩码必须为 [B, T]")
+    selected = frame_mask[:, :length].to(device=per_frame.device, dtype=torch.bool)
+    if not selected.any():
+        return per_frame.sum() * 0.0
+    return per_frame.masked_select(selected).mean()
 
 
 def posterior_entropy(log_probs):
