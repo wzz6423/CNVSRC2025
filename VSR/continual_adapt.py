@@ -317,6 +317,19 @@ def _build_engine(cfg, model, token_list, device):
         feedback_correct_span_kl_enabled=(
             cfg.plasticity.feedback_correct_span_kl_enabled
         ),
+        feedback_update_strategy=cfg.plasticity.feedback_update_strategy,
+        feedback_local_error_target_weight=(
+            cfg.plasticity.feedback_local.error_target_weight
+        ),
+        feedback_local_insertion_blank_weight=(
+            cfg.plasticity.feedback_local.insertion_blank_weight
+        ),
+        feedback_local_matched_kl_weight=(
+            cfg.plasticity.feedback_local.matched_kl_weight
+        ),
+        feedback_random_control_seed=(
+            cfg.plasticity.feedback_local.random_control_seed
+        ),
         adaptation_objective=cfg.plasticity.adaptation_objective,
         entropy_frame_selection=cfg.plasticity.tent.frame_selection,
     )
@@ -447,15 +460,6 @@ def main(cfg: DictConfig):
                 int(cfg.feedback.every) > 0
                 and (index + 1) % int(cfg.feedback.every) == 0
             )
-            if use_feedback and not item.target_tokens:
-                raise ValueError(f"样本 {item.uid} 被标记为反馈，但没有目标 token")
-            feedback_tokens = list(item.target_tokens) if use_feedback else None
-            if feedback_tokens and float(cfg.feedback.noise_rate) > 0:
-                feedback_tokens = _corrupt_feedback(
-                    feedback_tokens,
-                    float(cfg.feedback.noise_rate),
-                    len(text_transform.token_list),
-                )
 
             sample_started = time.perf_counter()
             video_started = time.perf_counter()
@@ -463,7 +467,23 @@ def main(cfg: DictConfig):
             video_load_seconds = time.perf_counter() - video_started
             _synchronize_device(device)
             process_started = time.perf_counter()
-            outcome = engine.process(video, feedback_tokens=feedback_tokens)
+            prediction = engine.predict(video)
+            if use_feedback and not item.target_tokens:
+                raise ValueError(
+                    f"样本 {item.uid} 被标记为反馈，但没有目标 token"
+                )
+            feedback_tokens = list(item.target_tokens) if use_feedback else None
+            if feedback_tokens and float(cfg.feedback.noise_rate) > 0:
+                feedback_tokens = _corrupt_feedback(
+                    feedback_tokens,
+                    float(cfg.feedback.noise_rate),
+                    len(text_transform.token_list),
+                )
+            outcome = engine.adapt(
+                prediction,
+                feedback_tokens=feedback_tokens,
+                sample_key=item.uid,
+            )
             _synchronize_device(device)
             process_seconds = time.perf_counter() - process_started
             total_seconds = time.perf_counter() - sample_started
@@ -534,6 +554,9 @@ def main(cfg: DictConfig):
     summary["expert_bank"] = engine.expert_bank.summary()
     summary["mode"] = str(cfg.plasticity.mode)
     summary["adaptation_objective"] = str(cfg.plasticity.adaptation_objective)
+    summary["feedback_update_strategy"] = str(
+        cfg.plasticity.feedback_update_strategy
+    )
     summary["base_checkpoint"] = str(cfg.checkpoint_path)
     summary["stream_manifest"] = str(cfg.stream_manifest)
     summary["stream_state"] = stream_state

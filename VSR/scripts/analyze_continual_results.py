@@ -21,6 +21,7 @@ from plasticity.analysis import (
     paired_sample_edit_transitions,
     static_corrected_forgetting,
     summarize_feedback_corrections,
+    summarize_localized_feedback_updates,
     summarize_seed_cers,
 )
 from plasticity.artifacts import _write_json_atomic
@@ -224,6 +225,9 @@ def run(args):
             "overall": overall,
             "run_summary": summary,
             "feedback_corrections": summarize_feedback_corrections(records),
+            "localized_feedback_updates": summarize_localized_feedback_updates(
+                records
+            ),
         }
         if args.feedback_horizon > 0:
             followup = feedback_followup_records(records, args.feedback_horizon)

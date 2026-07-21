@@ -19,6 +19,7 @@ from plasticity.analysis import (
     paired_sample_edit_transitions,
     static_corrected_forgetting,
     summarize_feedback_corrections,
+    summarize_localized_feedback_updates,
     summarize_seed_cers,
 )
 from scripts.analyze_continual_results import _load_experiment
@@ -91,6 +92,23 @@ def main():
             "feedback_used": True,
             "update": {
                 "status": "accepted",
+                "objective_before": 1.25,
+                "objective_after": 0.75,
+                "localization": {
+                    "strategy": "ctc_error_local",
+                    "randomized_support": False,
+                    "ctc_frames": 8,
+                    "target_log_likelihood": -3.0,
+                    "matched_target_tokens": 1,
+                    "error_target_tokens": 2,
+                    "substitution_target_tokens": 1,
+                    "deletion_target_tokens": 1,
+                    "insertion_frames": 2,
+                    "matched_occupancy_mass": 2.0,
+                    "error_occupancy_mass": 3.0,
+                    "matched_effective_frames": 1.5,
+                    "error_effective_frames": 2.5,
+                },
                 "correction": {
                     "predicted_tokens": 2,
                     "target_tokens": 3,
@@ -116,6 +134,16 @@ def main():
     assert correction_summary["missing_target_tokens"] == 1
     assert_close(correction_summary["mean_token_error_rate"], 2 / 3)
     assert_close(correction_summary["mean_matched_frame_rate"], 0.25)
+    localized_summary = summarize_localized_feedback_updates(feedback_records)
+    assert localized_summary["feedback_samples"] == 2
+    assert localized_summary["localized_feedback_samples"] == 1
+    assert localized_summary["strategies"] == {"ctc_error_local": 1}
+    assert localized_summary["update_statuses"] == {"accepted": 1}
+    assert localized_summary["error_target_tokens"] == 2
+    assert_close(localized_summary["insertion_frame_coverage"], 0.25)
+    assert_close(localized_summary["mean_error_occupancy_mass"], 3.0)
+    assert_close(localized_summary["mean_objective_delta"], -0.5)
+    assert localized_summary["objective_improved_samples"] == 1
     followup = feedback_followup_records(feedback_records, 2)
     assert [record["index"] for record in followup] == [1, 2, 4]
     no_feedback_records = [
@@ -428,6 +456,9 @@ def main():
         assert analysis["experiments"]["expert"]["run_summary"][
             "expert_bank"
         ]["route_counts"] == [641]
+        assert analysis["experiments"]["expert"][
+            "localized_feedback_updates"
+        ]["localized_feedback_samples"] == 0
         assert analysis["revisit_protocol"]["segment_lengths"] == {
             "A1": 130,
             "B": 195,

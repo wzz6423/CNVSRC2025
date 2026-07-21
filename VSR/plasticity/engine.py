@@ -5,12 +5,20 @@ from dataclasses import asdict, dataclass
 import torch
 
 from .adapters import ExpertBank, RouteDecision, sequence_signature
-from .corrections import CorrectionDiagnostics, localize_feedback_correction
+from .corrections import (
+    CorrectionDiagnostics,
+    localize_feedback_correction,
+    localize_target_conditioned_occupancy,
+    randomized_error_support,
+)
 from .objectives import (
     ctc_posterior_entropy,
     ctc_sequence_loss,
     ctc_target_error,
     feature_anchor_loss,
+    occupancy_weighted_blank_loss,
+    occupancy_weighted_posterior_kl,
+    occupancy_weighted_token_loss,
     posterior_entropy,
     posterior_kl,
 )
@@ -26,6 +34,9 @@ class UpdateOutcome:
     anchor_kl: float | None
     reasons: tuple[str, ...]
     correction: CorrectionDiagnostics | None = None
+    objective_before: float | None = None
+    objective_after: float | None = None
+    localization: dict | None = None
 
     def to_dict(self):
         value = asdict(self)
@@ -39,6 +50,7 @@ class ProcessOutcome:
     decoder_tokens: tuple[int, ...]
     ctc_tokens: tuple[int, ...]
     route: RouteDecision
+    adaptation_expert_index: int
     reliability: ReliabilityDecision
     update: UpdateOutcome
 
@@ -48,9 +60,24 @@ class ProcessOutcome:
             "decoder_tokens": list(self.decoder_tokens),
             "ctc_tokens": list(self.ctc_tokens),
             "route": asdict(self.route),
+            "adaptation_expert_index": self.adaptation_expert_index,
             "reliability": self.reliability.to_dict(),
             "update": self.update.to_dict(),
         }
+
+
+@dataclass(frozen=True)
+class PredictionState:
+    transcript: str
+    decoder_tokens: tuple[int, ...]
+    ctc_tokens: tuple[int, ...]
+    route: RouteDecision
+    reliability: ReliabilityDecision
+    signature: torch.Tensor
+    clean_features: torch.Tensor
+    augmented_features: torch.Tensor
+    base_log_probs: torch.Tensor
+    clean_log_probs: torch.Tensor
 
 
 class ContinualAdaptationEngine:
@@ -80,6 +107,11 @@ class ContinualAdaptationEngine:
         blank_id=0,
         feedback_confirms_growth=True,
         feedback_correct_span_kl_enabled=False,
+        feedback_update_strategy="full_sequence",
+        feedback_local_error_target_weight=1.0,
+        feedback_local_insertion_blank_weight=1.0,
+        feedback_local_matched_kl_weight=0.5,
+        feedback_random_control_seed=0,
         adaptation_objective="rsp",
         entropy_frame_selection="all",
     ):
@@ -111,9 +143,34 @@ class ContinualAdaptationEngine:
         self.temporal_mask_ratio = float(temporal_mask_ratio)
         self.blank_id = int(blank_id)
         self.feedback_confirms_growth = bool(feedback_confirms_growth)
-        self.feedback_correct_span_kl_enabled = bool(
-            feedback_correct_span_kl_enabled
+        feedback_update_strategy = str(feedback_update_strategy)
+        if feedback_correct_span_kl_enabled:
+            if feedback_update_strategy != "full_sequence":
+                raise ValueError(
+                    "旧 correct-span 开关不能与新 feedback_update_strategy 同时启用"
+                )
+            feedback_update_strategy = "greedy_correct_span"
+        if feedback_update_strategy not in {
+            "full_sequence",
+            "greedy_correct_span",
+            "ctc_error_local",
+            "ctc_error_local_random",
+        }:
+            raise ValueError("未知 feedback update strategy")
+        self.feedback_update_strategy = feedback_update_strategy
+        self.feedback_correct_span_kl_enabled = (
+            feedback_update_strategy == "greedy_correct_span"
         )
+        self.feedback_local_weights = {
+            "error_target": float(feedback_local_error_target_weight),
+            "insertion_blank": float(feedback_local_insertion_blank_weight),
+            "matched_kl": float(feedback_local_matched_kl_weight),
+        }
+        if any(value < 0 for value in self.feedback_local_weights.values()):
+            raise ValueError("局部反馈损失权重不能为负数")
+        if not any(self.feedback_local_weights.values()):
+            raise ValueError("局部反馈损失至少需要一个非零权重")
+        self.feedback_random_control_seed = int(feedback_random_control_seed)
         self.adaptation_objective = str(adaptation_objective)
         if self.adaptation_objective not in {"rsp", "tent_adapter"}:
             raise ValueError("适应目标仅支持 rsp 或 tent_adapter")
@@ -193,7 +250,9 @@ class ContinualAdaptationEngine:
             return " ".join(map(str, ctc_tokens)), list(ctc_tokens)
         return self.decoder(adapted_features.squeeze(0))
 
-    def _skip_update(self, supervision, reasons):
+    def _skip_update(
+        self, supervision, reasons, *, correction=None, localization=None
+    ):
         return UpdateOutcome(
             status="skipped",
             supervision=supervision,
@@ -201,6 +260,8 @@ class ContinualAdaptationEngine:
             loss_after=None,
             anchor_kl=None,
             reasons=tuple(reasons),
+            correction=correction,
+            localization=localization,
         )
 
     def _transactional_update(
@@ -378,6 +439,256 @@ class ContinualAdaptationEngine:
             correction=correction,
         )
 
+    def _transactional_local_feedback_update(
+        self,
+        expert_index,
+        clean_features,
+        augmented_features,
+        base_log_probs,
+        teacher_log_probs,
+        target_tokens,
+        pre_reliability,
+        sample_key,
+    ):
+        correction, _ = localize_feedback_correction(
+            teacher_log_probs, target_tokens, self.blank_id
+        )
+        alignment = localize_target_conditioned_occupancy(
+            teacher_log_probs, target_tokens, self.blank_id
+        )
+        error_target_indices = (
+            alignment.substitution_target_indices
+            + alignment.deletion_target_indices
+        )
+        token_occupancy = alignment.token_occupancy
+        insertion_weights = alignment.extra_prediction_frame_mask
+        randomized = self.feedback_update_strategy == "ctc_error_local_random"
+        if randomized:
+            token_occupancy, insertion_weights = randomized_error_support(
+                alignment,
+                sample_key,
+                seed=self.feedback_random_control_seed,
+            )
+        if error_target_indices:
+            error_index_tensor = torch.tensor(
+                error_target_indices,
+                dtype=torch.long,
+                device=token_occupancy.device,
+            )
+            error_frame_weights = token_occupancy.index_select(
+                -1, error_index_tensor
+            ).sum(dim=-1)
+        else:
+            error_frame_weights = torch.zeros_like(
+                alignment.matched_target_occupancy
+            )
+
+        def effective_frames(weights):
+            mass = float(weights.sum().item())
+            squared_mass = float(weights.square().sum().item())
+            return mass, mass * mass / squared_mass if squared_mass else 0.0
+
+        matched_mass, matched_effective_frames = effective_frames(
+            alignment.matched_target_occupancy
+        )
+        error_mass, error_effective_frames = effective_frames(error_frame_weights)
+        localization_summary = {
+            "strategy": self.feedback_update_strategy,
+            "randomized_support": randomized,
+            "ctc_frames": int(teacher_log_probs.size(1)),
+            "target_log_likelihood": float(alignment.log_likelihood.item()),
+            "matched_target_tokens": len(alignment.matched_target_indices),
+            "error_target_tokens": len(error_target_indices),
+            "substitution_target_tokens": len(
+                alignment.substitution_target_indices
+            ),
+            "deletion_target_tokens": len(alignment.deletion_target_indices),
+            "insertion_frames": int(insertion_weights.sum().item()),
+            "matched_occupancy_mass": matched_mass,
+            "error_occupancy_mass": error_mass,
+            "matched_effective_frames": matched_effective_frames,
+            "error_effective_frames": error_effective_frames,
+        }
+        if not error_target_indices and not insertion_weights.any():
+            return self._skip_update(
+                "feedback",
+                ["feedback_already_correct"],
+                correction=correction,
+                localization=localization_summary,
+            )
+
+        adapter = self.expert_bank.experts[expert_index]
+        optimizer = self._optimizer_for(expert_index)
+        adapter_snapshot = {
+            name: value.detach().clone() for name, value in adapter.state_dict().items()
+        }
+        optimizer_snapshot = copy.deepcopy(optimizer.state_dict())
+
+        def restore_snapshot():
+            adapter.load_state_dict(adapter_snapshot)
+            optimizer.load_state_dict(optimizer_snapshot)
+            adapter.eval()
+
+        def local_objective(log_probs, adapted_features):
+            error_target = occupancy_weighted_token_loss(
+                log_probs,
+                target_tokens,
+                token_occupancy,
+                error_target_indices,
+            )
+            insertion_blank = occupancy_weighted_blank_loss(
+                log_probs, insertion_weights, self.blank_id
+            )
+            matched_kl = occupancy_weighted_posterior_kl(
+                teacher_log_probs,
+                log_probs,
+                alignment.matched_target_occupancy,
+            )
+            feature_anchor = feature_anchor_loss(adapted_features, clean_features)
+            return (
+                self.feedback_local_weights["error_target"] * error_target
+                + self.feedback_local_weights["insertion_blank"] * insertion_blank
+                + self.feedback_local_weights["matched_kl"] * matched_kl
+                + self.loss_weights["feature_anchor"] * feature_anchor
+            )
+
+        with torch.no_grad():
+            loss_before = float(
+                ctc_sequence_loss(
+                    teacher_log_probs, target_tokens, self.blank_id
+                ).item()
+            )
+            objective_before = float(
+                local_objective(teacher_log_probs, clean_features).item()
+            )
+
+        failure_reason = None
+        adapter.train()
+        for _ in range(self.adaptation_steps):
+            optimizer.zero_grad(set_to_none=True)
+            clean_adapted = self._adapted_features(clean_features, expert_index)
+            clean_log_probs = self._log_probs(clean_adapted)
+            objective = local_objective(clean_log_probs, clean_adapted)
+            if not torch.isfinite(objective):
+                failure_reason = "non_finite_loss"
+                break
+            objective.backward()
+            gradient_norm = torch.nn.utils.clip_grad_norm_(
+                adapter.parameters(), self.gradient_clip
+            )
+            if not torch.isfinite(gradient_norm):
+                failure_reason = "non_finite_gradient"
+                break
+            optimizer.step()
+
+        if failure_reason:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision="feedback",
+                loss_before=loss_before,
+                loss_after=None,
+                anchor_kl=None,
+                reasons=(failure_reason,),
+                correction=correction,
+                objective_before=objective_before,
+                localization=localization_summary,
+            )
+
+        adapter.eval()
+        with torch.no_grad():
+            post_clean = self._adapted_features(clean_features, expert_index)
+            post_augmented = self._adapted_features(
+                augmented_features, expert_index
+            )
+            post_clean_log_probs = self._log_probs(post_clean)
+            post_augmented_log_probs = self._log_probs(post_augmented)
+            loss_after = float(
+                ctc_sequence_loss(
+                    post_clean_log_probs, target_tokens, self.blank_id
+                ).item()
+            )
+            objective_after = float(
+                local_objective(post_clean_log_probs, post_clean).item()
+            )
+            anchor_kl = float(
+                posterior_kl(base_log_probs, post_clean_log_probs).item()
+            )
+            post_ctc_tokens, _ = self.reliability_gate.evaluate(
+                post_clean_log_probs, post_augmented_log_probs
+            )
+            _, post_decoder_tokens = self._decode(
+                post_clean.detach(), post_ctc_tokens
+            )
+            _, post_reliability = self.reliability_gate.evaluate(
+                post_clean_log_probs,
+                post_augmented_log_probs,
+                post_decoder_tokens,
+            )
+
+        if not all(
+            math.isfinite(value)
+            for value in (
+                loss_before,
+                loss_after,
+                objective_before,
+                objective_after,
+                anchor_kl,
+                post_reliability.score,
+            )
+        ):
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision="feedback",
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=("non_finite_post_update_metric",),
+                correction=correction,
+                objective_before=objective_before,
+                objective_after=objective_after,
+                localization=localization_summary,
+            )
+
+        rejection_reasons = []
+        if loss_after > loss_before + self.max_target_loss_increase:
+            rejection_reasons.append("target_loss_regressed")
+        if anchor_kl > self.max_anchor_kl:
+            rejection_reasons.append("anchor_divergence_exceeded")
+        if (
+            self.reliability_enabled
+            and pre_reliability.accepted
+            and not post_reliability.accepted
+        ):
+            rejection_reasons.append("post_update_unreliable")
+        if rejection_reasons and self.rollback_enabled:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="rolled_back",
+                supervision="feedback",
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=tuple(rejection_reasons),
+                correction=correction,
+                objective_before=objective_before,
+                objective_after=objective_after,
+                localization=localization_summary,
+            )
+        return UpdateOutcome(
+            status="accepted",
+            supervision="feedback",
+            loss_before=loss_before,
+            loss_after=loss_after,
+            anchor_kl=anchor_kl,
+            reasons=tuple(rejection_reasons),
+            correction=correction,
+            objective_before=objective_before,
+            objective_after=objective_after,
+            localization=localization_summary,
+        )
+
     def _transactional_entropy_update(
         self,
         expert_index,
@@ -497,7 +808,7 @@ class ContinualAdaptationEngine:
             reasons=tuple(rejection_reasons),
         )
 
-    def process(self, video, feedback_tokens=None):
+    def predict(self, video):
         if video.ndim != 4:
             raise ValueError("视频输入必须为 [T, C, H, W]")
         video = video.to(self.device)
@@ -510,10 +821,9 @@ class ContinualAdaptationEngine:
         signature = sequence_signature(
             clean_features, self.expert_bank.signature_motion_order
         )
-        has_feedback = feedback_tokens is not None
         route = self.expert_bank.route(
             signature,
-            confirm_shift=has_feedback and self.feedback_confirms_growth,
+            confirm_shift=False,
         )
         adapter = self.expert_bank.experts[route.expert_index]
         adapter.eval()
@@ -538,53 +848,115 @@ class ContinualAdaptationEngine:
         pseudo_tokens, reliability = self.reliability_gate.evaluate(
             clean_log_probs, augmented_log_probs, decoder_tokens
         )
-
-        supervision = "feedback" if has_feedback else "pseudo"
-        target_tokens = list(feedback_tokens) if has_feedback else pseudo_tokens
-        target_error = (
-            ctc_target_error(clean_log_probs, target_tokens, self.blank_id)
-            if target_tokens
-            else None
-        )
-        if not self.enabled:
-            update = self._skip_update(supervision, ["adaptation_disabled"])
-        elif route.quarantined:
-            update = self._skip_update(supervision, ["shift_quarantine"])
-        elif self.adaptation_objective == "tent_adapter":
-            update = self._transactional_entropy_update(
-                route.expert_index,
-                clean_features,
-                base_log_probs,
-            )
-        elif (
-            not has_feedback
-            and self.reliability_enabled
-            and not reliability.accepted
-        ):
-            update = self._skip_update(supervision, reliability.reasons)
-        elif not target_tokens:
-            update = self._skip_update(supervision, ["empty_target"])
-        elif target_error is not None:
-            update = self._skip_update(supervision, [target_error])
-        else:
-            update = self._transactional_update(
-                route.expert_index,
-                clean_features,
-                augmented_features,
-                base_log_probs,
-                clean_log_probs.detach(),
-                target_tokens,
-                reliability,
-                supervision,
-            )
-            if update.status == "accepted":
-                self.expert_bank.mark_accepted(route.expert_index, signature)
-
-        return ProcessOutcome(
+        return PredictionState(
             transcript=transcript,
             decoder_tokens=tuple(decoder_tokens),
             ctc_tokens=tuple(pseudo_tokens),
             route=route,
             reliability=reliability,
+            signature=signature,
+            clean_features=clean_features,
+            augmented_features=augmented_features,
+            base_log_probs=base_log_probs,
+            clean_log_probs=clean_log_probs.detach(),
+        )
+
+    def adapt(self, prediction, feedback_tokens=None, sample_key=None):
+        if not isinstance(prediction, PredictionState):
+            raise TypeError("prediction 必须来自当前 engine.predict()")
+        has_feedback = feedback_tokens is not None
+        supervision = "feedback" if has_feedback else "pseudo"
+        target_tokens = (
+            list(feedback_tokens) if has_feedback else list(prediction.ctc_tokens)
+        )
+        target_error = (
+            ctc_target_error(
+                prediction.clean_log_probs, target_tokens, self.blank_id
+            )
+            if target_tokens
+            else None
+        )
+        adaptation_expert_index = int(prediction.route.expert_index)
+        if (
+            self.enabled
+            and has_feedback
+            and target_tokens
+            and target_error is None
+            and self.feedback_confirms_growth
+            and prediction.route.quarantined
+        ):
+            adaptation_expert_index = self.expert_bank.confirm_pending_shift(
+                prediction.route
+            )
+        confirmed_shift = adaptation_expert_index != prediction.route.expert_index
+        if not self.enabled:
+            update = self._skip_update(supervision, ["adaptation_disabled"])
+        elif prediction.route.quarantined and not confirmed_shift:
+            update = self._skip_update(supervision, ["shift_quarantine"])
+        elif self.adaptation_objective == "tent_adapter":
+            update = self._transactional_entropy_update(
+                adaptation_expert_index,
+                prediction.clean_features,
+                prediction.base_log_probs,
+            )
+        elif (
+            not has_feedback
+            and self.reliability_enabled
+            and not prediction.reliability.accepted
+        ):
+            update = self._skip_update(
+                supervision, prediction.reliability.reasons
+            )
+        elif not target_tokens:
+            update = self._skip_update(supervision, ["empty_target"])
+        elif target_error is not None:
+            update = self._skip_update(supervision, [target_error])
+        elif has_feedback and self.feedback_update_strategy in {
+            "ctc_error_local",
+            "ctc_error_local_random",
+        }:
+            update = self._transactional_local_feedback_update(
+                adaptation_expert_index,
+                prediction.clean_features,
+                prediction.augmented_features,
+                prediction.base_log_probs,
+                prediction.clean_log_probs,
+                target_tokens,
+                prediction.reliability,
+                sample_key,
+            )
+            if update.status == "accepted":
+                self.expert_bank.mark_accepted(
+                    adaptation_expert_index, prediction.signature
+                )
+        else:
+            update = self._transactional_update(
+                adaptation_expert_index,
+                prediction.clean_features,
+                prediction.augmented_features,
+                prediction.base_log_probs,
+                prediction.clean_log_probs,
+                target_tokens,
+                prediction.reliability,
+                supervision,
+            )
+            if update.status == "accepted":
+                self.expert_bank.mark_accepted(
+                    adaptation_expert_index, prediction.signature
+                )
+
+        return ProcessOutcome(
+            transcript=prediction.transcript,
+            decoder_tokens=prediction.decoder_tokens,
+            ctc_tokens=prediction.ctc_tokens,
+            route=prediction.route,
+            adaptation_expert_index=adaptation_expert_index,
+            reliability=prediction.reliability,
             update=update,
+        )
+
+    def process(self, video, feedback_tokens=None, sample_key=None):
+        prediction = self.predict(video)
+        return self.adapt(
+            prediction, feedback_tokens=feedback_tokens, sample_key=sample_key
         )

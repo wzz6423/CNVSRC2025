@@ -1,3 +1,4 @@
+import copy
 import json
 import random
 import re
@@ -42,6 +43,9 @@ from plasticity.objectives import (
     ctc_posterior_entropy,
     ctc_sequence_loss,
     ctc_target_error,
+    occupancy_weighted_blank_loss,
+    occupancy_weighted_posterior_kl,
+    occupancy_weighted_token_loss,
     posterior_kl,
 )
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
@@ -252,6 +256,195 @@ def main():
     assert tent_outcome.update.loss_after <= tent_outcome.update.loss_before
     assert all(not parameter.requires_grad for parameter in tent_model.parameters())
 
+    local_model = MockModel()
+    local_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    local_engine = ContinualAdaptationEngine(
+        local_model,
+        local_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_local",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    local_prediction = local_engine.predict(video)
+    local_adapter_before = {
+        name: value.detach().clone()
+        for name, value in local_bank.experts[0].state_dict().items()
+    }
+    local_outcome = local_engine.adapt(
+        local_prediction,
+        feedback_tokens=[2],
+        sample_key="local-feedback",
+    )
+    assert local_outcome.transcript == local_prediction.transcript
+    assert any(
+        not torch.equal(local_adapter_before[name], value)
+        for name, value in local_bank.experts[0].state_dict().items()
+    )
+    assert local_outcome.update.status == "accepted"
+    assert local_outcome.adaptation_expert_index == local_outcome.route.expert_index
+    assert local_outcome.update.correction.substituted_tokens == 1
+    assert local_outcome.update.localization["strategy"] == "ctc_error_local"
+    assert not local_outcome.update.localization["randomized_support"]
+    assert local_outcome.update.localization["error_target_tokens"] == 1
+    assert local_outcome.update.objective_after <= local_outcome.update.objective_before
+
+    equivalence_model = MockModel()
+    equivalence_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    process_engine = ContinualAdaptationEngine(
+        equivalence_model,
+        equivalence_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    split_engine = ContinualAdaptationEngine(
+        copy.deepcopy(equivalence_model),
+        copy.deepcopy(equivalence_bank),
+        copy.deepcopy(gate),
+        device="cpu",
+        decoder=CountingDecoder(),
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    torch.manual_seed(101)
+    process_outcome = process_engine.process(video, feedback_tokens=[2])
+    torch.manual_seed(101)
+    split_prediction = split_engine.predict(video)
+    split_outcome = split_engine.adapt(split_prediction, feedback_tokens=[2])
+    assert process_outcome.to_dict() == split_outcome.to_dict()
+    assert all(
+        torch.equal(
+            equivalence_bank.experts[0].state_dict()[name],
+            split_engine.expert_bank.experts[0].state_dict()[name],
+        )
+        for name in equivalence_bank.experts[0].state_dict()
+    )
+
+    local_rollback_model = MockModel()
+    local_rollback_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    local_rollback_engine = ContinualAdaptationEngine(
+        local_rollback_model,
+        local_rollback_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_local",
+        learning_rate=0.1,
+        rollback_enabled=True,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=0.0,
+        max_target_loss_increase=100.0,
+    )
+    local_rollback_prediction = local_rollback_engine.predict(video)
+    local_rollback_before = {
+        name: value.detach().clone()
+        for name, value in local_rollback_bank.experts[0].state_dict().items()
+    }
+    local_rollback_outcome = local_rollback_engine.adapt(
+        local_rollback_prediction,
+        feedback_tokens=[2],
+        sample_key="local-rollback",
+    )
+    assert local_rollback_outcome.update.status == "rolled_back"
+    assert all(
+        torch.equal(local_rollback_before[name], value)
+        for name, value in local_rollback_bank.experts[0].state_dict().items()
+    )
+    assert local_rollback_engine.optimizer_state_dict()["0"]["state"] == {}
+
+    no_error_model = MockModel()
+    no_error_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    no_error_engine = ContinualAdaptationEngine(
+        no_error_model,
+        no_error_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_local",
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    no_error_outcome = no_error_engine.process(
+        video, feedback_tokens=[1], sample_key="already-correct"
+    )
+    assert no_error_outcome.update.status == "skipped"
+    assert no_error_outcome.update.reasons == ("feedback_already_correct",)
+
+    random_model = MockModel()
+    random_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    random_engine = ContinualAdaptationEngine(
+        random_model,
+        random_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_local_random",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    random_outcome = random_engine.process(
+        video, feedback_tokens=[2], sample_key="random-control"
+    )
+    assert random_outcome.update.status == "accepted"
+    assert random_outcome.update.localization["randomized_support"]
+
+    local_log_probs = torch.log_softmax(torch.randn(1, 4, 5), dim=-1)
+    local_occupancy = torch.zeros(1, 4, 2)
+    local_occupancy[0, 1, 0] = 0.75
+    local_occupancy[0, 2, 0] = 0.25
+    token_loss = occupancy_weighted_token_loss(
+        local_log_probs, [1, 2], local_occupancy, [0]
+    )
+    blank_loss = occupancy_weighted_blank_loss(
+        local_log_probs, local_occupancy[:, :, 0], blank_id=0
+    )
+    weighted_kl = occupancy_weighted_posterior_kl(
+        local_log_probs,
+        local_log_probs,
+        local_occupancy[:, :, 0],
+    )
+    assert torch.isfinite(token_loss)
+    assert torch.isfinite(blank_loss)
+    assert weighted_kl.item() == 0.0
+
     slow = torch.tensor([0.0, 0.0, 1.0, 1.0]).view(1, 4, 1)
     alternating = torch.tensor([0.0, 1.0, 0.0, 1.0]).view(1, 4, 1)
     static_slow = sequence_signature(slow, motion_order=0)
@@ -301,11 +494,13 @@ def main():
     feedback_shifted = torch.zeros(16)
     feedback_shifted[1] = 1.0
     feedback_bank.route(feedback_first)
-    feedback_growth = feedback_bank.route(
-        feedback_shifted, confirm_shift=True
-    )
-    assert feedback_growth.created
-    assert not feedback_growth.quarantined
+    feedback_route = feedback_bank.route(feedback_shifted)
+    assert feedback_route.quarantined
+    assert feedback_bank.expert_count == 1
+    feedback_expert = feedback_bank.confirm_pending_shift(feedback_route)
+    assert feedback_expert == 1
+    assert feedback_bank.expert_count == 2
+    assert feedback_bank.route_counts.tolist() == [2, 0]
 
     route_records = [
         {

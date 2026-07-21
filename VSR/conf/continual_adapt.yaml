@@ -61,6 +61,12 @@ plasticity:
   allow_growth: true
   feedback_confirms_growth: true
   feedback_correct_span_kl_enabled: false
+  feedback_update_strategy: full_sequence
+  feedback_local:
+    error_target_weight: 1.0
+    insertion_blank_weight: 1.0
+    matched_kl_weight: 0.5
+    random_control_seed: ${seed}
   tent:
     frame_selection: all
   route_threshold: 0.9

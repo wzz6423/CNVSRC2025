@@ -203,6 +203,21 @@ class ExpertBank(nn.Module):
         return RouteDecision(best_index, False, similarity_value, pending_count, True)
 
     @torch.no_grad()
+    def confirm_pending_shift(self, route):
+        if not isinstance(route, RouteDecision):
+            raise TypeError("route 必须为 RouteDecision")
+        if (
+            not route.quarantined
+            or not self.allow_growth
+            or self.expert_count >= self.max_experts
+            or self.pending_count.item() == 0
+        ):
+            return int(route.expert_index)
+        new_index = self.add_expert(self.pending_prototype)
+        self._reset_pending()
+        return new_index
+
+    @torch.no_grad()
     def mark_accepted(self, expert_index, signature):
         count = int(self.prototype_counts[expert_index].item())
         signature = F.normalize(signature.float(), dim=-1)

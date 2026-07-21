@@ -105,6 +105,149 @@ def summarize_feedback_corrections(records):
     }
 
 
+def summarize_localized_feedback_updates(records):
+    feedback_samples = 0
+    localized_samples = 0
+    randomized_samples = 0
+    strategies = {}
+    update_statuses = {}
+    integer_totals = {
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+    }
+    measure_names = (
+        "target_log_likelihood",
+        "matched_occupancy_mass",
+        "error_occupancy_mass",
+        "matched_effective_frames",
+        "error_effective_frames",
+    )
+    measures = {name: [] for name in measure_names}
+    objective_before_values = []
+    objective_after_values = []
+
+    for position, record in enumerate(records, start=1):
+        if not isinstance(record, dict):
+            raise ValueError(f"第 {position} 条结果必须是 JSON 对象")
+        if not record.get("feedback_used", False):
+            continue
+        feedback_samples += 1
+        update = record.get("update")
+        localization = update.get("localization") if isinstance(update, dict) else None
+        if localization is None:
+            continue
+        if not isinstance(localization, dict):
+            raise ValueError(f"第 {position} 条 update.localization 必须是 JSON 对象")
+
+        strategy = localization.get("strategy")
+        randomized = localization.get("randomized_support")
+        if not isinstance(strategy, str) or not strategy:
+            raise ValueError(f"第 {position} 条 localization.strategy 必须是非空字符串")
+        if not isinstance(randomized, bool):
+            raise ValueError(f"第 {position} 条 localization.randomized_support 必须是布尔值")
+        strategies[strategy] = strategies.get(strategy, 0) + 1
+        randomized_samples += int(randomized)
+
+        for name in integer_totals:
+            value = localization.get(name)
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < (1 if name == "ctc_frames" else 0)
+            ):
+                requirement = "正整数" if name == "ctc_frames" else "非负整数"
+                raise ValueError(
+                    f"第 {position} 条 localization.{name} 必须是{requirement}"
+                )
+            integer_totals[name] += value
+
+        for name in measure_names:
+            value = localization.get(name)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+                or (name != "target_log_likelihood" and value < 0)
+            ):
+                raise ValueError(
+                    f"第 {position} 条 localization.{name} 必须是有限数值"
+                )
+            measures[name].append(float(value))
+
+        status = update.get("status")
+        if not isinstance(status, str) or not status:
+            raise ValueError(f"第 {position} 条 update.status 必须是非空字符串")
+        update_statuses[status] = update_statuses.get(status, 0) + 1
+
+        objective_before = update.get("objective_before")
+        objective_after = update.get("objective_after")
+        if (objective_before is None) != (objective_after is None):
+            raise ValueError(
+                f"第 {position} 条局部目标 before/after 必须同时存在或同时为空"
+            )
+        if objective_before is not None:
+            pair = (objective_before, objective_after)
+            if any(
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+                for value in pair
+            ):
+                raise ValueError(f"第 {position} 条局部目标必须是有限数值")
+            objective_before_values.append(float(objective_before))
+            objective_after_values.append(float(objective_after))
+        localized_samples += 1
+
+    objective_samples = len(objective_before_values)
+    objective_deltas = [
+        after - before
+        for before, after in zip(objective_before_values, objective_after_values)
+    ]
+    return {
+        "feedback_samples": feedback_samples,
+        "localized_feedback_samples": localized_samples,
+        "localization_coverage": (
+            localized_samples / feedback_samples if feedback_samples else 0.0
+        ),
+        "strategies": strategies,
+        "randomized_support_samples": randomized_samples,
+        "update_statuses": update_statuses,
+        **integer_totals,
+        "insertion_frame_coverage": (
+            integer_totals["insertion_frames"] / integer_totals["ctc_frames"]
+            if integer_totals["ctc_frames"]
+            else None
+        ),
+        **{
+            f"mean_{name}": (
+                math.fsum(values) / localized_samples if localized_samples else None
+            )
+            for name, values in measures.items()
+        },
+        "objective_samples": objective_samples,
+        "mean_objective_before": (
+            math.fsum(objective_before_values) / objective_samples
+            if objective_samples
+            else None
+        ),
+        "mean_objective_after": (
+            math.fsum(objective_after_values) / objective_samples
+            if objective_samples
+            else None
+        ),
+        "mean_objective_delta": (
+            math.fsum(objective_deltas) / objective_samples
+            if objective_samples
+            else None
+        ),
+        "objective_improved_samples": sum(delta < 0 for delta in objective_deltas),
+    }
+
+
 def feedback_followup_records(records, horizon):
     horizon = int(horizon)
     if horizon < 1:
