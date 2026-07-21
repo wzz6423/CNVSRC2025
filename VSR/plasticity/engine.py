@@ -132,6 +132,19 @@ class ContinualAdaptationEngine:
         features, _ = self.base_model.encoder(video.unsqueeze(0), None)
         return features.detach()
 
+    @torch.no_grad()
+    def extract_route_signature(self, video):
+        if not isinstance(video, torch.Tensor):
+            raise TypeError("视频输入必须为 torch.Tensor")
+        if video.ndim != 4:
+            raise ValueError("视频输入必须为 [T, C, H, W]")
+        if video.size(0) == 0:
+            raise ValueError("视频输入的时间维不能为空")
+        features = self._encode(video.to(self.device))
+        return sequence_signature(
+            features, self.expert_bank.signature_motion_order
+        ).detach()
+
     def _adapted_features(self, frozen_features, expert_index):
         return self.expert_bank(frozen_features, expert_index)
 

@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -38,6 +39,7 @@ from plasticity.engine import ContinualAdaptationEngine
 from plasticity.metrics import StreamMetrics
 from plasticity.objectives import ctc_sequence_loss, ctc_target_error
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
+from plasticity.routing_diagnostics import summarize_route_records
 from plasticity.stream import iter_stream_manifest
 from scripts.prepare_stream_manifest import domain_from_path, ordered_rows
 
@@ -207,7 +209,139 @@ def main():
     assert feedback_growth.created
     assert not feedback_growth.quarantined
 
+    route_records = [
+        {
+            "domain": "a",
+            "route": {
+                "expert_index": 0,
+                "created": True,
+                "similarity": 1.0,
+                "quarantined": False,
+            },
+        },
+        {
+            "domain": "a",
+            "route": {
+                "expert_index": 0,
+                "created": False,
+                "similarity": 0.95,
+                "quarantined": False,
+            },
+        },
+        {
+            "domain": "b",
+            "route": {
+                "expert_index": 0,
+                "created": False,
+                "similarity": 0.85,
+                "quarantined": True,
+            },
+        },
+        {
+            "domain": "b",
+            "route": {
+                "expert_index": 1,
+                "created": True,
+                "similarity": 0.8,
+                "quarantined": False,
+            },
+        },
+        {
+            "domain": "a",
+            "route": {
+                "expert_index": 0,
+                "created": False,
+                "similarity": 0.92,
+                "quarantined": False,
+            },
+        },
+    ]
+    route_summary = summarize_route_records(route_records, threshold=0.9)
+    assert route_summary["samples"] == 5
+    assert route_summary["similarity"]["quantiles"]["p50"] == 0.92
+    assert route_summary["similarity"]["below_threshold_count"] == 2
+    assert route_summary["created_count"] == 2
+    assert route_summary["quarantined_count"] == 1
+    assert route_summary["route_counts"] == {"0": 4, "1": 1}
+    assert route_summary["route_share"] == {"0": 0.8, "1": 0.2}
+    assert route_summary["domains"]["a"]["route_purity"] == 1.0
+    assert route_summary["domains"]["a"]["reuse_count"] == 2
+    assert route_summary["domains"]["b"]["route_purity"] == 0.5
+    assert route_summary["domains"]["b"]["reuse_count"] == 1
+    assert route_summary["experts"]["0"]["domain_purity"] == 0.75
+    assert route_summary["domain_route_consistency"] == 0.8
+    assert route_summary["clustering_purity"] == 0.8
+    assert "domain_route_purity" not in route_summary
+
+    collapsed_route_summary = summarize_route_records(
+        [
+            {
+                "domain": domain,
+                "route": {
+                    "expert_index": 0,
+                    "created": domain == "a",
+                    "similarity": 1.0 if domain == "a" else 0.95,
+                    "quarantined": False,
+                },
+            }
+            for domain in ("a", "b")
+        ],
+        threshold=0.9,
+    )
+    assert collapsed_route_summary["domain_route_consistency"] == 1.0
+    assert collapsed_route_summary["clustering_purity"] == 0.5
+    try:
+        summarize_route_records(
+            [{"domain": "a", "route": {"expert_index": 0}}], threshold=0.9
+        )
+    except ValueError as error:
+        assert "第 1 条记录缺少字段 route.similarity" in str(error)
+    else:
+        raise AssertionError("路由记录缺少必需字段时必须拒绝")
+
     with tempfile.TemporaryDirectory() as temporary_directory:
+        route_path = Path(temporary_directory) / "routes.jsonl"
+        route_path.write_text(
+            "\n".join(json.dumps(row) for row in route_records) + "\n",
+            encoding="utf-8",
+        )
+        route_cli = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "analyze_route_records.py"),
+                "--input",
+                str(route_path),
+                "--threshold",
+                "0.9",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert json.loads(route_cli.stdout) == route_summary
+
+        invalid_route_path = Path(temporary_directory) / "invalid_routes.jsonl"
+        invalid_route_path.write_text(
+            json.dumps({"domain": "a", "route": {"expert_index": 0}}) + "\n",
+            encoding="utf-8",
+        )
+        invalid_route_cli = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "analyze_route_records.py"),
+                "--input",
+                str(invalid_route_path),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert invalid_route_cli.returncode != 0
+        assert (
+            "第 1 条记录缺少字段 route.similarity"
+            in invalid_route_cli.stderr
+        )
+
         checkpoint_path = Path(temporary_directory) / "adaptation_state.pt"
         metrics = StreamMetrics()
         metrics.update(

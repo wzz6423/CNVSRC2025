@@ -9,6 +9,25 @@ from collections import Counter, OrderedDict, defaultdict, deque
 from pathlib import Path
 
 
+def _validate_revisit_domains(domains, error_type):
+    if len(domains) != 3:
+        raise error_type("--revisit-domains 必须恰好 3 个域")
+    if any(not isinstance(domain, str) or not domain.strip() for domain in domains):
+        raise error_type("回访域不能为空")
+    normalized = tuple(domain.strip() for domain in domains)
+    if len(set(normalized)) != 3:
+        raise error_type("3 个回访域必须互不相同")
+    return normalized
+
+
+def parse_revisit_domains(value):
+    try:
+        domains = next(csv.reader([value], strict=True))
+    except csv.Error as error:
+        raise argparse.ArgumentTypeError("回访域 CSV 格式无效") from error
+    return _validate_revisit_domains(domains, argparse.ArgumentTypeError)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="生成持续适应流式清单")
     parser.add_argument("--csv", required=True, help="CNVSRC 四列 CSV")
@@ -24,6 +43,11 @@ def parse_args():
     )
     parser.add_argument("--shuffle-within-domain", action="store_true")
     parser.add_argument("--shuffle-domains", action="store_true")
+    parser.add_argument(
+        "--revisit-domains",
+        type=parse_revisit_domains,
+        help="以 CSV 指定 3 个互异域 A,B,C，输出 A1-B-C-A2 回访子流",
+    )
     parser.add_argument("--feedback-every", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -249,6 +273,26 @@ def run(args):
     if args.text_metadata_csv and not args.target_vocab:
         raise ValueError("指定 --text-metadata-csv 时必须提供 --target-vocab")
 
+    revisit_domains = getattr(args, "revisit_domains", None)
+    if revisit_domains is not None:
+        if isinstance(revisit_domains, str):
+            try:
+                revisit_domains = parse_revisit_domains(revisit_domains)
+            except argparse.ArgumentTypeError as error:
+                raise ValueError(str(error)) from error
+        else:
+            try:
+                revisit_domains = tuple(revisit_domains)
+            except TypeError as error:
+                raise ValueError("--revisit-domains 必须是 3 个域") from error
+            revisit_domains = _validate_revisit_domains(revisit_domains, ValueError)
+        if not args.target_vocab:
+            raise ValueError("回访模式必须提供 --target-vocab")
+        if args.order != "domain-block":
+            raise ValueError("回访模式要求 --order domain-block")
+        if args.shuffle_domains:
+            raise ValueError("回访模式不能同时使用 --shuffle-domains")
+
     rng = random.Random(args.seed)
     pattern = re.compile(args.domain_regex) if args.domain_regex else None
     use_metadata = bool(args.text_metadata_csv)
@@ -280,6 +324,16 @@ def run(args):
                     ("video", str(Path(dataset) / relative_path)),
                 ]
             )
+            if revisit_domains:
+                row["domain"] = domain_from_path(relative_path, pattern)
+                if use_metadata:
+                    row["_sample_id"] = Path(relative_path).stem
+                else:
+                    row["_token_string"] = values[3]
+                    row["_source_line_number"] = index + 1
+                row["feedback"] = False
+                rows.append(row)
+                continue
             if use_metadata:
                 sample_id = Path(relative_path).stem
                 if sample_id not in metadata:
@@ -315,13 +369,101 @@ def run(args):
             row["feedback"] = False
             rows.append(row)
 
-    rows = ordered_rows(
-        rows,
-        args.order,
-        args.shuffle_within_domain,
-        args.shuffle_domains,
-        rng,
-    )
+    if revisit_domains:
+        shuffled_rows = ordered_rows(
+            rows,
+            "domain-block",
+            args.shuffle_within_domain,
+            False,
+            rng,
+        )
+        grouped = defaultdict(list)
+        for row in shuffled_rows:
+            grouped[row["domain"]].append(row)
+        first, second, third = revisit_domains
+        missing_domains = [
+            domain for domain in revisit_domains if domain not in grouped
+        ]
+        if missing_domains:
+            raise ValueError(f"回访域不存在：{', '.join(missing_domains)}")
+        selected_rows = [
+            row
+            for domain in revisit_domains
+            for row in grouped[domain]
+        ]
+        uid_counts = Counter(row["uid"] for row in selected_rows)
+        duplicate_uids = sorted(uid for uid, count in uid_counts.items() if count > 1)
+        if duplicate_uids:
+            raise ValueError(f"回访流 UID 重复：{duplicate_uids[0]}")
+        first_rows = grouped[first]
+        if len(first_rows) < 2:
+            raise ValueError("首个回访域至少需要 2 条样本")
+        split_index = (len(first_rows) + 1) // 2
+        segment_lengths = OrderedDict(
+            [
+                ("A1", split_index),
+                ("B", len(grouped[second])),
+                ("C", len(grouped[third])),
+                ("A2", len(first_rows) - split_index),
+            ]
+        )
+        rows = (
+            first_rows[:split_index]
+            + grouped[second]
+            + grouped[third]
+            + first_rows[split_index:]
+        )
+        materialized_rows = []
+        for row in rows:
+            materialized = OrderedDict(
+                [("uid", row["uid"]), ("video", row["video"])]
+            )
+            if use_metadata:
+                sample_id = row["_sample_id"]
+                if sample_id not in metadata:
+                    raise ValueError(f"元数据缺少样本：{sample_id}")
+                raw_target_text = metadata[sample_id]
+                raw_characters += len(raw_target_text)
+                target_text, target_tokens = encode_text(
+                    raw_target_text,
+                    token_to_id,
+                    args.oov_policy,
+                    dropped_counter,
+                )
+                if not target_tokens:
+                    raise ValueError(f"样本 {sample_id} 的标签规范化后为空")
+                target_characters += len(target_text)
+                decoded = "".join(id_to_token[token] for token in target_tokens)
+                if decoded != target_text:
+                    raise RuntimeError(
+                        f"目标 token 反解与规范化文本不一致：{sample_id}"
+                    )
+                materialized["raw_target_text"] = raw_target_text
+                materialized["target_text"] = target_text
+                materialized["target_tokens"] = target_tokens
+            else:
+                materialized["target_tokens"] = [
+                    int(token) for token in row["_token_string"].split()
+                ]
+                if any(
+                    token not in id_to_token
+                    for token in materialized["target_tokens"]
+                ):
+                    raise ValueError(
+                        f"第 {row['_source_line_number']} 行包含目标词表之外的 token ID"
+                    )
+            materialized["domain"] = row["domain"]
+            materialized["feedback"] = False
+            materialized_rows.append(materialized)
+        rows = materialized_rows
+    else:
+        rows = ordered_rows(
+            rows,
+            args.order,
+            args.shuffle_within_domain,
+            args.shuffle_domains,
+            rng,
+        )
     if args.feedback_every > 0:
         for index, row in enumerate(rows, start=1):
             row["feedback"] = index % args.feedback_every == 0
@@ -335,6 +477,13 @@ def run(args):
         )
     elif args.target_vocab:
         sidecar = build_passthrough_sidecar(args, len(rows))
+    if sidecar is not None and revisit_domains:
+        sidecar["revisit_protocol"] = OrderedDict(
+            [
+                ("domain_sequence", [first, second, third, first]),
+                ("segment_lengths", segment_lengths),
+            ]
+        )
     try:
         _write_lines_atomic(
             output, (json.dumps(row, ensure_ascii=False) for row in rows)
