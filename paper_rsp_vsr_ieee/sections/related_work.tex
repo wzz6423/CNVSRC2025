@@ -1,0 +1,16 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Mandarin Visual Speech Recognition}
+
+Large-scale VSR systems use 3D convolutional visual front ends and Transformer or Conformer sequence models~\cite{ma2022visual}. Chinese VSR adds a large character vocabulary and severe visual ambiguity. Chinese-LiPS provides 100.84 hours from 207 speakers, including fixed validation and test splits of 1,959 and 3,908 clips~\cite{zhao2025chineselips}. We use its lip video and transcript channels only. The task is cross-dataset deployment: the source checkpoint is fixed before Chinese-LiPS adaptation, and no Chinese-LiPS training sample is used by the online learner.
+
+\subsection{VSR Personalization}
+
+Personalized Lip Reading adapts a pretrained recognizer at visual and language levels using prompt tuning and LoRA, and evaluates on the speaker-adaptation dataset VoxLRS-SA~\cite{yeo2024personalized}. That work establishes the value of parameter-efficient speaker adaptation. Our setting differs in evaluation time and supervision: corrections arrive inside a non-stationary stream, every prediction is evaluated before updating, and returned domains test whether prior adaptation survives intervening speakers.
+
+\subsection{Continual Test-Time Adaptation}
+
+EATA filters unreliable or redundant samples and regularizes adaptation to reduce forgetting~\cite{niu2022eata}; CoTTA uses augmentation, teacher averaging, and stochastic restoration for continual shifts~\cite{wang2022cotta}. AETTA estimates online accuracy without labels and uses the estimate to control recovery~\cite{lee2024aetta}. These methods motivate reliability and recovery controls; the cited mechanisms do not by themselves establish novelty for per-update rollback.
+
+Expert-based CTTA explicitly addresses domain interference. BECoTTA blends low-rank domain experts with input-dependent routing~\cite{lee2024becotta}. PAINT uses a query mechanism to select a known domain prompt or allocate a new one~\cite{cui2025paint}. Consequently, adapter banks, cosine routing, and dynamic allocation cannot be claimed as first contributions here. Our expert bank is an evaluated VSR instantiation whose value must be established against one adapter and, in future work, against matched implementations of these nearest neighbors.

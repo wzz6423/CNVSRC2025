@@ -1,0 +1,81 @@
+\section{Results and Analysis}
+\label{sec:results}
+
+\subsection{Sparse Feedback Is the Dominant Gain}
+
+Table~\ref{tab:main} summarizes the primary operating points on the complete test stream. One adapter with feedback every ten samples improves the static CER by 2.421 points. The three-seed standard deviation is 0.105 points, indicating that the gain is not driven by one seed. More frequent corrections also matter: the expert-bank mean improves by 0.490 points from feedback every 20 to every 10 samples.
+
+\begin{table}[t]
+\centering
+\caption{Prequential CER on the 3,908-clip test stream. Mean $\pm$ population standard deviation is shown for three-seed rows.}
+\label{tab:main}
+\begin{tabular}{lcc}
+\toprule
+Method & Feedback & CER (\%) $\downarrow$ \\
+\midrule
+Static & none & 69.302 \\
+Single adapter & none & 67.584 \\
+Expert bank & none & 67.584 \\
+Single adapter & every 20 & $67.335\pm0.063$ \\
+Expert bank & every 20 & $67.317\pm0.058$ \\
+Single adapter & every 10 & $66.881\pm0.105$ \\
+Expert bank & every 10 & $66.826\pm0.079$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The no-feedback single and expert systems are identical at seed 42. This is consistent with the implemented reliability gate accepting too few useful pseudo targets to distinguish the structures. The publishable evidence therefore concerns correction-driven personalization, not unsupervised CTTA.
+
+\subsection{Dynamic Experts Do Not Beat One Adapter Materially}
+
+At feedback every ten samples, the expert advantage over one adapter is 0.087, 0.025, and 0.053 CER points for seeds 7, 42, and 123, respectively, for a mean of only 0.055 points. This is below the 0.3-point materiality threshold used for the structural decision.
+
+The revisit stream leads to the same conclusion (Table~\ref{tab:revisit}). Both adaptive systems improve over static. The expert bank is only 0.085 points better overall than one adapter and reduces static-corrected forgetting by 0.156 points (lower is better). Both effects remain below the 0.3-point structural threshold. More importantly, 741 of 742 clips route to expert~0. Thus the observed difference cannot support domain-specialized reuse.
+
+\begin{table*}[t]
+\centering
+\caption{A--B--C--A revisit results. Corrected forgetting subtracts the static A2--A1 difference; lower is better.}
+\label{tab:revisit}
+\begin{tabular}{lccccccl}
+\toprule
+Method & Overall & A1 & A2 & Raw A2--A1 & Corrected & Experts & Routes \\
+ & \multicolumn{5}{c}{CER (\%)} & & \\
+\midrule
+Static & 71.347 & 94.092 & 92.432 & $-1.661$ & 0.000 & 1 & 742 \\
+Single adapter & 69.167 & 92.748 & 90.455 & $-2.293$ & $-0.633$ & 1 & 742 \\
+Expert bank & 69.081 & 92.748 & 90.299 & $-2.449$ & $-0.789$ & 2 & 741/1 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Post-hoc diagnostics explain the collapse. The route consistency score is 0.9987, which alone looks strong because each labeled domain mostly chooses one expert. Standard clustering purity is only 0.3571 because nearly all domains choose the same expert. Reporting both metrics prevents a collapsed router from being described as domain-pure.
+
+\subsection{Validation-Only Routing Repair Fails the Revisit Gate}
+
+Frozen validation signatures pass the pre-specified proxy gate. The selected order-1 signature has proxy AUROC 0.883, F1 0.859, clustering purity 0.987, and cosine threshold 0.9801. These leave-own-domain-out scores justify one validation revisit run; they are not unseen-domain estimates.
+
+\begin{table}[t]
+\centering
+\caption{Validation A--B--C--A results. Corrected forgetting subtracts the static A2--A1 difference; lower is better.}
+\label{tab:validation_revisit}
+\begin{tabular}{lrrrr}
+\toprule
+Method & Overall & A1 & A2 & Corrected \\
+ & \multicolumn{4}{c}{CER (\%)} \\
+\midrule
+Static & 72.329 & 58.505 & 62.713 & 0.000 \\
+Single adapter & 69.637 & 57.250 & 56.712 & $-4.746$ \\
+Calibrated experts & 71.942 & 58.027 & 62.400 & $+0.165$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The repair nevertheless fails both downstream gates. Relative to one adapter, it worsens overall CER by 2.306 points (95\% CI: 1.700 to 2.917) and worsens the revisit difference-in-differences by 4.911 points (95\% CI: 3.051 to 6.887). It creates all eight allowed experts within A1. Expert~0 receives only 2.34\% of routes, satisfying the anti-collapse criterion, but the A1-dominant expert receives only 42.31\% of A2 routes, below the 80\% reuse criterion. Thus calibration replaces collapse with fragmentation rather than recovering domain-specialized reuse. No repaired-router test run, additional seed, or expert sweep is conducted.
+
+\subsection{Noise Robustness Is Observed but Not Attributed}
+
+With feedback every ten samples, replacing 10\% of feedback characters changes seed-42 CER from 66.728\% to 66.770\%, a degradation of 0.041 points. At feedback every 20, the noisy run is 0.023 points better than clean, but this single-seed difference is smaller than the clean three-seed spread and is not interpreted as an improvement. Under that noisy setting, disabling rollback and reliability worsens CER by 0.039 and 0.076 points relative to the full system. These effects are too small to establish that either mechanism caused robustness. The supported claim is narrower: the selected feedback-10 operating point is empirically insensitive to the tested 10\% character corruption.
+
+\subsection{Current Decision}
+
+The evidence supports continuing with a single-adapter application paper. The dynamic expert bank is a no-go under both evaluated regimes: the original router collapses, while the validation-calibrated router fragments and is significantly worse than one adapter. The pre-specified validation gate therefore stops all further expert seeds, parameter sweeps, and repaired-router test evaluation.

@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "static": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 15341,
+        "characters": 21210,
+        "cer": 0.7232909005186233
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.7232909005186233,
+        "edits": 15341,
+        "characters": 21210,
+        "mean_reliability": 0.7568155117117666,
+        "updates": {
+          "skipped": 641
+        },
+        "attempted_updates": 0,
+        "accepted_update_rate": 0.0,
+        "timing": {
+          "total_video_load_seconds": 48.33290236070752,
+          "total_process_seconds": 1268.2117237336934,
+          "total_seconds": 1316.5953419581056,
+          "mean_video_load_seconds": 0.07540234377645479,
+          "mean_process_seconds": 1.9784894286017056,
+          "mean_total_seconds": 2.0539708922903364
+        },
+        "domains": {
+          "189": {
+            "cer": 0.6066171112082787,
+            "edits": 4162,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 0.6820245726495726,
+            "edits": 5107,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 0.885002186270223,
+            "edits": 6072,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            641
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "static",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "425e744f37cc1e132e5375e021b74cc05e985ed9a0d7e729b426c8da497dfaad"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 1957,
+          "characters": 3345,
+          "cer": 0.5850523168908819
+        },
+        "B": {
+          "samples": 195,
+          "edits": 5107,
+          "characters": 7488,
+          "cer": 0.6820245726495726
+        },
+        "C": {
+          "samples": 186,
+          "edits": 6072,
+          "characters": 6861,
+          "cer": 0.885002186270223
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 2205,
+          "characters": 3516,
+          "cer": 0.6271331058020477
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.042080788911165845,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": 0.0
+      }
+    },
+    "single": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_single_adapter_feedback10_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 14770,
+        "characters": 21210,
+        "cer": 0.6963696369636964
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.6963696369636964,
+        "edits": 14770,
+        "characters": 21210,
+        "mean_reliability": 0.524700630785956,
+        "updates": {
+          "skipped": 567,
+          "accepted": 74
+        },
+        "attempted_updates": 74,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 49.17159327119589,
+          "total_process_seconds": 1247.6079445034266,
+          "total_seconds": 1296.831584136933,
+          "mean_video_load_seconds": 0.07671075393322291,
+          "mean_process_seconds": 1.9463462472752364,
+          "mean_total_seconds": 2.023138196781487
+        },
+        "domains": {
+          "189": {
+            "cer": 0.569742020113686,
+            "edits": 3909,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 0.6558493589743589,
+            "edits": 4911,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 0.8672205217898266,
+            "edits": 5950,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            641
+          ],
+          "accepted_updates": [
+            74
+          ],
+          "prototype_counts": [
+            75
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "a5d0e32f8cc9c27fcb9aeae050334c2aa5b2a2d235ebf9d061d6a3b8a90254d8"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_single_adapter_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_single_adapter_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_single_adapter_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_single_adapter_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 1915,
+          "characters": 3345,
+          "cer": 0.5724962630792227
+        },
+        "B": {
+          "samples": 195,
+          "edits": 4911,
+          "characters": 7488,
+          "cer": 0.6558493589743589
+        },
+        "C": {
+          "samples": 186,
+          "edits": 5950,
+          "characters": 6861,
+          "cer": 0.8672205217898266
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 1994,
+          "characters": 3516,
+          "cer": 0.5671217292377702
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.005374533841452589,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": -0.047455322752618434
+      }
+    },
+    "expert": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_rsp_calibrated_feedback10_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 15259,
+        "characters": 21210,
+        "cer": 0.7194247996228195
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.7194247996228195,
+        "edits": 15259,
+        "characters": 21210,
+        "mean_reliability": 0.5254167621231893,
+        "updates": {
+          "skipped": 626,
+          "accepted": 15
+        },
+        "attempted_updates": 15,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 43.36775963008404,
+          "total_process_seconds": 1262.3057856447995,
+          "total_seconds": 1305.7242080383003,
+          "mean_video_load_seconds": 0.06765641127938228,
+          "mean_process_seconds": 1.9692757966377528,
+          "mean_total_seconds": 2.037011244989548
+        },
+        "domains": {
+          "189": {
+            "cer": 0.6026818248068795,
+            "edits": 4135,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 0.6792200854700855,
+            "edits": 5086,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 0.880046640431424,
+            "edits": 6038,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 8,
+          "signature_motion_order": 1,
+          "route_counts": [
+            15,
+            189,
+            9,
+            52,
+            193,
+            1,
+            1,
+            181
+          ],
+          "accepted_updates": [
+            0,
+            3,
+            1,
+            1,
+            2,
+            1,
+            1,
+            6
+          ],
+          "prototype_counts": [
+            1,
+            4,
+            2,
+            2,
+            3,
+            2,
+            2,
+            7
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "expert_bank",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "8381cc204d8a5989a9a919259478ce0a66360948223fa904988e20dbd5f49868"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_rsp_calibrated_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_rsp_calibrated_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_rsp_calibrated_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_rsp_calibrated_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 1941,
+          "characters": 3345,
+          "cer": 0.5802690582959641
+        },
+        "B": {
+          "samples": 195,
+          "edits": 5086,
+          "characters": 7488,
+          "cer": 0.6792200854700855
+        },
+        "C": {
+          "samples": 186,
+          "edits": 6038,
+          "characters": 6861,
+          "cer": 0.880046640431424
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 2194,
+          "characters": 3516,
+          "cer": 0.624004550625711
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.04373549232974694,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": 0.0016547034185810938
+      }
+    }
+  },
+  "comparisons": {
+    "single_minus_static": {
+      "candidate": "single",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.02692126355492692,
+      "ci_95": {
+        "lower": -0.033149547588348996,
+        "upper": -0.020698673384032924
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "revisit_forgetting_difference": {
+        "point": -0.04745532275261839,
+        "ci_95": {
+          "lower": -0.06853869864994681,
+          "upper": -0.027282819654337574
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    },
+    "expert_minus_single": {
+      "candidate": "expert",
+      "baseline": "single",
+      "candidate_minus_baseline": 0.023055162659123055,
+      "ci_95": {
+        "lower": 0.01699810563484679,
+        "upper": 0.029173067673827616
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "revisit_forgetting_difference": {
+        "point": 0.04911002617119943,
+        "ci_95": {
+          "lower": 0.03051051002332864,
+          "upper": 0.06887129977266761
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    },
+    "expert_minus_static": {
+      "candidate": "expert",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.003866100895803866,
+      "ci_95": {
+        "lower": -0.0059102314044432,
+        "upper": -0.0018843703360672357
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "revisit_forgetting_difference": {
+        "point": 0.0016547034185810418,
+        "ci_95": {
+          "lower": -0.004594432312809854,
+          "upper": 0.008982162986295797
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 130,
+      "B": 195,
+      "C": 186,
+      "A2": 130
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

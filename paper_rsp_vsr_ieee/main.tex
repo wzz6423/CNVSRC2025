@@ -1,0 +1,46 @@
+\documentclass[10pt,journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\Method}{SFC-VSR}
+\newcommand{\Dataset}{Chinese-LiPS}
+
+\begin{document}
+
+\title{Sparse-Feedback Continual Personalization for Mandarin Visual Speech Recognition: Gains, Feedback Corruption, and the Limits of Dynamic Experts}
+
+\author{Zezhou~Wang, Jun~Li, Xiaoming~Li, and Congxin~Wei%
+\thanks{Z. Wang and C. Wei are with the School of Computer Science and Artificial Intelligence, Lanzhou University of Technology, Lanzhou, China.}%
+\thanks{J. Li is with the College of Computer Science and Engineering, Northwest Normal University, Lanzhou, China.}%
+\thanks{X. Li is with the Department of Otolaryngology Head and Neck Surgery, 980th Hospital of Logistic Supportive Force of Chinese PLA, Shijiazhuang, China.}%
+\thanks{Corresponding author: Congxin Wei.}}
+
+\maketitle
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\begin{abstract}
+Visual speech recognition (VSR) models are usually evaluated as static predictors, although deployed users, cameras, and speaking conditions vary over time. We study continual personalization of a frozen Mandarin VSR backbone when one character-level correction is available every ten utterances. We use a strictly prequential protocol: each transcript is scored before its correction can update a 75k-parameter residual adapter. Pseudo-label updates are admitted only after CTC-based reliability checks; candidate updates then undergo post-update checks and can be atomically rolled back. We also evaluate a dynamic expert bank intended to isolate recurring domains. On a 3,908-utterance Chinese-LiPS test stream, one adapter reduces character error rate (CER) from 69.30\% to $66.88\pm0.10$\% over three seeds. The expert bank reaches $66.83\pm0.08$\%, only 0.055 percentage points better. On an A--B--C--A test revisit stream, 741 of 742 samples route to expert~0. A validation-only routing repair passes its signature-separability proxy gate, but fragments into eight experts, worsens CER by 2.306 points relative to one adapter, and reuses the first-domain expert for only 42.3\% of returning samples. Corrupting 10\% of feedback characters changes CER by only 0.041 points at the selected operating point, but rollback and reliability ablations do not support a strong causal robustness claim. These results support sparse-feedback adapter personalization, but not the present dynamic-expert mechanism. We report both conclusions to separate reproducible application value from unsupported structural novelty.
+\end{abstract}
+
+\begin{IEEEkeywords}
+visual speech recognition, lip reading, continual adaptation, personalization, sparse feedback, test-time adaptation
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/results_analysis}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

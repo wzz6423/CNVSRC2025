@@ -1,0 +1,17 @@
+\section{Introduction}
+\label{sec:introduction}
+
+\IEEEPARstart{V}{isual} speech recognition converts silent mouth motion into text and enables communication when audio is unavailable, private, or unreliable~\cite{potamianos2003recent,ma2022visual}. Modern systems combine a spatiotemporal visual front end with a sequence encoder and CTC~\cite{graves2006ctc} or attention-based decoding. Their reported accuracy, however, normally assumes a fixed model. A deployed recognizer instead observes a stream: speakers recur, camera conditions drift, and a user may occasionally correct a transcript. The practical question is therefore not only whether a source model generalizes, but whether a small amount of feedback can improve future predictions without replaying source data or corrupting previously useful behavior.
+
+Speaker adaptation has clear precedent in VSR. Prompt- and LoRA-based personalization can adapt both visual and language components to a target user~\cite{yeo2024personalized}. Continual test-time adaptation (CTTA) similarly studies non-stationary unlabeled streams, including parameter-efficient adaptation, recovery mechanisms, and expert routing~\cite{niu2022eata,wang2022cotta,lee2024becotta,cui2025paint}. These settings do not directly answer our question. VSR personalization is commonly organized as an offline support-set stage, while generic CTTA is primarily evaluated on image classification or semantic segmentation. Sparse human corrections introduce a different resource: labels are direct but intermittent and may themselves be noisy, and every result must be recorded before its label is used.
+
+This paper studies that setting with a frozen Mandarin VSR backbone and lightweight residual adapters. We compare a single adapter with a dynamic expert bank under identical prequential streams. The latter is treated as a falsifiable hypothesis, not as an assumed contribution. This distinction matters because a more complex structure is useful only if it routes domains meaningfully and improves either accuracy or revisit forgetting beyond a single adapter.
+
+Our contributions are empirical and methodological:
+\begin{enumerate}
+  \item We define an auditable sparse-feedback protocol for continual Mandarin VSR. Predictions are scored before adaptation, stream order and feedback positions are fixed, manifests and checkpoints are hash-locked, and comparisons use utterance-paired bootstrap intervals.
+  \item We show that a residual adapter updated from one correction every ten utterances yields a stable 2.42-point absolute CER gain over the static model on Chinese-LiPS, with low three-seed variance.
+  \item We provide a negative structural result under two routing regimes: the original expert bank collapses almost entirely to one expert, while a validation-calibrated repair over-fragments into eight experts and performs materially worse than one adapter. We therefore retain the single-adapter application result while rejecting a stronger dynamic-expert claim.
+\end{enumerate}
+
+The paper deliberately separates supported claims from open work. The validation-only router gate is resolved as a no-go, so no repaired-router test run or additional expert seed is reported. Matched CTTA baselines remain required before a method-comparison submission.

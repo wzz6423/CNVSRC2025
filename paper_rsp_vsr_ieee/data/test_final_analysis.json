@@ -1,0 +1,415 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-21T02:39:24.682830+00:00",
+  "git_commit": "75e0de5ddfd1b49e1be6aece4b2dd7371ca1a244",
+  "status": "complete",
+  "quality_assurance": {
+    "validated_run_count": 26,
+    "validated_runs": [
+      {
+        "name": "revisit_130_024_041_rsp_feedback10_seed42",
+        "samples": 742,
+        "cer": 0.6908125533327012
+      },
+      {
+        "name": "revisit_130_024_041_single_adapter_feedback10_seed42",
+        "samples": 742,
+        "cer": 0.6916658765525742
+      },
+      {
+        "name": "revisit_130_024_041_static_seed42",
+        "samples": 742,
+        "cer": 0.7134730255048829
+      },
+      {
+        "name": "rsp_feedback100_seed42",
+        "samples": 3908,
+        "cer": 0.6729834434657367
+      },
+      {
+        "name": "rsp_feedback10_noise10_seed42",
+        "samples": 3908,
+        "cer": 0.667695754512539
+      },
+      {
+        "name": "rsp_feedback10_seed123",
+        "samples": 3908,
+        "cer": 0.6682892025791654
+      },
+      {
+        "name": "rsp_feedback10_seed42",
+        "samples": 3908,
+        "cer": 0.6672823412526422
+      },
+      {
+        "name": "rsp_feedback10_seed7",
+        "samples": 3908,
+        "cer": 0.669216048436031
+      },
+      {
+        "name": "rsp_feedback20_seed123",
+        "samples": 3908,
+        "cer": 0.6726100379406685
+      },
+      {
+        "name": "rsp_feedback20_seed7",
+        "samples": 3908,
+        "cer": 0.6739703009248454
+      },
+      {
+        "name": "rsp_feedback50_seed42",
+        "samples": 3908,
+        "cer": 0.6774643097665549
+      },
+      {
+        "name": "rsp_feedback_noise10_seed42",
+        "samples": 3908,
+        "cer": 0.672690053410326
+      },
+      {
+        "name": "rsp_no_reliability_feedback20_noise10_seed42",
+        "samples": 3908,
+        "cer": 0.6734502003720719
+      },
+      {
+        "name": "rsp_no_reliability_feedback20_seed42",
+        "samples": 3908,
+        "cer": 0.6734502003720719
+      },
+      {
+        "name": "rsp_no_rollback_feedback20_noise10_seed42",
+        "samples": 3908,
+        "cer": 0.6730767948470038
+      },
+      {
+        "name": "rsp_no_rollback_feedback20_seed42",
+        "samples": 3908,
+        "cer": 0.6725166865594014
+      },
+      {
+        "name": "rsp_nofeedback_seed42",
+        "samples": 3908,
+        "cer": 0.6758439965059911
+      },
+      {
+        "name": "single_adapter_feedback10_seed123",
+        "samples": 3908,
+        "cer": 0.6688226390435484
+      },
+      {
+        "name": "single_adapter_feedback10_seed42",
+        "samples": 3908,
+        "cer": 0.6675290556174194
+      },
+      {
+        "name": "single_adapter_feedback10_seed7",
+        "samples": 3908,
+        "cer": 0.6700895506464584
+      },
+      {
+        "name": "single_adapter_feedback20_seed123",
+        "samples": 3908,
+        "cer": 0.6725166865594014
+      },
+      {
+        "name": "single_adapter_feedback20_seed42",
+        "samples": 3908,
+        "cer": 0.6734702042394863
+      },
+      {
+        "name": "single_adapter_feedback20_seed7",
+        "samples": 3908,
+        "cer": 0.6740569843503077
+      },
+      {
+        "name": "single_adapter_nofeedback_seed42",
+        "samples": 3908,
+        "cer": 0.6758439965059911
+      },
+      {
+        "name": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_vocabfixed_fullckpt_feedback20_seed42/static_seed42",
+        "samples": 3908,
+        "cer": 0.6930206506591274
+      },
+      {
+        "name": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_vocabfixed_fullckpt_feedback20_seed42/rsp_feedback20_seed42",
+        "samples": 3908,
+        "cer": 0.6729167639076888
+      }
+    ],
+    "all_json_parseable": true,
+    "all_result_indices_contiguous": true,
+    "all_checkpoints_match_summaries": true,
+    "checkpoint_file_limit_respected": true,
+    "error_logs_clear": true
+  },
+  "manifests": {
+    "main": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl",
+      "sha256": "7ca7116f9e9e58f80d5bfdef0b6c01c522928c6e1f02d28f8733aee969713e29"
+    },
+    "revisit": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_revisit_130_024_041_seed42.jsonl",
+      "sha256": "4d8c09250997eb84b3dcabe4bad52dedaf3a1b21b0703ba97d99f406d9005407",
+      "sidecar_sha256": "353d31a55af9f8624f71cd3b27c836f9d5287724d7511a453097d3d02d0a8f7d",
+      "segments": {
+        "A1": 133,
+        "B": 255,
+        "C": 222,
+        "A2": 132
+      }
+    }
+  },
+  "main_stream": {
+    "static_seed42_cer": 0.6930206506591274,
+    "expert_nofeedback_seed42_cer": 0.6758439965059911,
+    "single_nofeedback_seed42_cer": 0.6758439965059911,
+    "expert_feedback10": {
+      "seeds": {
+        "7": 0.669216048436031,
+        "42": 0.6672823412526422,
+        "123": 0.6682892025791654
+      },
+      "mean": 0.6682625307559462,
+      "population_std": 0.0007896579037312078,
+      "population_variance": 6.235596049251655e-07
+    },
+    "single_feedback10": {
+      "seeds": {
+        "7": 0.6700895506464584,
+        "42": 0.6675290556174194,
+        "123": 0.6688226390435484
+      },
+      "mean": 0.6688137484358088,
+      "population_std": 0.0010453366222140533,
+      "population_variance": 1.0927286537418865e-06
+    },
+    "expert_feedback20": {
+      "seeds": {
+        "7": 0.6739703009248454,
+        "42": 0.6729167639076888,
+        "123": 0.6726100379406685
+      },
+      "mean": 0.673165700924401,
+      "population_std": 0.0005825553337080845,
+      "population_variance": 3.3937071683173765e-07
+    },
+    "single_feedback20": {
+      "seeds": {
+        "7": 0.6740569843503077,
+        "42": 0.6734702042394863,
+        "123": 0.6725166865594014
+      },
+      "mean": 0.6733479583830652,
+      "population_std": 0.000634737404090217,
+      "population_variance": 4.0289157215118745e-07
+    },
+    "feedback_frequency_seed42": {
+      "every_10": 0.6672823412526422,
+      "every_20": 0.6729167639076888,
+      "every_50": 0.6774643097665549,
+      "every_100": 0.6729834434657367
+    },
+    "comparisons": {
+      "expert_feedback10_mean_improvement_vs_static": 0.02475811990318122,
+      "expert_feedback10_seed42_improvement_vs_nofeedback": 0.008561655253348954,
+      "expert_feedback10_mean_improvement_vs_feedback20_mean": 0.004903170168454762,
+      "expert_advantage_over_single_feedback10_mean": 0.0005512176798625479,
+      "expert_advantage_over_single_feedback10_by_seed": {
+        "7": 0.0008735022104273682,
+        "42": 0.00024671436477718967,
+        "123": 0.0005334364643830858
+      }
+    }
+  },
+  "noise_and_safety": {
+    "feedback10_clean_cer": 0.6672823412526422,
+    "feedback10_noise10_cer": 0.667695754512539,
+    "feedback10_noise10_delta": 0.0004134132598968554,
+    "noise20_triggered": false,
+    "noise20_gate_reason": "abs(feedback10_noise10_delta) < 0.002",
+    "feedback20_clean_cer": 0.6729167639076888,
+    "feedback20_noise10_cer": 0.672690053410326,
+    "feedback20_noise10_delta": -0.00022671049736289195,
+    "no_rollback_clean_delta_vs_full": -0.0004000773482873976,
+    "no_rollback_noise_delta_vs_full": 0.0003867414366778288,
+    "rollback_noise_interaction": 0.0007868187849652264,
+    "no_reliability_clean_delta_vs_full": 0.0005334364643830858,
+    "no_reliability_noise_delta_vs_full": 0.0007601469617459777,
+    "reliability_noise_interaction": 0.00022671049736289195
+  },
+  "revisit_stream": {
+    "runs": {
+      "static": {
+        "name": "revisit_130_024_041_static_seed42",
+        "overall_cer": 0.7134730255048829,
+        "updates": {
+          "skipped": 742
+        },
+        "accepted_update_rate": 0.0,
+        "expert_count": 1,
+        "route_counts": [
+          742
+        ],
+        "segments": {
+          "A1": {
+            "samples": 133,
+            "edits": 3711,
+            "characters": 3944,
+            "cer": 0.940922920892495
+          },
+          "B": {
+            "samples": 255,
+            "edits": 3169,
+            "characters": 6517,
+            "cer": 0.4862666871259782
+          },
+          "C": {
+            "samples": 222,
+            "edits": 4616,
+            "characters": 6788,
+            "cer": 0.6800235710076605
+          },
+          "A2": {
+            "samples": 132,
+            "edits": 3554,
+            "characters": 3845,
+            "cer": 0.9243172951885565
+          }
+        },
+        "raw_A2_minus_A1": -0.01660562570393842,
+        "static_corrected_forgetting": 0.0
+      },
+      "single_adapter": {
+        "name": "revisit_130_024_041_single_adapter_feedback10_seed42",
+        "overall_cer": 0.6916658765525742,
+        "updates": {
+          "skipped": 646,
+          "accepted": 96
+        },
+        "accepted_update_rate": 1.0,
+        "expert_count": 1,
+        "route_counts": [
+          742
+        ],
+        "segments": {
+          "A1": {
+            "samples": 133,
+            "edits": 3658,
+            "characters": 3944,
+            "cer": 0.9274847870182555
+          },
+          "B": {
+            "samples": 255,
+            "edits": 3041,
+            "characters": 6517,
+            "cer": 0.4666257480435783
+          },
+          "C": {
+            "samples": 222,
+            "edits": 4413,
+            "characters": 6788,
+            "cer": 0.6501178550383029
+          },
+          "A2": {
+            "samples": 132,
+            "edits": 3478,
+            "characters": 3845,
+            "cer": 0.9045513654096229
+          }
+        },
+        "raw_A2_minus_A1": -0.022933421608632654,
+        "static_corrected_forgetting": -0.006327795904694233
+      },
+      "expert_bank": {
+        "name": "revisit_130_024_041_rsp_feedback10_seed42",
+        "overall_cer": 0.6908125533327012,
+        "updates": {
+          "skipped": 649,
+          "accepted": 92,
+          "rolled_back": 1
+        },
+        "accepted_update_rate": 0.989247311827957,
+        "expert_count": 2,
+        "route_counts": [
+          741,
+          1
+        ],
+        "segments": {
+          "A1": {
+            "samples": 133,
+            "edits": 3658,
+            "characters": 3944,
+            "cer": 0.9274847870182555
+          },
+          "B": {
+            "samples": 255,
+            "edits": 3035,
+            "characters": 6517,
+            "cer": 0.46570507902409086
+          },
+          "C": {
+            "samples": 222,
+            "edits": 4407,
+            "characters": 6788,
+            "cer": 0.6492339422510313
+          },
+          "A2": {
+            "samples": 132,
+            "edits": 3472,
+            "characters": 3845,
+            "cer": 0.9029908972691808
+          }
+        },
+        "raw_A2_minus_A1": -0.024493889749074738,
+        "static_corrected_forgetting": -0.007888264045136317
+      }
+    },
+    "comparisons": {
+      "single_improvement_vs_static_overall": 0.02180714895230873,
+      "expert_improvement_vs_static_overall": 0.0226604721721817,
+      "expert_advantage_over_single_overall": 0.0008533232198729701,
+      "expert_advantage_over_single_static_corrected_forgetting": 0.001560468140442084,
+      "expert_route0_share": 0.9986522911051213
+    }
+  },
+  "hypotheses": {
+    "H1_feedback_driven_online_adaptation": {
+      "decision": "GO",
+      "evidence": "feedback10 expert mean improves absolute CER by 0.024758 vs static and 0.004903 vs feedback20 mean; three-seed std 0.000790"
+    },
+    "H2_dynamic_expert_structure": {
+      "decision": "NO_GO_FOR_CURRENT_EXPERT_BANK",
+      "evidence": "expert advantage is 0.000551 on full-stream three-seed mean and 0.000853 on revisit overall, while 99.8652% of revisit routes use expert0"
+    },
+    "H3_pollution_control_mechanism": {
+      "decision": "PARTIAL_GO_FOR_ROBUST_OUTCOME_NO_GO_FOR_STRONG_CAUSAL_CLAIM",
+      "evidence": "10% noise changes feedback10 CER by 0.000413; disabling rollback/reliability under feedback20 noise worsens CER only 0.000387/0.000760"
+    }
+  },
+  "paper_claims": {
+    "supported": [
+      "Sparse corrective feedback enables stable online adapter adaptation on the frozen Chinese VSR stream.",
+      "Feedback every 10 samples outperforms every 20 samples by about 0.0049 absolute CER on three-seed means.",
+      "The adapted model retains its gain on the revisited domain after static difficulty correction.",
+      "Observed 10 percent label corruption has negligible effect at the selected feedback10 operating point."
+    ],
+    "not_supported": [
+      "Dynamic expert growth provides a material advantage over one adapter.",
+      "The current router learns meaningful domain-specialized expert reuse.",
+      "Reliability or rollback alone explains a large robustness gain.",
+      "Robustness generalizes beyond the tested 10 percent label-noise condition."
+    ]
+  },
+  "next_code_research": [
+    "Add router margin, entropy, prototype-distance and per-domain confusion diagnostics; write synthetic shift tests before changing routing thresholds.",
+    "Calibrate expert creation and routing only on a development stream, then rerun the fixed revisit protocol after a code-level routing change.",
+    "Add matched accepted-update-budget controls so feedback cadence is separated from total supervised-update count.",
+    "Promote fixed segment metrics and static-corrected forgetting into the repository analysis tool with regression tests.",
+    "Separate reliability filtering from rollback acceptance by supervision type and corruption status in logs and deterministic tests."
+  ],
+  "experiment_decision": {
+    "run_more_now": false,
+    "reason": "All preregistered gates are resolved; remaining structural questions require code changes rather than another parameter sweep."
+  }
+}
