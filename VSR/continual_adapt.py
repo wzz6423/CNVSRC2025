@@ -317,6 +317,8 @@ def _build_engine(cfg, model, token_list, device):
         feedback_correct_span_kl_enabled=(
             cfg.plasticity.feedback_correct_span_kl_enabled
         ),
+        adaptation_objective=cfg.plasticity.adaptation_objective,
+        entropy_frame_selection=cfg.plasticity.tent.frame_selection,
     )
 
 
@@ -531,6 +533,7 @@ def main(cfg: DictConfig):
     summary = metrics.summary()
     summary["expert_bank"] = engine.expert_bank.summary()
     summary["mode"] = str(cfg.plasticity.mode)
+    summary["adaptation_objective"] = str(cfg.plasticity.adaptation_objective)
     summary["base_checkpoint"] = str(cfg.checkpoint_path)
     summary["stream_manifest"] = str(cfg.stream_manifest)
     summary["stream_state"] = stream_state

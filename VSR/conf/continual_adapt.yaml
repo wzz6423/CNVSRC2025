@@ -54,12 +54,15 @@ feedback:
 
 plasticity:
   mode: expert_bank
+  adaptation_objective: rsp
   adapter_bottleneck: 48
   adapter_dropout: 0.0
   max_experts: 8
   allow_growth: true
   feedback_confirms_growth: true
   feedback_correct_span_kl_enabled: false
+  tent:
+    frame_selection: all
   route_threshold: 0.9
   growth_patience: 6
   pending_similarity: 0.95

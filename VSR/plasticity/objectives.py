@@ -66,9 +66,23 @@ def posterior_kl(teacher_log_probs, student_log_probs, frame_mask=None):
     return per_frame.masked_select(selected).mean()
 
 
-def posterior_entropy(log_probs):
+def ctc_posterior_entropy(log_probs, blank_id=0, frame_selection="all"):
+    if log_probs.ndim != 3:
+        raise ValueError("CTC entropy 输入必须为 [B, T, V]")
+    if frame_selection not in {"all", "nonblank"}:
+        raise ValueError("CTC entropy 帧选择仅支持 all 或 nonblank")
     probabilities = log_probs.exp()
-    return -(probabilities * log_probs).sum(dim=-1).mean()
+    per_frame = -(probabilities * log_probs).sum(dim=-1)
+    if frame_selection == "all":
+        return per_frame.mean()
+    selected = log_probs.detach().argmax(dim=-1).ne(int(blank_id))
+    if not selected.any():
+        return per_frame.sum() * 0.0
+    return per_frame.masked_select(selected).mean()
+
+
+def posterior_entropy(log_probs):
+    return ctc_posterior_entropy(log_probs)
 
 
 def feature_anchor_loss(adapted_features, frozen_features):

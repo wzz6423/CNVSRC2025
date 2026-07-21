@@ -7,6 +7,7 @@ import torch
 from .adapters import ExpertBank, RouteDecision, sequence_signature
 from .corrections import CorrectionDiagnostics, localize_feedback_correction
 from .objectives import (
+    ctc_posterior_entropy,
     ctc_sequence_loss,
     ctc_target_error,
     feature_anchor_loss,
@@ -79,6 +80,8 @@ class ContinualAdaptationEngine:
         blank_id=0,
         feedback_confirms_growth=True,
         feedback_correct_span_kl_enabled=False,
+        adaptation_objective="rsp",
+        entropy_frame_selection="all",
     ):
         self.device = torch.device(device)
         self.base_model = base_model.to(self.device)
@@ -111,6 +114,12 @@ class ContinualAdaptationEngine:
         self.feedback_correct_span_kl_enabled = bool(
             feedback_correct_span_kl_enabled
         )
+        self.adaptation_objective = str(adaptation_objective)
+        if self.adaptation_objective not in {"rsp", "tent_adapter"}:
+            raise ValueError("适应目标仅支持 rsp 或 tent_adapter")
+        self.entropy_frame_selection = str(entropy_frame_selection)
+        if self.entropy_frame_selection not in {"all", "nonblank"}:
+            raise ValueError("entropy_frame_selection 仅支持 all 或 nonblank")
         if self.adaptation_steps < 1:
             raise ValueError("每次适应的更新步数必须大于 0")
         if self.gradient_clip <= 0:
@@ -369,13 +378,134 @@ class ContinualAdaptationEngine:
             correction=correction,
         )
 
+    def _transactional_entropy_update(
+        self,
+        expert_index,
+        clean_features,
+        base_log_probs,
+    ):
+        adapter = self.expert_bank.experts[expert_index]
+        optimizer = self._optimizer_for(expert_index)
+        adapter_snapshot = {
+            name: value.detach().clone() for name, value in adapter.state_dict().items()
+        }
+        optimizer_snapshot = copy.deepcopy(optimizer.state_dict())
+
+        def restore_snapshot():
+            adapter.load_state_dict(adapter_snapshot)
+            optimizer.load_state_dict(optimizer_snapshot)
+            adapter.eval()
+
+        adapter.eval()
+        with torch.no_grad():
+            pre_adapted = self._adapted_features(clean_features, expert_index)
+            pre_log_probs = self._log_probs(pre_adapted)
+            if (
+                self.entropy_frame_selection == "nonblank"
+                and not pre_log_probs.argmax(dim=-1).ne(self.blank_id).any()
+            ):
+                return self._skip_update("entropy", ["no_nonblank_frames"])
+            loss_before = float(
+                ctc_posterior_entropy(
+                    pre_log_probs,
+                    blank_id=self.blank_id,
+                    frame_selection=self.entropy_frame_selection,
+                ).item()
+            )
+
+        failure_reason = None
+        adapter.train()
+        for _ in range(self.adaptation_steps):
+            optimizer.zero_grad(set_to_none=True)
+            adapted = self._adapted_features(clean_features, expert_index)
+            log_probs = self._log_probs(adapted)
+            entropy = ctc_posterior_entropy(
+                log_probs,
+                blank_id=self.blank_id,
+                frame_selection=self.entropy_frame_selection,
+            )
+            if not torch.isfinite(entropy):
+                failure_reason = "non_finite_loss"
+                break
+            entropy.backward()
+            gradient_norm = torch.nn.utils.clip_grad_norm_(
+                adapter.parameters(), self.gradient_clip
+            )
+            if not torch.isfinite(gradient_norm):
+                failure_reason = "non_finite_gradient"
+                break
+            optimizer.step()
+
+        if failure_reason:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision="entropy",
+                loss_before=loss_before,
+                loss_after=None,
+                anchor_kl=None,
+                reasons=(failure_reason,),
+            )
+
+        adapter.eval()
+        with torch.no_grad():
+            post_adapted = self._adapted_features(clean_features, expert_index)
+            post_log_probs = self._log_probs(post_adapted)
+            loss_after = float(
+                ctc_posterior_entropy(
+                    post_log_probs,
+                    blank_id=self.blank_id,
+                    frame_selection=self.entropy_frame_selection,
+                ).item()
+            )
+            anchor_kl = float(posterior_kl(base_log_probs, post_log_probs).item())
+
+        if not all(
+            math.isfinite(value) for value in (loss_before, loss_after, anchor_kl)
+        ):
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision="entropy",
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=("non_finite_post_update_metric",),
+            )
+
+        rejection_reasons = []
+        if loss_after > loss_before + self.max_target_loss_increase:
+            rejection_reasons.append("entropy_regressed")
+        if anchor_kl > self.max_anchor_kl:
+            rejection_reasons.append("anchor_divergence_exceeded")
+        if rejection_reasons and self.rollback_enabled:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="rolled_back",
+                supervision="entropy",
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=tuple(rejection_reasons),
+            )
+        return UpdateOutcome(
+            status="accepted",
+            supervision="entropy",
+            loss_before=loss_before,
+            loss_after=loss_after,
+            anchor_kl=anchor_kl,
+            reasons=tuple(rejection_reasons),
+        )
+
     def process(self, video, feedback_tokens=None):
         if video.ndim != 4:
             raise ValueError("视频输入必须为 [T, C, H, W]")
         video = video.to(self.device)
         clean_features = self._encode(video)
         augmented_features = (
-            self._encode(self._weak_view(video)) if self.enabled else clean_features
+            self._encode(self._weak_view(video))
+            if self.enabled and self.adaptation_objective == "rsp"
+            else clean_features
         )
         signature = sequence_signature(
             clean_features, self.expert_bank.signature_motion_order
@@ -420,6 +550,12 @@ class ContinualAdaptationEngine:
             update = self._skip_update(supervision, ["adaptation_disabled"])
         elif route.quarantined:
             update = self._skip_update(supervision, ["shift_quarantine"])
+        elif self.adaptation_objective == "tent_adapter":
+            update = self._transactional_entropy_update(
+                route.expert_index,
+                clean_features,
+                base_log_probs,
+            )
         elif (
             not has_feedback
             and self.reliability_enabled

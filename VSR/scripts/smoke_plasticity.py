@@ -38,7 +38,12 @@ from plasticity.checkpoint import (
 from plasticity.corrections import localize_feedback_correction
 from plasticity.engine import ContinualAdaptationEngine
 from plasticity.metrics import StreamMetrics
-from plasticity.objectives import ctc_sequence_loss, ctc_target_error, posterior_kl
+from plasticity.objectives import (
+    ctc_posterior_entropy,
+    ctc_sequence_loss,
+    ctc_target_error,
+    posterior_kl,
+)
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
 from plasticity.routing_diagnostics import summarize_route_records
 from plasticity.stream import iter_stream_manifest
@@ -106,6 +111,21 @@ class CountingDecoder:
         return "1", [1]
 
 
+class EmptyReliabilityGate:
+    def evaluate(self, _clean_log_probs, _augmented_log_probs, decoder_tokens=None):
+        return [], ReliabilityDecision(
+            accepted=False,
+            score=0.0,
+            confidence=0.0,
+            view_consistency=0.0,
+            view_token_agreement=0.0,
+            decoder_agreement=0.0 if decoder_tokens is not None else None,
+            emission_rate=0.0,
+            pseudo_token_count=0,
+            reasons=("empty_pseudo_label",),
+        )
+
+
 def main():
     torch.manual_seed(7)
     alignment_logits = torch.full((1, 8, 6), -8.0)
@@ -143,6 +163,16 @@ def main():
     empty_kl.backward()
     assert empty_kl.item() == 0.0
     assert student.grad is not None
+    blank_logits = torch.full((1, 3, 4), -4.0)
+    blank_logits[:, :, 0] = 4.0
+    blank_log_probs = torch.log_softmax(blank_logits, dim=-1)
+    assert ctc_posterior_entropy(blank_log_probs).item() > 0
+    assert (
+        ctc_posterior_entropy(
+            blank_log_probs, frame_selection="nonblank"
+        ).item()
+        == 0.0
+    )
     assert _resolve_device("auto").type in {"cpu", "cuda", "mps"}
     model = MockModel()
     bank = ExpertBank(
@@ -194,6 +224,33 @@ def main():
     assert feedback_outcome.update.status == "accepted"
     assert feedback_outcome.update.correction is not None
     assert feedback_outcome.to_dict()["update"]["correction"]["target_tokens"] == 1
+
+    tent_model = MockModel()
+    tent_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    tent_engine = ContinualAdaptationEngine(
+        tent_model,
+        tent_bank,
+        EmptyReliabilityGate(),
+        device="cpu",
+        decoder=None,
+        adaptation_objective="tent_adapter",
+        entropy_frame_selection="nonblank",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    tent_outcome = tent_engine.process(video)
+    assert tent_outcome.ctc_tokens == ()
+    assert tent_outcome.update.status == "accepted"
+    assert tent_outcome.update.supervision == "entropy"
+    assert tent_outcome.update.loss_after <= tent_outcome.update.loss_before
+    assert all(not parameter.requires_grad for parameter in tent_model.parameters())
 
     slow = torch.tensor([0.0, 0.0, 1.0, 1.0]).view(1, 4, 1)
     alternating = torch.tensor([0.0, 1.0, 0.0, 1.0]).view(1, 4, 1)
