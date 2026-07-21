@@ -1,7 +1,7 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-This study evaluated sparse-feedback continual personalization for Mandarin VSR under a strict predict-then-update protocol. A 75k-parameter residual adapter with one correction every ten utterances reduced Chinese-LiPS CER by 2.42 absolute points relative to the frozen source model and remained stable across three seeds. The result is practically useful: most of the attainable gain came from a simple adapter and a clear feedback contract.
+This study evaluated continual personalization for Mandarin VSR under a strict predict-then-update protocol. At seed 42, no-feedback adaptation of a 75k-parameter residual adapter reduced Chinese-LiPS CER by 1.72 absolute points relative to the frozen source model. Supplying one correction every ten utterances added a further 0.83-point same-seed gain and produced a 2.42-point total gain over static across three seeds. These are two valid results under different supervision budgets and should not be collapsed into one claim.
 
 The experiments do not support the stronger structural story. The original dynamic expert bank improved over one adapter by only 0.055 CER points on average and assigned 99.87\% of test-revisit samples to one expert. A validation-only calibration passed its signature proxy gate but then created eight experts, reused the A1-dominant expert on only 42.3\% of A2, and performed significantly worse than one adapter. Reliability and rollback ablations likewise yielded effects too small for a strong causal safety claim. We therefore reject those claims rather than interpreting complexity as evidence.
 

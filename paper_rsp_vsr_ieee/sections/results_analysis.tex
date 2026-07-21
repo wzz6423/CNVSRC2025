@@ -1,9 +1,9 @@
 \section{Results and Analysis}
 \label{sec:results}
 
-\subsection{Sparse Feedback Is the Dominant Gain}
+\subsection{Online Adaptation and Sparse Feedback Both Improve CER}
 
-Table~\ref{tab:main} summarizes the primary operating points on the complete test stream. One adapter with feedback every ten samples improves the static CER by 2.421 points. The three-seed standard deviation is 0.105 points, indicating that the gain is not driven by one seed. More frequent corrections also matter: the expert-bank mean improves by 0.490 points from feedback every 20 to every 10 samples.
+Table~\ref{tab:main} summarizes the primary operating points on the complete test stream. At seed 42, no-feedback online adaptation improves static CER by 1.718 points. Adding feedback every ten samples improves the same-seed single adapter by a further 0.831 points and yields a 2.421-point three-seed mean gain over static. The three-seed standard deviation is 0.105 points, indicating that the total gain is not driven by one seed. More frequent corrections also matter: the expert-bank mean improves by 0.490 points from feedback every 20 to every 10 samples.
 
 \begin{table}[t]
 \centering
@@ -24,7 +24,7 @@ Expert bank & every 10 & $66.826\pm0.079$ \\
 \end{tabular}
 \end{table}
 
-The no-feedback single and expert systems are identical at seed 42. This is consistent with the implemented reliability gate accepting too few useful pseudo targets to distinguish the structures. The publishable evidence therefore concerns correction-driven personalization, not unsupervised CTTA.
+The no-feedback single and expert systems are identical at seed 42 because neither run grows a second effective expert. Their 1.718-point improvement over static is nevertheless a measured U0 result, although it currently has only one seed and lacks matched TTA baselines. The additional feedback gain belongs to a separate F10 supervision track and is supported by three seeds. We therefore report both effects without treating their different supervision budgets as interchangeable.
 
 \subsection{Dynamic Experts Do Not Beat One Adapter Materially}
 
