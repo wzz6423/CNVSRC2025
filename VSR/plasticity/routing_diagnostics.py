@@ -15,6 +15,7 @@ QUANTILES = (
     ("p99", 0.99),
     ("p100", 1.0),
 )
+REVISIT_SEGMENT_NAMES = ("A1", "B", "C", "A2")
 
 
 def _quantile(sorted_values, probability):
@@ -93,7 +94,63 @@ def _share_dict(counter, total):
     return {str(key): counter[key] / total for key in sorted(counter)}
 
 
-def summarize_route_records(records: Iterable[Mapping], threshold=0.9):
+def _summarize_revisit_routes(normalized, segment_lengths):
+    try:
+        segment_lengths = tuple(segment_lengths)
+    except TypeError as error:
+        raise ValueError("回访段长必须依次提供 A1/B/C/A2 四个正整数") from error
+    if len(segment_lengths) != len(REVISIT_SEGMENT_NAMES):
+        raise ValueError("回访段长必须依次提供 A1/B/C/A2 四个正整数")
+    if any(
+        not isinstance(length, int) or isinstance(length, bool) or length < 1
+        for length in segment_lengths
+    ):
+        raise ValueError("回访段长必须是四个正整数")
+
+    expected_samples = sum(segment_lengths)
+    if len(normalized) != expected_samples:
+        raise ValueError(
+            "A-B-C-A 回访路由记录必须恰好包含 "
+            f"{expected_samples} 条，实际为 {len(normalized)} 条"
+        )
+
+    segments = {}
+    start = 0
+    normalized_segments = {}
+    for name, length in zip(REVISIT_SEGMENT_NAMES, segment_lengths):
+        end = start + length
+        segment = normalized[start:end]
+        normalized_segments[name] = segment
+        segments[name] = {
+            "samples": length,
+            "route_counts": _count_dict(Counter(record[1] for record in segment)),
+            "created_count": sum(record[3] for record in segment),
+            "quarantined_count": sum(record[4] for record in segment),
+        }
+        start = end
+
+    a1_counts = Counter(record[1] for record in normalized_segments["A1"])
+    a1_dominant_expert, a1_dominant_count = min(
+        a1_counts.items(), key=lambda item: (-item[1], item[0])
+    )
+    a2_routes_to_a1 = sum(
+        record[1] == a1_dominant_expert for record in normalized_segments["A2"]
+    )
+    return {
+        "segment_lengths": dict(zip(REVISIT_SEGMENT_NAMES, segment_lengths)),
+        "segments": segments,
+        "returning_A": {
+            "a1_dominant_expert": a1_dominant_expert,
+            "a1_dominant_share": a1_dominant_count / segment_lengths[0],
+            "a2_routes_to_a1_dominant_expert": a2_routes_to_a1,
+            "a2_reuse_rate": a2_routes_to_a1 / segment_lengths[3],
+        },
+    }
+
+
+def summarize_route_records(
+    records: Iterable[Mapping], threshold=0.9, segment_lengths=None
+):
     """汇总路由记录；reuse 指当次未创建新专家而复用已有专家。"""
     if (
         not isinstance(threshold, Real)
@@ -169,7 +226,7 @@ def summarize_route_records(records: Iterable[Mapping], threshold=0.9):
             "domain_purity": dominant_count / expert_samples,
         }
 
-    return {
+    summary = {
         "schema_version": 1,
         "samples": samples,
         "threshold": threshold,
@@ -195,3 +252,6 @@ def summarize_route_records(records: Iterable[Mapping], threshold=0.9):
         "domains": domains,
         "experts": experts,
     }
+    if segment_lengths is not None:
+        summary.update(_summarize_revisit_routes(normalized, segment_lengths))
+    return summary

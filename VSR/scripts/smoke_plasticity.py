@@ -273,6 +273,72 @@ def main():
     assert route_summary["clustering_purity"] == 0.8
     assert "domain_route_purity" not in route_summary
 
+    revisit_specs = (
+        ("a", 1, True, False),
+        ("a", 0, False, True),
+        ("b", 2, True, False),
+        ("b", 2, False, False),
+        ("c", 1, False, False),
+        ("c", 2, False, True),
+        ("a", 0, False, False),
+        ("a", 3, True, False),
+    )
+    revisit_route_records = [
+        {
+            "domain": domain,
+            "route": {
+                "expert_index": expert_index,
+                "created": created,
+                "similarity": 0.95,
+                "quarantined": quarantined,
+            },
+        }
+        for domain, expert_index, created, quarantined in revisit_specs
+    ]
+    revisit_route_summary = summarize_route_records(
+        revisit_route_records, threshold=0.9, segment_lengths=(2, 2, 2, 2)
+    )
+    assert revisit_route_summary["segment_lengths"] == {
+        "A1": 2,
+        "B": 2,
+        "C": 2,
+        "A2": 2,
+    }
+    assert revisit_route_summary["segments"]["A1"] == {
+        "samples": 2,
+        "route_counts": {"0": 1, "1": 1},
+        "created_count": 1,
+        "quarantined_count": 1,
+    }
+    assert revisit_route_summary["segments"]["B"]["route_counts"] == {"2": 2}
+    assert revisit_route_summary["segments"]["C"]["created_count"] == 0
+    assert revisit_route_summary["segments"]["C"]["quarantined_count"] == 1
+    assert revisit_route_summary["segments"]["A2"]["route_counts"] == {
+        "0": 1,
+        "3": 1,
+    }
+    assert revisit_route_summary["returning_A"] == {
+        "a1_dominant_expert": 0,
+        "a1_dominant_share": 0.5,
+        "a2_routes_to_a1_dominant_expert": 1,
+        "a2_reuse_rate": 0.5,
+    }
+    for invalid_lengths, expected_error in (
+        ((2, 2, 2), "四个正整数"),
+        ((2, 2, 2, 0), "四个正整数"),
+        ((2, 2, 2, 1), "恰好包含 7 条，实际为 8 条"),
+    ):
+        try:
+            summarize_route_records(
+                revisit_route_records,
+                threshold=0.9,
+                segment_lengths=invalid_lengths,
+            )
+        except ValueError as error:
+            assert expected_error in str(error)
+        else:
+            raise AssertionError("非法回访段长必须拒绝")
+
     collapsed_route_summary = summarize_route_records(
         [
             {
@@ -319,6 +385,42 @@ def main():
             text=True,
         )
         assert json.loads(route_cli.stdout) == route_summary
+
+        revisit_route_path = Path(temporary_directory) / "revisit_routes.jsonl"
+        revisit_route_path.write_text(
+            "\n".join(json.dumps(row) for row in revisit_route_records) + "\n",
+            encoding="utf-8",
+        )
+        revisit_route_cli = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "analyze_route_records.py"),
+                "--input",
+                str(revisit_route_path),
+                "--revisit-segment-lengths",
+                "2,2,2,2",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert json.loads(revisit_route_cli.stdout) == revisit_route_summary
+
+        invalid_segments_cli = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "analyze_route_records.py"),
+                "--input",
+                str(revisit_route_path),
+                "--revisit-segment-lengths",
+                "2,2,2,0",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert invalid_segments_cli.returncode != 0
+        assert "回访段长必须是正整数" in invalid_segments_cli.stderr
 
         invalid_route_path = Path(temporary_directory) / "invalid_routes.jsonl"
         invalid_route_path.write_text(
