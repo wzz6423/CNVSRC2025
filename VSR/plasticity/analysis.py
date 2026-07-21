@@ -37,6 +37,93 @@ def aggregate_character_cer(records):
     }
 
 
+def summarize_feedback_corrections(records):
+    feedback_samples = 0
+    diagnosed_samples = 0
+    totals = {
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+    }
+    token_error_rates = []
+    matched_frame_rates = []
+    for position, record in enumerate(records, start=1):
+        if not isinstance(record, dict):
+            raise ValueError(f"第 {position} 条结果必须是 JSON 对象")
+        if not record.get("feedback_used", False):
+            continue
+        feedback_samples += 1
+        update = record.get("update")
+        correction = update.get("correction") if isinstance(update, dict) else None
+        if correction is None:
+            continue
+        if not isinstance(correction, dict):
+            raise ValueError(f"第 {position} 条结果的 correction 必须是 JSON 对象")
+        for name in totals:
+            value = correction.get(name)
+            if (
+                not isinstance(value, int)
+                or isinstance(value, bool)
+                or value < 0
+            ):
+                raise ValueError(f"第 {position} 条 correction.{name} 必须是非负整数")
+            totals[name] += value
+        rates = []
+        for name in ("token_error_rate", "matched_frame_rate"):
+            value = correction.get(name)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+                or value < 0
+            ):
+                raise ValueError(f"第 {position} 条 correction.{name} 必须是非负有限数值")
+            rates.append(float(value))
+        token_error_rates.append(rates[0])
+        matched_frame_rates.append(rates[1])
+        diagnosed_samples += 1
+    return {
+        "feedback_samples": feedback_samples,
+        "diagnosed_feedback_samples": diagnosed_samples,
+        "diagnostic_coverage": (
+            diagnosed_samples / feedback_samples if feedback_samples else 0.0
+        ),
+        **totals,
+        "mean_token_error_rate": (
+            math.fsum(token_error_rates) / diagnosed_samples
+            if diagnosed_samples
+            else None
+        ),
+        "mean_matched_frame_rate": (
+            math.fsum(matched_frame_rates) / diagnosed_samples
+            if diagnosed_samples
+            else None
+        ),
+    }
+
+
+def feedback_followup_records(records, horizon):
+    horizon = int(horizon)
+    if horizon < 1:
+        raise ValueError("反馈后窗口必须大于 0")
+    selected = []
+    remaining = 0
+    for position, record in enumerate(records):
+        if not isinstance(record, dict):
+            raise ValueError(f"第 {position + 1} 条结果必须是 JSON 对象")
+        if record.get("index") != position:
+            raise ValueError("反馈后窗口要求 index 从 0 开始连续递增")
+        if remaining:
+            selected.append(record)
+            remaining -= 1
+        if record.get("feedback_used", False):
+            remaining = horizon
+    return selected
+
+
 def _revisit_segments(segment_lengths):
     segment_lengths = tuple(segment_lengths)
     if len(segment_lengths) != len(REVISIT_SEGMENT_NAMES):
@@ -127,6 +214,34 @@ def _records_by_uid(records, source):
     return indexed
 
 
+def paired_feedback_followup_records(candidate_records, baseline_records, horizon):
+    candidate_records = list(candidate_records)
+    baseline_records = list(baseline_records)
+    candidate_followup = feedback_followup_records(candidate_records, horizon)
+    baseline_followup = feedback_followup_records(baseline_records, horizon)
+    if candidate_followup and baseline_followup:
+        if {record["uid"] for record in candidate_followup} != {
+            record["uid"] for record in baseline_followup
+        }:
+            raise ValueError("candidate 与 baseline 的反馈后窗口必须覆盖相同 uid")
+        baseline_by_uid = _records_by_uid(baseline_followup, "baseline followup")
+        return candidate_followup, [
+            baseline_by_uid[record["uid"]] for record in candidate_followup
+        ]
+    if candidate_followup:
+        baseline_by_uid = _records_by_uid(baseline_records, "baseline")
+        return candidate_followup, [
+            baseline_by_uid[record["uid"]] for record in candidate_followup
+        ]
+    if baseline_followup:
+        candidate_by_uid = _records_by_uid(candidate_records, "candidate")
+        return (
+            [candidate_by_uid[record["uid"]] for record in baseline_followup],
+            baseline_followup,
+        )
+    return [], []
+
+
 def _paired_edit_arrays(candidate_records, baseline_records, source):
     candidate_by_uid = _records_by_uid(candidate_records, f"{source} candidate")
     baseline_by_uid = _records_by_uid(baseline_records, f"{source} baseline")
@@ -200,6 +315,21 @@ def paired_bootstrap_cer_difference(
         "iterations": iterations,
         "seed": int(seed),
         "paired_samples": len(candidate_records),
+    }
+
+
+def paired_sample_edit_transitions(candidate_records, baseline_records):
+    candidate_records = list(candidate_records)
+    baseline_records = list(baseline_records)
+    edit_differences, _ = _paired_edit_arrays(
+        candidate_records, baseline_records, "transitions"
+    )
+    return {
+        "paired_samples": len(edit_differences),
+        "candidate_better": int((edit_differences < 0).sum()),
+        "same": int((edit_differences == 0).sum()),
+        "candidate_worse": int((edit_differences > 0).sum()),
+        "net_edit_difference": int(edit_differences.sum()),
     }
 
 

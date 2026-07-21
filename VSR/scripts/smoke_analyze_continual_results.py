@@ -12,9 +12,13 @@ sys.path.insert(0, str(ROOT))
 from plasticity.analysis import (
     aggregate_character_cer,
     aggregate_revisit_segments,
+    feedback_followup_records,
     paired_bootstrap_cer_difference,
     paired_bootstrap_revisit_forgetting_difference,
+    paired_feedback_followup_records,
+    paired_sample_edit_transitions,
     static_corrected_forgetting,
+    summarize_feedback_corrections,
     summarize_seed_cers,
 )
 from scripts.analyze_continual_results import _load_experiment
@@ -80,6 +84,69 @@ def main():
         "edits": 1,
         "characters": 4,
         "cer": 0.25,
+    }
+    feedback_records = [
+        {
+            **make_record(0, "字", "错", update="accepted"),
+            "feedback_used": True,
+            "update": {
+                "status": "accepted",
+                "correction": {
+                    "predicted_tokens": 2,
+                    "target_tokens": 3,
+                    "matched_tokens": 1,
+                    "substituted_tokens": 1,
+                    "missing_target_tokens": 1,
+                    "extra_prediction_tokens": 0,
+                    "token_error_rate": 2 / 3,
+                    "matched_frame_rate": 0.25,
+                },
+            },
+        },
+        make_record(1, "字", "字"),
+        make_record(2, "字", "错"),
+        {**make_record(3, "字", "字"), "feedback_used": True},
+        make_record(4, "字", "字"),
+    ]
+    correction_summary = summarize_feedback_corrections(feedback_records)
+    assert correction_summary["feedback_samples"] == 2
+    assert correction_summary["diagnosed_feedback_samples"] == 1
+    assert correction_summary["diagnostic_coverage"] == 0.5
+    assert correction_summary["substituted_tokens"] == 1
+    assert correction_summary["missing_target_tokens"] == 1
+    assert_close(correction_summary["mean_token_error_rate"], 2 / 3)
+    assert_close(correction_summary["mean_matched_frame_rate"], 0.25)
+    followup = feedback_followup_records(feedback_records, 2)
+    assert [record["index"] for record in followup] == [1, 2, 4]
+    no_feedback_records = [
+        {key: value for key, value in record.items() if key != "feedback_used"}
+        for record in feedback_records
+    ]
+    candidate_followup, baseline_followup = paired_feedback_followup_records(
+        feedback_records, no_feedback_records, 2
+    )
+    assert [record["uid"] for record in candidate_followup] == [
+        record["uid"] for record in baseline_followup
+    ]
+
+    transition_candidate = [
+        make_record(0, "字", "字"),
+        make_record(1, "字", "错"),
+        make_record(2, "字", "错"),
+    ]
+    transition_baseline = [
+        make_record(0, "字", "错"),
+        make_record(1, "字", "字"),
+        make_record(2, "字", "错"),
+    ]
+    assert paired_sample_edit_transitions(
+        transition_candidate, transition_baseline
+    ) == {
+        "paired_samples": 3,
+        "candidate_better": 1,
+        "same": 1,
+        "candidate_worse": 1,
+        "net_edit_difference": 0,
     }
 
     with tempfile.TemporaryDirectory() as temporary_directory:

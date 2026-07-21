@@ -14,9 +14,13 @@ from plasticity.analysis import (
     REVISIT_SEGMENT_NAMES,
     aggregate_character_cer,
     aggregate_revisit_segments,
+    feedback_followup_records,
     paired_bootstrap_cer_difference,
     paired_bootstrap_revisit_forgetting_difference,
+    paired_feedback_followup_records,
+    paired_sample_edit_transitions,
     static_corrected_forgetting,
+    summarize_feedback_corrections,
     summarize_seed_cers,
 )
 from plasticity.artifacts import _write_json_atomic
@@ -90,6 +94,12 @@ def build_parser():
     parser.add_argument("--bootstrap-iterations", type=int, default=10000)
     parser.add_argument("--bootstrap-seed", type=int, default=42)
     parser.add_argument("--bootstrap-batch-size", type=int, default=256)
+    parser.add_argument(
+        "--feedback-horizon",
+        type=int,
+        default=0,
+        help="大于 0 时额外分析每次反馈后的固定样本窗口",
+    )
     parser.add_argument("--output", required=True, type=Path)
     return parser
 
@@ -199,6 +209,8 @@ def _require_experiment(name, experiments, source):
 
 
 def run(args):
+    if args.feedback_horizon < 0:
+        raise ValueError("feedback-horizon 不能为负数")
     experiments = {}
     records_by_name = {}
     for specification in args.experiment:
@@ -211,7 +223,15 @@ def run(args):
             "directory": str(directory),
             "overall": overall,
             "run_summary": summary,
+            "feedback_corrections": summarize_feedback_corrections(records),
         }
+        if args.feedback_horizon > 0:
+            followup = feedback_followup_records(records, args.feedback_horizon)
+            if followup:
+                experiments[name]["feedback_followup"] = {
+                    "horizon": int(args.feedback_horizon),
+                    **aggregate_character_cer(followup),
+                }
 
     revisit_names = []
     for name in args.revisit:
@@ -259,7 +279,33 @@ def run(args):
                 seed=args.bootstrap_seed,
                 batch_size=args.bootstrap_batch_size,
             ),
+            "sample_edit_transitions": paired_sample_edit_transitions(
+                records_by_name[candidate], records_by_name[baseline]
+            ),
         }
+        if args.feedback_horizon > 0:
+            candidate_followup, baseline_followup = (
+                paired_feedback_followup_records(
+                    records_by_name[candidate],
+                    records_by_name[baseline],
+                    args.feedback_horizon,
+                )
+            )
+            if candidate_followup or baseline_followup:
+                followup_difference = paired_bootstrap_cer_difference(
+                    candidate_followup,
+                    baseline_followup,
+                    iterations=args.bootstrap_iterations,
+                    seed=args.bootstrap_seed,
+                    batch_size=args.bootstrap_batch_size,
+                )
+                comparison["feedback_followup"] = {
+                    "horizon": int(args.feedback_horizon),
+                    **followup_difference,
+                    "sample_edit_transitions": paired_sample_edit_transitions(
+                        candidate_followup, baseline_followup
+                    ),
+                }
         if candidate in revisit_names and baseline in revisit_names:
             comparison["revisit_forgetting_difference"] = (
                 paired_bootstrap_revisit_forgetting_difference(
