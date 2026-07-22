@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "label_mode": "metadata_reencoded",
+  "samples": 804,
+  "source_csv": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_015_098_133_seed42_source.csv",
+  "source_csv_sha256": "70483a27e8a1e4f23c4aeccbea9df52c7c9e8e8045233e4a45908bf7141cbd54",
+  "text_metadata_csv": "/hy-tmp/cn_dataset/chinese_lips/chinese_lips/meta_train.csv",
+  "text_metadata_csv_sha256": "bc0150e082657698019a976b3a280c23f0640df38603f658870f548fe4268bac",
+  "target_vocab": "/hy-tmp/rsp-vsr-next-353c47d/VSR/datamodule/char_units.txt",
+  "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+  "oov_policy": "drop",
+  "raw_characters": 24539,
+  "target_characters": 22249,
+  "dropped_characters": 2290,
+  "dropped_rate": 0.09332083621989486,
+  "distinct_dropped_characters": 15,
+  "dropped_character_counts": {
+    "，": 1278,
+    "。": 826,
+    "、": 173,
+    "B": 2,
+    ",": 1,
+    "C": 1,
+    "I": 1,
+    "M": 1,
+    "T": 1,
+    "U": 1,
+    "V": 1,
+    "　": 1,
+    "岇": 1,
+    "掖": 1,
+    "葚": 1
+  },
+  "revisit_protocol": {
+    "domain_sequence": [
+      "015",
+      "098",
+      "133",
+      "015"
+    ],
+    "segment_lengths": {
+      "A1": 154,
+      "B": 253,
+      "C": 243,
+      "A2": 154
+    }
+  }
+}

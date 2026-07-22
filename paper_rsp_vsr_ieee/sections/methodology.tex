@@ -19,6 +19,10 @@ where the bottleneck width is 48, the feature width is 768, and $s$ is a learnab
 
 When feedback is present, its (possibly corrupted) token sequence is used directly as the adaptation target and bypasses the pseudo-label admission gate. Without feedback, a pseudo target is admitted only if the CTC confidence, perturbed-view agreement, CTC emission rate, and CTC/attention agreement pass fixed reliability tests. The replay baseline takes one AdamW step on a weighted combination of full-sequence CTC target loss, clean/perturbed posterior consistency, entropy, and feature anchoring. The learning rate is $5\times10^{-4}$ and gradient norm is clipped at 1.
 
+\subsection{Separating Update Sources}
+
+Sparse feedback and unlabeled pseudo-target adaptation are distinct information sources. We therefore distinguish three schedules under the same prequential order and adapter parameterization. \emph{Pseudo-only} receives no corrections and may update only when an unlabeled sample passes the reliability gate. \emph{Feedback-only} predicts every sample but disables all non-feedback parameter updates; only a pre-scheduled correction can change the adapter. \emph{Combined replay} retains reliability-gated pseudo updates between the same scheduled corrections. This decomposition tests whether improvement comes from autonomous pseudo-target adaptation, from actual user corrections, or from their interaction. It also ensures that feedback-only is implemented as a scheduling rule rather than by changing reliability thresholds, which would confound update admission with post-update safety checks.
+
 \subsection{Error-Localized Correction Candidate}
 
 Whole-sequence replay does not distinguish characters that were already correct from substitutions, deletions, or insertions. We therefore evaluate a validation-only localized candidate. Let $p^0_{t,k}$ denote the pre-update CTC posterior, and align its greedy collapsed token sequence with the correction by Levenshtein backtrace. For corrected target token $y_j$, a target-conditioned CTC forward--backward pass gives the stop-gradient occupancy
@@ -38,6 +42,18 @@ Let $\mathcal E$ contain target positions identified as substitutions or deletio
 with zero-valued terms when their support is empty. We use $\lambda_e=1.0$, $\lambda_i=1.0$, $\lambda_m=0.5$, and $\lambda_f=0.1$, followed by one AdamW step. The first term raises corrected substitution/deletion tokens, the second suppresses inserted emissions toward CTC blank $\varnothing$, and the third preserves the pre-update posterior where target tokens already match. Non-feedback samples retain the same reliability-gated pseudo-update path as the replay baseline.
 
 To test whether localization, rather than merely sparse gradient support, matters, a deterministic control applies one UID- and seed-specific time permutation to every error-token occupancy and insertion mask. This preserves token-wise mass, effective support size, objective weights, optimizer, and update schedule while moving error evidence to unrelated frames. The matched-token KL support is unchanged. The control uses seed 42. We compare localized, randomized-support, and full-sequence replay only on validation before deciding whether any localized variant may enter test evaluation.
+
+\subsection{Full-Replay Error Hybrid}
+
+Pure localization discards the sequence-level supervision that CTC obtains by marginalizing complete alignments. We therefore define a separate hybrid candidate that preserves the complete replay objective $\mathcal L_{\mathrm{full}}$ and uses edit-conditioned evidence only as an auxiliary term:
+\begin{equation}
+  \mathcal L_{\mathrm{hybrid}}=
+  \mathcal L_{\mathrm{full}}+
+  \lambda_e\mathcal L_{\mathrm{error}}+
+  \lambda_i\mathcal L_{\mathrm{insert}}+
+  \lambda_m\mathcal L_{\mathrm{match-KL}}.
+\end{equation}
+The occupancy definitions and weights are identical to the localized audit, while feature anchoring remains inside $\mathcal L_{\mathrm{full}}$ and is not counted twice. Unlike the pure-local rule, the hybrid still performs full replay when the pre-update transcript is already correct. A matched randomized-support hybrid permutes only the error-token and insertion support while preserving their mass. The pair isolates whether any improvement is caused by error location rather than by adding another regularizer or sparse gradient support.
 
 \subsection{Transactional Acceptance}
 

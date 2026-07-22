@@ -2,3 +2,7 @@ backup/
 .DS_Store
 __pycache__/
 *.py[cod]
+experiment_archives/**/*.pt
+experiment_archives/**/worker.pid
+experiment_archives/**/supervisor.lock
+experiment_archives/**/.transfer_tmp/

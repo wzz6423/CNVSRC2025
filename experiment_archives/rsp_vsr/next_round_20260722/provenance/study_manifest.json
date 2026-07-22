@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "study_id": "rsp_vsr_next_round_20260722",
+  "created_at": "2026-07-22T05:32:16Z",
+  "server": "i-1.gpushare.com:1442",
+  "server_repository": "/hy-tmp/rsp-vsr",
+  "archive_policy": {
+    "preserve_server_files_byte_for_byte": true,
+    "copy_base_checkpoint": false,
+    "copy_raw_dataset": false,
+    "retain_adaptation_checkpoints_locally": true
+  },
+  "fixed_inputs": {
+    "test_manifest": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl",
+      "sha256": "7ca7116f9e9e58f80d5bfdef0b6c01c522928c6e1f02d28f8733aee969713e29"
+    },
+    "test_manifest_sidecar": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl.meta.json",
+      "sha256": "0a105205c6ae780c91039aacb354ac60780f05f2039e4fae0c328d6152e66bbd"
+    },
+    "base_checkpoint": {
+      "path": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+      "sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c"
+    },
+    "target_dev2": {
+      "source_pool": "Chinese-LiPS official train split, unused by prior RSP-VSR experiments",
+      "speakers": ["015", "098", "133"],
+      "segment_lengths": [154, 253, 243, 154],
+      "samples": 804,
+      "source_csv_sha256": "70483a27e8a1e4f23c4aeccbea9df52c7c9e8e8045233e4a45908bf7141cbd54",
+      "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+      "manifest_sidecar_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77"
+    },
+    "target_holdout2": {
+      "source_pool": "Chinese-LiPS official train split, untouched confirmation pool",
+      "speakers": ["046", "001", "093"],
+      "segment_lengths": [136, 242, 264, 136],
+      "samples": 778,
+      "source_csv_sha256": "16d0d172c240b29eb1b9a73b26676a91c29978cbd0b0ebff7b7dd59d9e4d378c",
+      "manifest_sha256": "29b4005205e18c8a2b1fa643d0fc9fb35bbf6266692e12a4c73ee0ad42a07651",
+      "manifest_sidecar_sha256": "0a15e1f2bd0ec6284b9b1df1b924a748a46356be1682c9975c126577f93edc17"
+    }
+  },
+  "runs": [
+    {
+      "name": "single_adapter_nofeedback_seed7",
+      "track": "strict_test_replication",
+      "seed": 7,
+      "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7",
+      "local_path": "runs/single_adapter_nofeedback_seed7",
+      "status": "running"
+    },
+    {
+      "name": "single_adapter_nofeedback_seed123",
+      "track": "strict_test_replication",
+      "seed": 123,
+      "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123",
+      "local_path": "runs/single_adapter_nofeedback_seed123",
+      "status": "running"
+    },
+    {
+      "name": "single_adapter_nofeedback_seed42",
+      "track": "strict_test_replication",
+      "seed": 42,
+      "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42",
+      "local_path": "runs/single_adapter_nofeedback_seed42",
+      "status": "queued"
+    },
+    {
+      "name": "dev2_revisit_full_replay_feedback10_seed42",
+      "track": "target_dev2",
+      "seed": 42,
+      "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42",
+      "local_path": "runs/dev2_revisit_full_replay_feedback10_seed42",
+      "status": "running"
+    },
+    {
+      "name": "dev2_revisit_feedback_only_feedback10_seed42",
+      "track": "target_dev2",
+      "seed": 42,
+      "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42",
+      "local_path": "runs/dev2_revisit_feedback_only_feedback10_seed42",
+      "status": "running"
+    },
+    {
+      "name": "dev2_revisit_ctc_error_hybrid_feedback10_seed42",
+      "track": "target_dev2",
+      "seed": 42,
+      "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
+      "status": "queued"
+    },
+    {
+      "name": "dev2_revisit_ctc_error_hybrid_random_feedback10_seed42",
+      "track": "target_dev2",
+      "seed": 42,
+      "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
+      "status": "queued"
+    },
+    {
+      "name": "dev2_revisit_static_seed42",
+      "track": "target_dev2",
+      "seed": 42,
+      "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
+      "status": "queued"
+    }
+  ]
+}

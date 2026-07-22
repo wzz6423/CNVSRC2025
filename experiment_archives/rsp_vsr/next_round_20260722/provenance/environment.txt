@@ -1,0 +1,16 @@
+captured_at=2026-07-22T06:02:18Z
+server=i-1.gpushare.com:1442
+hostname=I29ec95df7800501c4b
+kernel=Linux 5.15.0-153-generic x86_64 GNU/Linux
+gpu_0=NVIDIA GeForce RTX 3090, 24576 MiB
+gpu_1=NVIDIA GeForce RTX 3090, 24576 MiB
+nvidia_driver=550.163.01
+python=3.10.20
+torch=2.0.1+cu118
+cuda=11.8
+legacy_code_commit=1d99eb8bb161368329c0c2f59e1f89615d1dea68
+candidate_code_commit=353c47dc37351cad410139cbacbd69b5c0e0b14e
+candidate_worktree=/hy-tmp/rsp-vsr-next-353c47d
+experiment_filesystem=/dev/nvme1n1p1
+experiment_filesystem_size_gib=330
+experiment_filesystem_free_gib_at_capture=83

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "label_mode": "metadata_reencoded",
+  "samples": 778,
+  "source_csv": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_holdout2_046_001_093_seed42_source.csv",
+  "source_csv_sha256": "16d0d172c240b29eb1b9a73b26676a91c29978cbd0b0ebff7b7dd59d9e4d378c",
+  "text_metadata_csv": "/hy-tmp/cn_dataset/chinese_lips/chinese_lips/meta_train.csv",
+  "text_metadata_csv_sha256": "bc0150e082657698019a976b3a280c23f0640df38603f658870f548fe4268bac",
+  "target_vocab": "/hy-tmp/rsp-vsr-next-353c47d/VSR/datamodule/char_units.txt",
+  "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+  "oov_policy": "drop",
+  "raw_characters": 25670,
+  "target_characters": 23323,
+  "dropped_characters": 2347,
+  "dropped_rate": 0.09142968445656409,
+  "distinct_dropped_characters": 18,
+  "dropped_character_counts": {
+    "，": 1299,
+    "。": 840,
+    "、": 187,
+    "　": 5,
+    "G": 2,
+    "裨": 2,
+    "C": 1,
+    "S": 1,
+    "k": 1,
+    "y": 1,
+    "娉": 1,
+    "痧": 1,
+    "瘀": 1,
+    "粳": 1,
+    "腘": 1,
+    "腠": 1,
+    "陟": 1,
+    "；": 1
+  },
+  "revisit_protocol": {
+    "domain_sequence": [
+      "046",
+      "001",
+      "093",
+      "046"
+    ],
+    "segment_lengths": {
+      "A1": 136,
+      "B": 242,
+      "C": 264,
+      "A2": 136
+    }
+  }
+}
