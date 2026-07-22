@@ -330,6 +330,7 @@ def _build_engine(cfg, model, token_list, device):
         feedback_random_control_seed=(
             cfg.plasticity.feedback_local.random_control_seed
         ),
+        non_feedback_updates_enabled=cfg.plasticity.non_feedback_updates_enabled,
         adaptation_objective=cfg.plasticity.adaptation_objective,
         entropy_frame_selection=cfg.plasticity.tent.frame_selection,
     )
@@ -556,6 +557,9 @@ def main(cfg: DictConfig):
     summary["adaptation_objective"] = str(cfg.plasticity.adaptation_objective)
     summary["feedback_update_strategy"] = str(
         cfg.plasticity.feedback_update_strategy
+    )
+    summary["non_feedback_updates_enabled"] = bool(
+        cfg.plasticity.non_feedback_updates_enabled
     )
     summary["base_checkpoint"] = str(cfg.checkpoint_path)
     summary["stream_manifest"] = str(cfg.stream_manifest)

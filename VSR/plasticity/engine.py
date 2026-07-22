@@ -112,6 +112,7 @@ class ContinualAdaptationEngine:
         feedback_local_insertion_blank_weight=1.0,
         feedback_local_matched_kl_weight=0.5,
         feedback_random_control_seed=0,
+        non_feedback_updates_enabled=True,
         adaptation_objective="rsp",
         entropy_frame_selection="all",
     ):
@@ -155,6 +156,8 @@ class ContinualAdaptationEngine:
             "greedy_correct_span",
             "ctc_error_local",
             "ctc_error_local_random",
+            "ctc_error_hybrid",
+            "ctc_error_hybrid_random",
         }:
             raise ValueError("未知 feedback update strategy")
         self.feedback_update_strategy = feedback_update_strategy
@@ -171,6 +174,7 @@ class ContinualAdaptationEngine:
         if not any(self.feedback_local_weights.values()):
             raise ValueError("局部反馈损失至少需要一个非零权重")
         self.feedback_random_control_seed = int(feedback_random_control_seed)
+        self.non_feedback_updates_enabled = bool(non_feedback_updates_enabled)
         self.adaptation_objective = str(adaptation_objective)
         if self.adaptation_objective not in {"rsp", "tent_adapter"}:
             raise ValueError("适应目标仅支持 rsp 或 tent_adapter")
@@ -274,6 +278,7 @@ class ContinualAdaptationEngine:
         target_tokens,
         pre_reliability,
         supervision,
+        localization=None,
     ):
         adapter = self.expert_bank.experts[expert_index]
         optimizer = self._optimizer_for(expert_index)
@@ -281,9 +286,14 @@ class ContinualAdaptationEngine:
             name: value.detach().clone() for name, value in adapter.state_dict().items()
         }
         optimizer_snapshot = copy.deepcopy(optimizer.state_dict())
-        correction = None
+        correction = localization["correction"] if localization is not None else None
+        localization_summary = (
+            localization["localization_summary"]
+            if localization is not None
+            else None
+        )
         consistency_mask = None
-        if supervision == "feedback":
+        if supervision == "feedback" and localization is None:
             correction, correct_frame_mask = localize_feedback_correction(
                 teacher_log_probs, target_tokens, self.blank_id
             )
@@ -295,11 +305,27 @@ class ContinualAdaptationEngine:
             optimizer.load_state_dict(optimizer_snapshot)
             adapter.eval()
 
+        def localized_objective(log_probs):
+            if localization is None:
+                return None
+            return self._localized_feedback_aux(
+                log_probs,
+                teacher_log_probs,
+                target_tokens,
+                localization,
+            )
+
         with torch.no_grad():
             loss_before = float(
                 ctc_sequence_loss(
                     teacher_log_probs, target_tokens, self.blank_id
                 ).item()
+            )
+            objective_before_tensor = localized_objective(teacher_log_probs)
+            objective_before = (
+                float(objective_before_tensor.item())
+                if objective_before_tensor is not None
+                else None
             )
 
         failure_reason = None
@@ -331,6 +357,9 @@ class ContinualAdaptationEngine:
                 + self.loss_weights["entropy"] * entropy
                 + self.loss_weights["feature_anchor"] * feature_anchor
             )
+            auxiliary_loss = localized_objective(clean_log_probs)
+            if auxiliary_loss is not None:
+                total_loss = total_loss + auxiliary_loss
             if not torch.isfinite(total_loss):
                 failure_reason = "non_finite_loss"
                 break
@@ -353,6 +382,8 @@ class ContinualAdaptationEngine:
                 anchor_kl=None,
                 reasons=(failure_reason,),
                 correction=correction,
+                objective_before=objective_before,
+                localization=localization_summary,
             )
 
         adapter.eval()
@@ -367,6 +398,12 @@ class ContinualAdaptationEngine:
                 ctc_sequence_loss(
                     post_clean_log_probs, target_tokens, self.blank_id
                 ).item()
+            )
+            objective_after_tensor = localized_objective(post_clean_log_probs)
+            objective_after = (
+                float(objective_after_tensor.item())
+                if objective_after_tensor is not None
+                else None
             )
             anchor_kl = float(
                 posterior_kl(base_log_probs, post_clean_log_probs).item()
@@ -383,10 +420,10 @@ class ContinualAdaptationEngine:
                 post_decoder_tokens,
             )
 
-        if not all(
-            math.isfinite(value)
-            for value in (loss_before, loss_after, anchor_kl, post_reliability.score)
-        ):
+        finite_metrics = [loss_before, loss_after, anchor_kl, post_reliability.score]
+        if objective_before is not None:
+            finite_metrics.extend((objective_before, objective_after))
+        if not all(math.isfinite(value) for value in finite_metrics):
             restore_snapshot()
             return UpdateOutcome(
                 status="failed",
@@ -396,6 +433,9 @@ class ContinualAdaptationEngine:
                 anchor_kl=anchor_kl,
                 reasons=("non_finite_post_update_metric",),
                 correction=correction,
+                objective_before=objective_before,
+                objective_after=objective_after,
+                localization=localization_summary,
             )
 
         rejection_reasons = []
@@ -427,6 +467,9 @@ class ContinualAdaptationEngine:
                 anchor_kl=anchor_kl,
                 reasons=tuple(rejection_reasons),
                 correction=correction,
+                objective_before=objective_before,
+                objective_after=objective_after,
+                localization=localization_summary,
             )
 
         return UpdateOutcome(
@@ -437,18 +480,13 @@ class ContinualAdaptationEngine:
             anchor_kl=anchor_kl,
             reasons=tuple(rejection_reasons),
             correction=correction,
+            objective_before=objective_before,
+            objective_after=objective_after,
+            localization=localization_summary,
         )
 
-    def _transactional_local_feedback_update(
-        self,
-        expert_index,
-        clean_features,
-        augmented_features,
-        base_log_probs,
-        teacher_log_probs,
-        target_tokens,
-        pre_reliability,
-        sample_key,
+    def _prepare_ctc_error_localization(
+        self, teacher_log_probs, target_tokens, sample_key, randomized
     ):
         correction, _ = localize_feedback_correction(
             teacher_log_probs, target_tokens, self.blank_id
@@ -462,7 +500,6 @@ class ContinualAdaptationEngine:
         )
         token_occupancy = alignment.token_occupancy
         insertion_weights = alignment.extra_prediction_frame_mask
-        randomized = self.feedback_update_strategy == "ctc_error_local_random"
         if randomized:
             token_occupancy, insertion_weights = randomized_error_support(
                 alignment,
@@ -494,7 +531,7 @@ class ContinualAdaptationEngine:
         error_mass, error_effective_frames = effective_frames(error_frame_weights)
         localization_summary = {
             "strategy": self.feedback_update_strategy,
-            "randomized_support": randomized,
+            "randomized_support": bool(randomized),
             "ctc_frames": int(teacher_log_probs.size(1)),
             "target_log_likelihood": float(alignment.log_likelihood.item()),
             "matched_target_tokens": len(alignment.matched_target_indices),
@@ -509,7 +546,63 @@ class ContinualAdaptationEngine:
             "matched_effective_frames": matched_effective_frames,
             "error_effective_frames": error_effective_frames,
         }
-        if not error_target_indices and not insertion_weights.any():
+        return {
+            "correction": correction,
+            "alignment": alignment,
+            "error_target_indices": error_target_indices,
+            "token_occupancy": token_occupancy,
+            "insertion_weights": insertion_weights,
+            "localization_summary": localization_summary,
+        }
+
+    def _localized_feedback_aux(
+        self,
+        log_probs,
+        teacher_log_probs,
+        target_tokens,
+        localization,
+    ):
+        error_target = occupancy_weighted_token_loss(
+            log_probs,
+            target_tokens,
+            localization["token_occupancy"],
+            localization["error_target_indices"],
+        )
+        insertion_blank = occupancy_weighted_blank_loss(
+            log_probs, localization["insertion_weights"], self.blank_id
+        )
+        matched_kl = occupancy_weighted_posterior_kl(
+            teacher_log_probs,
+            log_probs,
+            localization["alignment"].matched_target_occupancy,
+        )
+        return (
+            self.feedback_local_weights["error_target"] * error_target
+            + self.feedback_local_weights["insertion_blank"] * insertion_blank
+            + self.feedback_local_weights["matched_kl"] * matched_kl
+        )
+
+    def _transactional_local_feedback_update(
+        self,
+        expert_index,
+        clean_features,
+        augmented_features,
+        base_log_probs,
+        teacher_log_probs,
+        target_tokens,
+        pre_reliability,
+        sample_key,
+    ):
+        randomized = self.feedback_update_strategy == "ctc_error_local_random"
+        localization = self._prepare_ctc_error_localization(
+            teacher_log_probs, target_tokens, sample_key, randomized
+        )
+        correction = localization["correction"]
+        localization_summary = localization["localization_summary"]
+        if (
+            not localization["error_target_indices"]
+            and not localization["insertion_weights"].any()
+        ):
             return self._skip_update(
                 "feedback",
                 ["feedback_already_correct"],
@@ -530,26 +623,13 @@ class ContinualAdaptationEngine:
             adapter.eval()
 
         def local_objective(log_probs, adapted_features):
-            error_target = occupancy_weighted_token_loss(
+            return self._localized_feedback_aux(
                 log_probs,
-                target_tokens,
-                token_occupancy,
-                error_target_indices,
-            )
-            insertion_blank = occupancy_weighted_blank_loss(
-                log_probs, insertion_weights, self.blank_id
-            )
-            matched_kl = occupancy_weighted_posterior_kl(
                 teacher_log_probs,
-                log_probs,
-                alignment.matched_target_occupancy,
-            )
-            feature_anchor = feature_anchor_loss(adapted_features, clean_features)
-            return (
-                self.feedback_local_weights["error_target"] * error_target
-                + self.feedback_local_weights["insertion_blank"] * insertion_blank
-                + self.feedback_local_weights["matched_kl"] * matched_kl
-                + self.loss_weights["feature_anchor"] * feature_anchor
+                target_tokens,
+                localization,
+            ) + self.loss_weights["feature_anchor"] * feature_anchor_loss(
+                adapted_features, clean_features
             )
 
         with torch.no_grad():
@@ -687,6 +767,34 @@ class ContinualAdaptationEngine:
             objective_before=objective_before,
             objective_after=objective_after,
             localization=localization_summary,
+        )
+
+    def _transactional_hybrid_feedback_update(
+        self,
+        expert_index,
+        clean_features,
+        augmented_features,
+        base_log_probs,
+        teacher_log_probs,
+        target_tokens,
+        pre_reliability,
+        sample_key,
+    ):
+        """Full-sequence primary loss + CTC-error occupancy auxiliary terms."""
+        randomized = self.feedback_update_strategy == "ctc_error_hybrid_random"
+        localization = self._prepare_ctc_error_localization(
+            teacher_log_probs, target_tokens, sample_key, randomized
+        )
+        return self._transactional_update(
+            expert_index,
+            clean_features,
+            augmented_features,
+            base_log_probs,
+            teacher_log_probs,
+            target_tokens,
+            pre_reliability,
+            "feedback",
+            localization=localization,
         )
 
     def _transactional_entropy_update(
@@ -891,6 +999,10 @@ class ContinualAdaptationEngine:
         confirmed_shift = adaptation_expert_index != prediction.route.expert_index
         if not self.enabled:
             update = self._skip_update(supervision, ["adaptation_disabled"])
+        elif not has_feedback and not self.non_feedback_updates_enabled:
+            update = self._skip_update(
+                supervision, ["non_feedback_updates_disabled"]
+            )
         elif prediction.route.quarantined and not confirmed_shift:
             update = self._skip_update(supervision, ["shift_quarantine"])
         elif self.adaptation_objective == "tent_adapter":
@@ -916,6 +1028,24 @@ class ContinualAdaptationEngine:
             "ctc_error_local_random",
         }:
             update = self._transactional_local_feedback_update(
+                adaptation_expert_index,
+                prediction.clean_features,
+                prediction.augmented_features,
+                prediction.base_log_probs,
+                prediction.clean_log_probs,
+                target_tokens,
+                prediction.reliability,
+                sample_key,
+            )
+            if update.status == "accepted":
+                self.expert_bank.mark_accepted(
+                    adaptation_expert_index, prediction.signature
+                )
+        elif has_feedback and self.feedback_update_strategy in {
+            "ctc_error_hybrid",
+            "ctc_error_hybrid_random",
+        }:
+            update = self._transactional_hybrid_feedback_update(
                 adaptation_expert_index,
                 prediction.clean_features,
                 prediction.augmented_features,

@@ -426,6 +426,281 @@ def main():
     assert random_outcome.update.status == "accepted"
     assert random_outcome.update.localization["randomized_support"]
 
+    # --- feedback-only gate ---
+    fo_model = MockModel()
+    fo_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    fo_engine = ContinualAdaptationEngine(
+        fo_model,
+        fo_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        non_feedback_updates_enabled=False,
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    fo_pred = fo_engine.predict(video)
+    fo_adapter_before = {
+        name: value.detach().clone()
+        for name, value in fo_bank.experts[0].state_dict().items()
+    }
+    fo_skip = fo_engine.adapt(fo_pred, feedback_tokens=None)
+    assert fo_skip.update.status == "skipped"
+    assert fo_skip.update.reasons == ("non_feedback_updates_disabled",)
+    assert all(
+        torch.equal(fo_adapter_before[name], value)
+        for name, value in fo_bank.experts[0].state_dict().items()
+    )
+    assert fo_engine.optimizer_state_dict() == {}
+    assert fo_bank.accepted_updates.tolist() == [0]
+    fo_fb = fo_engine.adapt(fo_pred, feedback_tokens=[2], sample_key="fo-fb")
+    assert fo_fb.update.status == "accepted"
+    assert any(
+        not torch.equal(fo_adapter_before[name], value)
+        for name, value in fo_bank.experts[0].state_dict().items()
+    )
+    assert fo_bank.accepted_updates.tolist()[0] >= 1
+
+    # --- hybrid vs full_sequence from identical init ---
+    def _fresh_pair(strategy):
+        model = MockModel()
+        bank = ExpertBank(
+            feature_dim=8,
+            bottleneck_dim=4,
+            max_experts=1,
+            allow_growth=False,
+        )
+        eng = ContinualAdaptationEngine(
+            model,
+            bank,
+            gate,
+            device="cpu",
+            decoder=CountingDecoder(),
+            feedback_update_strategy=strategy,
+            learning_rate=0.01,
+            rollback_enabled=False,
+            view_noise_std=0.0,
+            temporal_mask_ratio=0.0,
+            max_anchor_kl=100.0,
+            max_target_loss_increase=100.0,
+        )
+        return eng, bank
+
+    torch.manual_seed(202)
+    full_eng, full_bank = _fresh_pair("full_sequence")
+    torch.manual_seed(202)
+    hybrid_eng, hybrid_bank = _fresh_pair("ctc_error_hybrid")
+    # 同步初始 adapter：两侧各自 predict 创建 expert 后拷贝相同权重
+    torch.manual_seed(303)
+    full_pred = full_eng.predict(video)
+    torch.manual_seed(303)
+    hybrid_pred = hybrid_eng.predict(video)
+    hybrid_bank.experts[0].load_state_dict(full_bank.experts[0].state_dict())
+    full_out = full_eng.adapt(
+        full_pred, feedback_tokens=[2], sample_key="hyb-vs-full"
+    )
+    hybrid_out = hybrid_eng.adapt(
+        hybrid_pred, feedback_tokens=[2], sample_key="hyb-vs-full"
+    )
+
+    assert full_out.update.status == "accepted"
+    assert hybrid_out.update.status == "accepted"
+    assert hybrid_out.update.localization["strategy"] == "ctc_error_hybrid"
+    assert not hybrid_out.update.localization["randomized_support"]
+    assert hybrid_out.update.objective_before is not None
+    assert any(
+        not torch.equal(
+            full_bank.experts[0].state_dict()[name],
+            hybrid_bank.experts[0].state_dict()[name],
+        )
+        for name in full_bank.experts[0].state_dict()
+    )
+
+    # hybrid still updates when prediction already matches feedback
+    hyb_correct_model = MockModel()
+    hyb_correct_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    hyb_correct_engine = ContinualAdaptationEngine(
+        hyb_correct_model,
+        hyb_correct_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_hybrid",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    hyb_correct_pred = hyb_correct_engine.predict(video)
+    hyb_correct_before = {
+        name: value.detach().clone()
+        for name, value in hyb_correct_bank.experts[0].state_dict().items()
+    }
+    hyb_correct_out = hyb_correct_engine.adapt(
+        hyb_correct_pred, feedback_tokens=[1], sample_key="hyb-already-correct"
+    )
+    assert hyb_correct_out.update.status == "accepted"
+    assert hyb_correct_out.update.localization["error_target_tokens"] == 0
+    assert any(
+        not torch.equal(hyb_correct_before[name], value)
+        for name, value in hyb_correct_bank.experts[0].state_dict().items()
+    )
+
+    # hybrid rollback restores adapter + AdamW
+    hyb_rb_model = MockModel()
+    hyb_rb_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    hyb_rb_engine = ContinualAdaptationEngine(
+        hyb_rb_model,
+        hyb_rb_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_hybrid",
+        learning_rate=0.1,
+        rollback_enabled=True,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=0.0,
+        max_target_loss_increase=100.0,
+    )
+    hyb_rb_pred = hyb_rb_engine.predict(video)
+    hyb_rb_before = {
+        name: value.detach().clone()
+        for name, value in hyb_rb_bank.experts[0].state_dict().items()
+    }
+    hyb_rb_out = hyb_rb_engine.adapt(
+        hyb_rb_pred, feedback_tokens=[2], sample_key="hyb-rollback"
+    )
+    assert hyb_rb_out.update.status == "rolled_back"
+    assert all(
+        torch.equal(hyb_rb_before[name], value)
+        for name, value in hyb_rb_bank.experts[0].state_dict().items()
+    )
+    assert hyb_rb_engine.optimizer_state_dict()["0"]["state"] == {}
+
+    # hybrid process == predict->adapt
+    hyb_eq_model = MockModel()
+    hyb_eq_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    hyb_process_engine = ContinualAdaptationEngine(
+        hyb_eq_model,
+        hyb_eq_bank,
+        gate,
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_hybrid",
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    hyb_split_engine = ContinualAdaptationEngine(
+        copy.deepcopy(hyb_eq_model),
+        copy.deepcopy(hyb_eq_bank),
+        copy.deepcopy(gate),
+        device="cpu",
+        decoder=CountingDecoder(),
+        feedback_update_strategy="ctc_error_hybrid",
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    torch.manual_seed(404)
+    hyb_process_out = hyb_process_engine.process(
+        video, feedback_tokens=[2], sample_key="hyb-eq"
+    )
+    torch.manual_seed(404)
+    hyb_split_pred = hyb_split_engine.predict(video)
+    hyb_split_out = hyb_split_engine.adapt(
+        hyb_split_pred, feedback_tokens=[2], sample_key="hyb-eq"
+    )
+    assert hyb_process_out.to_dict() == hyb_split_out.to_dict()
+    assert all(
+        torch.equal(
+            hyb_eq_bank.experts[0].state_dict()[name],
+            hyb_split_engine.expert_bank.experts[0].state_dict()[name],
+        )
+        for name in hyb_eq_bank.experts[0].state_dict()
+    )
+
+    # random hybrid: deterministic + differs from true occupancy hybrid
+    def _hybrid_state(strategy, seed_init, seed_run, sample_key):
+        torch.manual_seed(seed_init)
+        model = MockModel()
+        bank = ExpertBank(
+            feature_dim=8,
+            bottleneck_dim=4,
+            max_experts=1,
+            allow_growth=False,
+        )
+        eng = ContinualAdaptationEngine(
+            model,
+            bank,
+            gate,
+            device="cpu",
+            decoder=CountingDecoder(),
+            feedback_update_strategy=strategy,
+            feedback_random_control_seed=11,
+            learning_rate=0.01,
+            rollback_enabled=False,
+            view_noise_std=0.0,
+            temporal_mask_ratio=0.0,
+            max_anchor_kl=100.0,
+            max_target_loss_increase=100.0,
+        )
+        torch.manual_seed(seed_run)
+        out = eng.process(video, feedback_tokens=[2], sample_key=sample_key)
+        state = {
+            name: value.detach().clone()
+            for name, value in bank.experts[0].state_dict().items()
+        }
+        return out, state
+
+    out_r1, state_r1 = _hybrid_state(
+        "ctc_error_hybrid_random", 501, 502, "rand-hyb"
+    )
+    out_r2, state_r2 = _hybrid_state(
+        "ctc_error_hybrid_random", 501, 502, "rand-hyb"
+    )
+    assert out_r1.update.status == "accepted"
+    assert out_r1.update.localization["randomized_support"]
+    assert out_r1.update.localization["strategy"] == "ctc_error_hybrid_random"
+    assert all(torch.equal(state_r1[n], state_r2[n]) for n in state_r1)
+    out_true, state_true = _hybrid_state(
+        "ctc_error_hybrid", 501, 502, "rand-hyb"
+    )
+    assert out_true.update.status == "accepted"
+    assert not out_true.update.localization["randomized_support"]
+    assert any(not torch.equal(state_r1[n], state_true[n]) for n in state_r1)
+
     local_log_probs = torch.log_softmax(torch.randn(1, 4, 5), dim=-1)
     local_occupancy = torch.zeros(1, 4, 2)
     local_occupancy[0, 1, 0] = 0.75

@@ -61,6 +61,7 @@ plasticity:
   allow_growth: true
   feedback_confirms_growth: true
   feedback_correct_span_kl_enabled: false
+  non_feedback_updates_enabled: true
   feedback_update_strategy: full_sequence
   feedback_local:
     error_target_weight: 1.0
