@@ -1,0 +1,491 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "static": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 15341,
+        "characters": 21210,
+        "cer": 0.7232909005186233
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.7232909005186233,
+        "edits": 15341,
+        "characters": 21210,
+        "mean_reliability": 0.7568155117117666,
+        "updates": {
+          "skipped": 641
+        },
+        "attempted_updates": 0,
+        "accepted_update_rate": 0.0,
+        "timing": {
+          "total_video_load_seconds": 48.33290236070752,
+          "total_process_seconds": 1268.2117237336934,
+          "total_seconds": 1316.5953419581056,
+          "mean_video_load_seconds": 0.07540234377645479,
+          "mean_process_seconds": 1.9784894286017056,
+          "mean_total_seconds": 2.0539708922903364
+        },
+        "domains": {
+          "189": {
+            "cer": 0.6066171112082787,
+            "edits": 4162,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 0.6820245726495726,
+            "edits": 5107,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 0.885002186270223,
+            "edits": 6072,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            641
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "static",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "425e744f37cc1e132e5375e021b74cc05e985ed9a0d7e729b426c8da497dfaad"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_router_gate/revisit_189_155_168_static_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 1957,
+          "characters": 3345,
+          "cer": 0.5850523168908819
+        },
+        "B": {
+          "samples": 195,
+          "edits": 5107,
+          "characters": 7488,
+          "cer": 0.6820245726495726
+        },
+        "C": {
+          "samples": 186,
+          "edits": 6072,
+          "characters": 6861,
+          "cer": 0.885002186270223
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 2205,
+          "characters": 3516,
+          "cer": 0.6271331058020477
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.042080788911165845,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": 0.0
+      }
+    },
+    "tent_all": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_all_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 20909,
+        "characters": 21210,
+        "cer": 0.9858085808580858
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.9858085808580858,
+        "edits": 20909,
+        "characters": 21210,
+        "mean_reliability": 0.7031510398806969,
+        "updates": {
+          "accepted": 641
+        },
+        "attempted_updates": 641,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 39.54612461850047,
+          "total_process_seconds": 240.3044339902699,
+          "total_seconds": 279.8971000574529,
+          "mean_video_load_seconds": 0.061694422181748004,
+          "mean_process_seconds": 0.37488991262132587,
+          "mean_total_seconds": 0.4366569423673212
+        },
+        "domains": {
+          "189": {
+            "cer": 0.9561288441918088,
+            "edits": 6560,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 1.0,
+            "edits": 7488,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 1.0,
+            "edits": 6861,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            641
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "tent_adapter",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "b51562b3059410cedeb5908a4cdd9a8e48feb9dc181be6fa0b15fbdef05c88c8"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_all_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_all_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_all_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_all_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 3044,
+          "characters": 3345,
+          "cer": 0.9100149476831091
+        },
+        "B": {
+          "samples": 195,
+          "edits": 7488,
+          "characters": 7488,
+          "cer": 1.0
+        },
+        "C": {
+          "samples": 186,
+          "edits": 6861,
+          "characters": 6861,
+          "cer": 1.0
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 3516,
+          "characters": 3516,
+          "cer": 1.0
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.08998505231689091,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": 0.04790426340572507
+      }
+    },
+    "tent_nonblank": {
+      "directory": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_nonblank_seed42",
+      "overall": {
+        "samples": 641,
+        "edits": 20519,
+        "characters": 21210,
+        "cer": 0.9674210278170674
+      },
+      "run_summary": {
+        "samples": 641,
+        "cer": 0.9674210278170674,
+        "edits": 20519,
+        "characters": 21210,
+        "mean_reliability": 0.9730323854923427,
+        "updates": {
+          "accepted": 641
+        },
+        "attempted_updates": 641,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 39.66859946399927,
+          "total_process_seconds": 348.7566168606281,
+          "total_seconds": 388.4754968211055,
+          "mean_video_load_seconds": 0.061885490583462203,
+          "mean_process_seconds": 0.5440820855860034,
+          "mean_total_seconds": 0.6060460168815998
+        },
+        "domains": {
+          "189": {
+            "cer": 0.9316426176942136,
+            "edits": 6392,
+            "characters": 6861,
+            "samples": 260
+          },
+          "155": {
+            "cer": 0.9906517094017094,
+            "edits": 7418,
+            "characters": 7488,
+            "samples": 195
+          },
+          "168": {
+            "cer": 0.9778457950736045,
+            "edits": 6709,
+            "characters": 6861,
+            "samples": 186
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            641
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "tent_adapter",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_val_revisit_189_155_168_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "fbc72f769d9ad4b55c1ace821ac266f84ea7b5f84665f7525ca9bc62ec61f173",
+          "manifest_metadata_sha256": "4c6f34aa4c77498ea0d23d908b8de100d22bc6bc2379fba067754a6a8abb513d",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "afe0b59dc32d94a6838e721271658d361439e425fd44722d28f36497dc57f443"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_nonblank_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_nonblank_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_nonblank_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_val_tta_baselines/revisit_tent_adapter_nonblank_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "segments": {
+        "A1": {
+          "samples": 130,
+          "edits": 2959,
+          "characters": 3345,
+          "cer": 0.8846038863976083
+        },
+        "B": {
+          "samples": 195,
+          "edits": 7418,
+          "characters": 7488,
+          "cer": 0.9906517094017094
+        },
+        "C": {
+          "samples": 186,
+          "edits": 6709,
+          "characters": 6861,
+          "cer": 0.9778457950736045
+        },
+        "A2": {
+          "samples": 130,
+          "edits": 3433,
+          "characters": 3516,
+          "cer": 0.9763936291240045
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.09178974272639617,
+        "static_a2_minus_a1": 0.042080788911165845,
+        "static_corrected": 0.04970895381523033
+      }
+    }
+  },
+  "comparisons": {
+    "tent_all_minus_static": {
+      "candidate": "tent_all",
+      "baseline": "static",
+      "candidate_minus_baseline": 0.26251768033946254,
+      "ci_95": {
+        "lower": 0.24046724226206573,
+        "upper": 0.2841889776332742
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "sample_edit_transitions": {
+        "paired_samples": 641,
+        "candidate_better": 63,
+        "same": 47,
+        "candidate_worse": 531,
+        "net_edit_difference": 5568
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.04790426340572501,
+        "ci_95": {
+          "lower": -0.016442098146715413,
+          "upper": 0.11316130572080073
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    },
+    "tent_nonblank_minus_static": {
+      "candidate": "tent_nonblank",
+      "baseline": "static",
+      "candidate_minus_baseline": 0.24413012729844413,
+      "ci_95": {
+        "lower": 0.22061143044298245,
+        "upper": 0.2680775828434548
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "sample_edit_transitions": {
+        "paired_samples": 641,
+        "candidate_better": 74,
+        "same": 65,
+        "candidate_worse": 502,
+        "net_edit_difference": 5178
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.04970895381523033,
+        "ci_95": {
+          "lower": -0.0400507567704375,
+          "upper": 0.1308414216978337
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    },
+    "tent_nonblank_minus_tent_all": {
+      "candidate": "tent_nonblank",
+      "baseline": "tent_all",
+      "candidate_minus_baseline": -0.018387553041018388,
+      "ci_95": {
+        "lower": -0.026965285441026752,
+        "upper": -0.007987466090808098
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 641,
+      "sample_edit_transitions": {
+        "paired_samples": 641,
+        "candidate_better": 369,
+        "same": 245,
+        "candidate_worse": 27,
+        "net_edit_difference": -390
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.0018046904095052989,
+        "ci_95": {
+          "lower": -0.06361000757352879,
+          "upper": 0.054642537869085614
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 130,
+          "A2": 130
+        }
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 130,
+      "B": 195,
+      "C": 186,
+      "A2": 130
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

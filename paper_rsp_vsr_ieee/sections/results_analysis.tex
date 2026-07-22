@@ -7,7 +7,7 @@ Table~\ref{tab:main} summarizes the primary operating points on the complete tes
 
 \begin{table}[t]
 \centering
-\caption{Prequential CER on the 3,908-clip test stream. Mean $\pm$ population standard deviation is shown for three-seed rows.}
+\caption{Exploratory CER on the 3,908-clip test stream. Mean $\pm$ population standard deviation is shown for three-seed rows; $\dagger$ marks pre-fix expert diagnostics.}
 \label{tab:main}
 \begin{tabular}{lcc}
 \toprule
@@ -15,20 +15,49 @@ Method & Feedback & CER (\%) $\downarrow$ \\
 \midrule
 Static & none & 69.302 \\
 Single adapter & none & 67.584 \\
-Expert bank & none & 67.584 \\
+Expert bank$^{\dagger}$ & none & 67.584 \\
 Single adapter & every 20 & $67.335\pm0.063$ \\
-Expert bank & every 20 & $67.317\pm0.058$ \\
+Expert bank$^{\dagger}$ & every 20 & $67.317\pm0.058$ \\
 Single adapter & every 10 & $66.881\pm0.105$ \\
-Expert bank & every 10 & $66.826\pm0.079$ \\
+Expert bank$^{\dagger}$ & every 10 & $66.826\pm0.079$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The no-feedback single and expert systems are identical at seed 42 because neither run grows a second effective expert. Their 1.718-point improvement over static is nevertheless a measured U0 result, although it currently has only one seed and lacks matched TTA baselines. The additional feedback gain belongs to a separate F10 supervision track and is supported by three seeds. We therefore report both effects without treating their different supervision budgets as interchangeable.
 
+\subsection{Two Intuitive Update Alternatives Fail on Validation}
+
+Full-sequence feedback replay reaches 69.637\% CER on the 641-utterance validation revisit, improving the 72.329\% static result by 2.692 points (paired 95\% CI: $-3.315$ to $-2.070$). Preserving greedily matched spans appears more selective, but reaches 70.174\% and is 0.538 points worse than replay (95\% CI: $+0.074$ to $+1.077$). The greedy correct-span variant therefore fails its validation gate and is not evaluated on test.
+
+Adapter-only entropy minimization is substantially less stable. Selecting all CTC frames produces 98.581\% CER, while selecting only nonblank greedy frames produces 96.742\%. Relative to static, the two variants degrade CER by 26.252 and 24.413 points, respectively, and both paired intervals lie wholly in the harmful direction. We stop this baseline after validation rather than tune it against test outcomes. These failures do not imply that all TTA methods fail for VSR; they show that direct entropy minimization of this frozen-backbone adapter is not a competitive control.
+
+\subsection{Error Localization Is Informative but Underperforms Replay}
+
+Table~\ref{tab:validation_local} resolves the final validation-only update gate. Error localization reaches 72.004\% CER. It is 2.508 points better than randomized support (95\% CI: $-3.087$ to $-1.955$), showing that where the sparse correction gradient acts contains useful information. However, it is 2.367 points worse than full-sequence replay (95\% CI: $+1.757$ to $+3.048$). Its revisit difference-in-differences is also 3.244 points worse than replay (95\% CI: $+1.527$ to $+5.044$). Relative to static, the 0.325-point CER improvement is not significant (95\% CI: $-0.844$ to $+0.227$). The pre-specified replay gate therefore fails and no localized test run, parameter adjustment, or additional seed is conducted.
+
+\begin{table}[t]
+\centering
+\caption{Validation correction-localization results. Corrected forgetting subtracts the static A2--A1 difference; lower is better.}
+\label{tab:validation_local}
+\begin{tabular}{lrrrr}
+\toprule
+Method & Overall & A1 & A2 & Corrected \\
+ & \multicolumn{4}{c}{CER (\%)} \\
+\midrule
+Static & 72.329 & 58.505 & 62.713 & 0.000 \\
+Full replay & 69.637 & 57.250 & 56.712 & $-4.746$ \\
+Error-localized & 72.004 & 58.386 & 61.092 & $-1.502$ \\
+Random support & 74.512 & 58.475 & 63.623 & $+0.940$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All 64 scheduled corrections receive a target-conditioned occupancy. Across the localized run, they contain 1,199 substitution and 143 deletion target positions plus 51 insertion frames, or 0.367\% of the 13,889 CTC frames. Mean matched and error occupancy masses are 11.204 and 21.007, with effective supports of 11.681 and 22.625 frames. The local objective decreases on all 64 corrections by 0.112 on average, yet total updates are 71 accepted, 3 rolled back, and 567 skipped. The randomized trajectory accepts only 27 updates and rolls back 46. Thus local objective descent is not sufficient evidence of future transcript improvement, and whole-sequence replay remains the selected update rule.
+
 \subsection{Dynamic Experts Do Not Beat One Adapter Materially}
 
-At feedback every ten samples, the expert advantage over one adapter is 0.087, 0.025, and 0.053 CER points for seeds 7, 42, and 123, respectively, for a mean of only 0.055 points. This is below the 0.3-point materiality threshold used for the structural decision.
+At feedback every ten samples, the expert advantage over one adapter is 0.087, 0.025, and 0.053 CER points for seeds 7, 42, and 123, respectively, for a mean of only 0.055 points. This is below the 0.3-point materiality threshold used for the structural decision. Because these prototype runs allowed the known feedback-location flag to confirm growth before the corresponding prediction, we do not treat the expert rows as strict causal comparisons; the negative routing and accuracy outcomes are diagnostic despite that favorable information.
 
 The revisit stream leads to the same conclusion (Table~\ref{tab:revisit}). Both adaptive systems improve over static. The expert bank is only 0.085 points better overall than one adapter and reduces static-corrected forgetting by 0.156 points (lower is better). Both effects remain below the 0.3-point structural threshold. More importantly, 741 of 742 clips route to expert~0. Thus the observed difference cannot support domain-specialized reuse.
 
@@ -52,7 +81,7 @@ Post-hoc diagnostics explain the collapse. The route consistency score is 0.9987
 
 \subsection{Validation-Only Routing Repair Fails the Revisit Gate}
 
-Frozen validation signatures pass the pre-specified proxy gate. The selected order-1 signature has proxy AUROC 0.883, F1 0.859, clustering purity 0.987, and cosine threshold 0.9801. These leave-own-domain-out scores justify one validation revisit run; they are not unseen-domain estimates.
+In the pre-fix diagnostic, frozen validation signatures pass the pre-specified proxy gate. The selected order-1 signature has proxy AUROC 0.883, F1 0.859, clustering purity 0.987, and cosine threshold 0.9801. These leave-own-domain-out scores justified one validation revisit run; they are not unseen-domain estimates or results from the strict causal implementation.
 
 \begin{table}[t]
 \centering
@@ -74,8 +103,8 @@ The repair nevertheless fails both downstream gates. Relative to one adapter, it
 
 \subsection{Noise Robustness Is Observed but Not Attributed}
 
-With feedback every ten samples, replacing 10\% of feedback characters changes seed-42 CER from 66.728\% to 66.770\%, a degradation of 0.041 points. At feedback every 20, the noisy run is 0.023 points better than clean, but this single-seed difference is smaller than the clean three-seed spread and is not interpreted as an improvement. Under that noisy setting, disabling rollback and reliability worsens CER by 0.039 and 0.076 points relative to the full system. These effects are too small to establish that either mechanism caused robustness. The supported claim is narrower: the selected feedback-10 operating point is empirically insensitive to the tested 10\% character corruption.
+With feedback every ten samples, one controlled seed-42 run with 10\% feedback-character replacement changes CER from 66.728\% to 66.770\%, a degradation of 0.041 points. At feedback every 20, the noisy run is 0.023 points better than clean, but this single-seed difference is smaller than the clean three-seed spread and is not interpreted as an improvement. Under that noisy setting, disabling rollback and reliability worsens CER by 0.039 and 0.076 points relative to the full system. These effects are too small to establish robustness or attribute it to either mechanism; repeated corruptions and equivalence intervals remain necessary.
 
 \subsection{Current Decision}
 
-The evidence supports continuing with a single-adapter application paper. The dynamic expert bank is a no-go under both evaluated regimes: the original router collapses, while the validation-calibrated router fragments and is significantly worse than one adapter. The pre-specified validation gate therefore stops all further expert seeds, parameter sweeps, and repaired-router test evaluation.
+The evidence supports continuing with a single-adapter application paper using full-sequence replay. The error-localized candidate fails its replay gate despite significantly outperforming randomized support. The current dynamic expert implementation is also a no-go under both diagnostic regimes: the original router collapses, while the validation-calibrated router fragments and is significantly worse than one adapter. The pre-specified gates stop localized test evaluation, further expert seeds, and parameter sweeps.

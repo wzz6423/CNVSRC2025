@@ -3,7 +3,7 @@
 
 \subsection{Prequential Sparse-Feedback Setting}
 
-Let $\{(x_t,y_t,d_t)\}_{t=1}^{T}$ be a video stream, where $d_t$ is retained only for ordering and post-hoc analysis. At step $t$, the system first predicts $\hat y_t$ and records its edit distance to $y_t$. Only then may it receive feedback $y_t$ according to a schedule fixed before evaluation. The main operating point supplies one correction every ten utterances. Character error rate is aggregated as
+Let $\{(x_t,y_t,d_t)\}_{t=1}^{T}$ be a video stream, where $d_t$ is retained only for ordering and post-hoc analysis. The evaluator holds $y_t$; the learner cannot read it until \texttt{predict()} has fixed $\hat y_t$ and the evaluator has recorded the corresponding error. Only then may \texttt{adapt()} receive $y_t$ according to a schedule fixed before evaluation. The main operating point supplies one correction every ten utterances. Character error rate is aggregated as
 \begin{equation}
   \mathrm{CER}=\frac{\sum_t \operatorname{EditDistance}(\hat y_t,y_t)}{\sum_t |y_t|}.
 \end{equation}
@@ -17,7 +17,27 @@ The base VSR model contains a visual encoder $f_{\theta}$ and CTC/attention deco
 \end{equation}
 where the bottleneck width is 48, the feature width is 768, and $s$ is a learnable scalar initialized to one. Zero initialization of $W_{\mathrm{up}}$ makes a newly created adapter function-preserving at creation. It does not guarantee preservation after subsequent updates.
 
-When feedback is present, its (possibly corrupted) token sequence is used directly as the adaptation target and bypasses the pseudo-label admission gate. Without feedback, a pseudo target is admitted only if the CTC confidence, perturbed-view agreement, CTC emission rate, and CTC/attention agreement pass fixed reliability tests. One AdamW step minimizes a weighted combination of CTC target loss, clean/perturbed posterior consistency, entropy, and feature anchoring. The learning rate is $5\times10^{-4}$ and gradient norm is clipped at 1.
+When feedback is present, its (possibly corrupted) token sequence is used directly as the adaptation target and bypasses the pseudo-label admission gate. Without feedback, a pseudo target is admitted only if the CTC confidence, perturbed-view agreement, CTC emission rate, and CTC/attention agreement pass fixed reliability tests. The replay baseline takes one AdamW step on a weighted combination of full-sequence CTC target loss, clean/perturbed posterior consistency, entropy, and feature anchoring. The learning rate is $5\times10^{-4}$ and gradient norm is clipped at 1.
+
+\subsection{Error-Localized Correction Candidate}
+
+Whole-sequence replay does not distinguish characters that were already correct from substitutions, deletions, or insertions. We therefore evaluate a validation-only localized candidate. Let $p^0_{t,k}$ denote the pre-update CTC posterior, and align its greedy collapsed token sequence with the correction by Levenshtein backtrace. For corrected target token $y_j$, a target-conditioned CTC forward--backward pass gives the stop-gradient occupancy
+\begin{equation}
+  q_{t,j}=P(s_t=2j-1\mid x,y;\phi^0),
+\end{equation}
+where $s_t$ indexes the standard blank-interleaved CTC states. This soft CTC alignment posterior is used only as a localization proxy; it is neither a manually annotated boundary nor a hard forced alignment of the final beam-search transcript.
+
+Let $\mathcal E$ contain target positions identified as substitutions or deletions, $I_t$ mark greedy segments identified as insertions, and $w_t^{M}=\sum_{j\in\mathcal M}q_{t,j}$ sum occupancy over matched target positions. The candidate objective is
+\begin{align}
+\mathcal L_{\mathrm{local}}={}&
+\lambda_e\frac{\sum_{t,j\in\mathcal E}q_{t,j}[-\log p_{t,y_j}]}{\sum_{t,j\in\mathcal E}q_{t,j}}
++\lambda_i\frac{\sum_t I_t[-\log p_{t,\varnothing}]}{\sum_t I_t}\nonumber\\
+&+\lambda_m\frac{\sum_t w_t^M D_{\mathrm{KL}}(p_t^0\Vert p_t)}{\sum_t w_t^M}
++\lambda_f\lVert A_\phi(z)-z\rVert_2^2,
+\end{align}
+with zero-valued terms when their support is empty. We use $\lambda_e=1.0$, $\lambda_i=1.0$, $\lambda_m=0.5$, and $\lambda_f=0.1$, followed by one AdamW step. The first term raises corrected substitution/deletion tokens, the second suppresses inserted emissions toward CTC blank $\varnothing$, and the third preserves the pre-update posterior where target tokens already match. Non-feedback samples retain the same reliability-gated pseudo-update path as the replay baseline.
+
+To test whether localization, rather than merely sparse gradient support, matters, a deterministic control applies one UID- and seed-specific time permutation to every error-token occupancy and insertion mask. This preserves token-wise mass, effective support size, objective weights, optimizer, and update schedule while moving error evidence to unrelated frames. The matched-token KL support is unchanged. The control uses seed 42. We compare localized, randomized-support, and full-sequence replay only on validation before deciding whether any localized variant may enter test evaluation.
 
 \subsection{Transactional Acceptance}
 
@@ -25,6 +45,8 @@ Before an update, the adapter and optimizer states are copied. A candidate updat
 
 \subsection{Dynamic-Expert Validation}
 
-The expert variant forms a family of signatures by concatenating frozen-feature mean and standard deviation with up to first- and second-order temporal-difference magnitudes. The normalized signature is routed by cosine similarity to an online prototype. Without feedback, low-similarity sequences are accumulated before growth; a feedback item can confirm growth immediately. Each accepted update also updates the selected prototype. For the single validation repair, order-2 signatures are extracted once from the frozen backbone and orders 0--2 are compared using a fixed leave-own-domain-out proxy. This selects order 1 and its cosine threshold without reading test outcomes. The proxy does not estimate true unseen-domain performance.
+The current causal implementation forms signatures by concatenating frozen-feature mean and standard deviation with temporal-difference magnitudes, then routes the normalized signature by cosine similarity. It fixes the inference route and transcript before feedback is inspected. A later correction may choose a post-prediction adaptation expert, but that update can affect only future transcripts; inference and adaptation expert indices are logged separately.
+
+All expert experiments reported here, including the validation-calibrated revisit, predate this separation. Their pre-fixed feedback-location indicator, but never the correction content, could confirm growth before the corresponding transcript was produced. For the validation repair, frozen signatures of orders 0--2 were compared using a leave-own-domain-out proxy, selecting order 1 and its cosine threshold without reading test outcomes. The proxy does not estimate true unseen-domain performance. Single-adapter results are unaffected because only one expert exists. We retain these expert results as a pre-fix diagnostic study, not as evidence from the strict causal protocol or as a proposed deployment path.
 
 We test two necessary conditions: (i) expert routing must avoid collapse and reuse the first speaker's expert on return; and (ii) its overall CER or static-corrected revisit forgetting must materially improve over one adapter. Failure of either condition stops further dynamic-expert evaluation under the pre-specified decision rule.
