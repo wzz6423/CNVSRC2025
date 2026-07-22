@@ -1,0 +1,572 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "full": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev2_revisit_full_replay_feedback10_seed42",
+      "overall": {
+        "samples": 804,
+        "edits": 13373,
+        "characters": 22249,
+        "cer": 0.6010607218301947
+      },
+      "run_summary": {
+        "samples": 804,
+        "cer": 0.6010607218301947,
+        "edits": 13373,
+        "characters": 22249,
+        "mean_reliability": 0.5616440435501671,
+        "updates": {
+          "skipped": 695,
+          "accepted": 107,
+          "rolled_back": 2
+        },
+        "attempted_updates": 109,
+        "accepted_update_rate": 0.981651376146789,
+        "timing": {
+          "total_video_load_seconds": 44.33010719716549,
+          "total_process_seconds": 1581.219502929598,
+          "total_seconds": 1625.609518546611,
+          "mean_video_load_seconds": 0.05513694925020583,
+          "mean_process_seconds": 1.9666909240417887,
+          "mean_total_seconds": 2.021902386252004
+        },
+        "domains": {
+          "015": {
+            "cer": 0.5109267825809539,
+            "edits": 3203,
+            "characters": 6269,
+            "samples": 308
+          },
+          "098": {
+            "cer": 0.7841708852944808,
+            "edits": 6351,
+            "characters": 8099,
+            "samples": 253
+          },
+          "133": {
+            "cer": 0.4845831747240198,
+            "edits": 3819,
+            "characters": 7881,
+            "samples": 243
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            804
+          ],
+          "accepted_updates": [
+            107
+          ],
+          "prototype_counts": [
+            108
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+          "manifest_metadata_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "189a149a40e7db8d3968dd7e84c9f53d3b83d356ed12af8e8f3a7ae08adeca84"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 80,
+        "diagnosed_feedback_samples": 80,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2111,
+        "target_tokens": 2361,
+        "matched_tokens": 888,
+        "substituted_tokens": 1197,
+        "missing_target_tokens": 276,
+        "extra_prediction_tokens": 26,
+        "mean_token_error_rate": 0.6261282536396742,
+        "mean_matched_frame_rate": 0.06296548582613468
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 80,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "segments": {
+        "A1": {
+          "samples": 154,
+          "edits": 1589,
+          "characters": 3094,
+          "cer": 0.5135746606334841
+        },
+        "B": {
+          "samples": 253,
+          "edits": 6351,
+          "characters": 8099,
+          "cer": 0.7841708852944808
+        },
+        "C": {
+          "samples": 243,
+          "edits": 3819,
+          "characters": 7881,
+          "cer": 0.4845831747240198
+        },
+        "A2": {
+          "samples": 154,
+          "edits": 1614,
+          "characters": 3175,
+          "cer": 0.5083464566929133
+        }
+      }
+    },
+    "hybrid": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev2_revisit_ctc_error_hybrid_feedback10_seed42",
+      "overall": {
+        "samples": 804,
+        "edits": 13439,
+        "characters": 22249,
+        "cer": 0.6040271472875185
+      },
+      "run_summary": {
+        "samples": 804,
+        "cer": 0.6040271472875185,
+        "edits": 13439,
+        "characters": 22249,
+        "mean_reliability": 0.5611715006373446,
+        "updates": {
+          "skipped": 695,
+          "accepted": 109
+        },
+        "attempted_updates": 109,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 42.45747983828187,
+          "total_process_seconds": 1762.9205445162952,
+          "total_seconds": 1805.4369902610779,
+          "mean_video_load_seconds": 0.05280781074413168,
+          "mean_process_seconds": 2.1926872444232526,
+          "mean_total_seconds": 2.245568395847112
+        },
+        "domains": {
+          "015": {
+            "cer": 0.513479023767746,
+            "edits": 3219,
+            "characters": 6269,
+            "samples": 308
+          },
+          "098": {
+            "cer": 0.788615878503519,
+            "edits": 6387,
+            "characters": 8099,
+            "samples": 253
+          },
+          "133": {
+            "cer": 0.4863595990356554,
+            "edits": 3833,
+            "characters": 7881,
+            "samples": 243
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            804
+          ],
+          "accepted_updates": [
+            109
+          ],
+          "prototype_counts": [
+            110
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "ctc_error_hybrid",
+        "non_feedback_updates_enabled": true,
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+          "manifest_metadata_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "bc531800c937cc841bce2d3763a085f39d4505c07ce5be8212551d335f8397ad"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 80,
+        "diagnosed_feedback_samples": 80,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2171,
+        "target_tokens": 2361,
+        "matched_tokens": 915,
+        "substituted_tokens": 1216,
+        "missing_target_tokens": 230,
+        "extra_prediction_tokens": 40,
+        "mean_token_error_rate": 0.6208087559291544,
+        "mean_matched_frame_rate": 0.06535533430287614
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 80,
+        "localized_feedback_samples": 80,
+        "localization_coverage": 1.0,
+        "strategies": {
+          "ctc_error_hybrid": 80
+        },
+        "randomized_support_samples": 0,
+        "update_statuses": {
+          "accepted": 80
+        },
+        "ctc_frames": 14972,
+        "matched_target_tokens": 915,
+        "error_target_tokens": 1446,
+        "substitution_target_tokens": 1216,
+        "deletion_target_tokens": 230,
+        "insertion_frames": 40,
+        "insertion_frame_coverage": 0.0026716537536735237,
+        "mean_target_log_likelihood": -98.64963375329971,
+        "mean_matched_occupancy_mass": 12.153500631451607,
+        "mean_error_occupancy_mass": 18.125731909275054,
+        "mean_matched_effective_frames": 12.776640234204713,
+        "mean_error_effective_frames": 19.610250809459846,
+        "objective_samples": 80,
+        "mean_objective_before": 6.449249312281609,
+        "mean_objective_after": 6.360691054165363,
+        "mean_objective_delta": -0.08855825811624526,
+        "objective_improved_samples": 80
+      },
+      "segments": {
+        "A1": {
+          "samples": 154,
+          "edits": 1608,
+          "characters": 3094,
+          "cer": 0.519715578539108
+        },
+        "B": {
+          "samples": 253,
+          "edits": 6387,
+          "characters": 8099,
+          "cer": 0.788615878503519
+        },
+        "C": {
+          "samples": 243,
+          "edits": 3833,
+          "characters": 7881,
+          "cer": 0.4863595990356554
+        },
+        "A2": {
+          "samples": 154,
+          "edits": 1611,
+          "characters": 3175,
+          "cer": 0.5074015748031496
+        }
+      }
+    },
+    "hybrid_random": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42",
+      "overall": {
+        "samples": 804,
+        "edits": 14338,
+        "characters": 22249,
+        "cer": 0.6444334576834914
+      },
+      "run_summary": {
+        "samples": 804,
+        "cer": 0.6444334576834914,
+        "edits": 14338,
+        "characters": 22249,
+        "mean_reliability": 0.5538855146270034,
+        "updates": {
+          "skipped": 702,
+          "accepted": 49,
+          "rolled_back": 53
+        },
+        "attempted_updates": 102,
+        "accepted_update_rate": 0.4803921568627451,
+        "timing": {
+          "total_video_load_seconds": 44.595657266676426,
+          "total_process_seconds": 1814.4833933487535,
+          "total_seconds": 1859.1352317258716,
+          "mean_video_load_seconds": 0.055467235406313965,
+          "mean_process_seconds": 2.2568201409810364,
+          "mean_total_seconds": 2.3123572533903873
+        },
+        "domains": {
+          "015": {
+            "cer": 0.5525602169405008,
+            "edits": 3464,
+            "characters": 6269,
+            "samples": 308
+          },
+          "098": {
+            "cer": 0.824422768242993,
+            "edits": 6677,
+            "characters": 8099,
+            "samples": 253
+          },
+          "133": {
+            "cer": 0.5325466311381805,
+            "edits": 4197,
+            "characters": 7881,
+            "samples": 243
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            804
+          ],
+          "accepted_updates": [
+            49
+          ],
+          "prototype_counts": [
+            50
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "ctc_error_hybrid_random",
+        "non_feedback_updates_enabled": true,
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+          "manifest_metadata_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "c904f6bf3ce70aec44fc7d4d3c35793c0f3af02b289c697f05d1bb22f6112de1"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 80,
+        "diagnosed_feedback_samples": 80,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2521,
+        "target_tokens": 2361,
+        "matched_tokens": 967,
+        "substituted_tokens": 1344,
+        "missing_target_tokens": 50,
+        "extra_prediction_tokens": 210,
+        "mean_token_error_rate": 0.6710666685683726,
+        "mean_matched_frame_rate": 0.0748739963164553
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 80,
+        "localized_feedback_samples": 80,
+        "localization_coverage": 1.0,
+        "strategies": {
+          "ctc_error_hybrid_random": 80
+        },
+        "randomized_support_samples": 80,
+        "update_statuses": {
+          "accepted": 33,
+          "rolled_back": 47
+        },
+        "ctc_frames": 14972,
+        "matched_target_tokens": 967,
+        "error_target_tokens": 1394,
+        "substitution_target_tokens": 1344,
+        "deletion_target_tokens": 50,
+        "insertion_frames": 228,
+        "insertion_frame_coverage": 0.015228426395939087,
+        "mean_target_log_likelihood": -113.06173461675644,
+        "mean_matched_occupancy_mass": 14.674638482928277,
+        "mean_error_occupancy_mass": 17.58603752553463,
+        "mean_matched_effective_frames": 16.227771389574112,
+        "mean_error_effective_frames": 19.152210659239294,
+        "objective_samples": 80,
+        "mean_objective_before": 14.757825541496278,
+        "mean_objective_after": 14.580184841156006,
+        "mean_objective_delta": -0.177640700340271,
+        "objective_improved_samples": 80
+      },
+      "segments": {
+        "A1": {
+          "samples": 154,
+          "edits": 1658,
+          "characters": 3094,
+          "cer": 0.5358758888170653
+        },
+        "B": {
+          "samples": 253,
+          "edits": 6677,
+          "characters": 8099,
+          "cer": 0.824422768242993
+        },
+        "C": {
+          "samples": 243,
+          "edits": 4197,
+          "characters": 7881,
+          "cer": 0.5325466311381805
+        },
+        "A2": {
+          "samples": 154,
+          "edits": 1806,
+          "characters": 3175,
+          "cer": 0.5688188976377953
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "hybrid_minus_full": {
+      "candidate": "hybrid",
+      "baseline": "full",
+      "candidate_minus_baseline": 0.002966425457323925,
+      "ci_95": {
+        "lower": -0.0011502113686500438,
+        "upper": 0.006477716978634299
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 804,
+      "sample_edit_transitions": {
+        "paired_samples": 804,
+        "candidate_better": 51,
+        "same": 647,
+        "candidate_worse": 106,
+        "net_edit_difference": 66
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.007085799795387568,
+        "ci_95": {
+          "lower": -0.033540870776824744,
+          "upper": 0.010373334264120392
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 154,
+          "A2": 154
+        }
+      }
+    },
+    "hybrid_minus_hybrid_random": {
+      "candidate": "hybrid",
+      "baseline": "hybrid_random",
+      "candidate_minus_baseline": -0.04040631039597285,
+      "ci_95": {
+        "lower": -0.04892561991115201,
+        "upper": -0.03262577205382266
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 804,
+      "sample_edit_transitions": {
+        "paired_samples": 804,
+        "candidate_better": 363,
+        "same": 327,
+        "candidate_worse": 114,
+        "net_edit_difference": -899
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.045257012556688334,
+        "ci_95": {
+          "lower": -0.08381826132299677,
+          "upper": -0.01503776344031978
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 154,
+          "A2": 154
+        }
+      }
+    },
+    "hybrid_random_minus_full": {
+      "candidate": "hybrid_random",
+      "baseline": "full",
+      "candidate_minus_baseline": 0.043372735853296776,
+      "ci_95": {
+        "lower": 0.03516443589632894,
+        "upper": 0.05200397972790007
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 804,
+      "sample_edit_transitions": {
+        "paired_samples": 804,
+        "candidate_better": 106,
+        "same": 315,
+        "candidate_worse": 383,
+        "net_edit_difference": 965
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.03817121276130077,
+        "ci_95": {
+          "lower": 0.0033225463909567743,
+          "upper": 0.07837346257722355
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 154,
+          "A2": 154
+        }
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 154,
+      "B": 253,
+      "C": 243,
+      "A2": 154
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

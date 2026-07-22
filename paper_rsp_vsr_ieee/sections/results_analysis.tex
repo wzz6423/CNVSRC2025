@@ -3,18 +3,18 @@
 
 \subsection{Online Adaptation and Sparse Feedback Both Improve CER}
 
-Table~\ref{tab:main} summarizes the primary operating points on the complete test stream. At seed 42, no-feedback online adaptation improves static CER by 1.718 points. Adding feedback every ten samples improves the same-seed single adapter by a further 0.831 points and yields a 2.421-point three-seed mean gain over static. The three-seed standard deviation is 0.105 points, indicating that the total gain is not driven by one seed. More frequent corrections also matter: the expert-bank mean improves by 0.490 points from feedback every 20 to every 10 samples.
+Table~\ref{tab:main} summarizes the primary operating points on the complete test stream. No-feedback online adaptation reaches $67.713\pm0.178$\% CER across three seeds, 1.589 points below static. Adding feedback every ten samples lowers the matched three-seed mean by a further 0.832 points and yields a 2.421-point mean gain over static. The feedback-every-ten population standard deviation is 0.105 points, and all three matched seed comparisons favor feedback. More frequent corrections also matter: the expert-bank mean improves by 0.490 points from feedback every 20 to every 10 samples.
 
 \begin{table}[t]
 \centering
-\caption{Exploratory CER on the 3,908-clip test stream. Mean $\pm$ population standard deviation is shown for three-seed rows; $\dagger$ marks pre-fix expert diagnostics.}
+\caption{Exploratory CER on the 3,908-clip test stream. Mean $\pm$ population standard deviation is shown for three-seed rows; $\dagger$ marks pre-fix seed-42 expert diagnostics.}
 \label{tab:main}
 \begin{tabular}{lcc}
 \toprule
 Method & Feedback & CER (\%) $\downarrow$ \\
 \midrule
 Static & none & 69.302 \\
-Single adapter & none & 67.584 \\
+Single adapter & none & $67.713\pm0.178$ \\
 Expert bank$^{\dagger}$ & none & 67.584 \\
 Single adapter & every 20 & $67.335\pm0.063$ \\
 Expert bank$^{\dagger}$ & every 20 & $67.317\pm0.058$ \\
@@ -24,7 +24,7 @@ Expert bank$^{\dagger}$ & every 10 & $66.826\pm0.079$ \\
 \end{tabular}
 \end{table}
 
-The no-feedback single and expert systems are identical at seed 42 because neither run grows a second effective expert. Their 1.718-point improvement over static is nevertheless a measured U0 result, although it currently has only one seed and lacks matched TTA baselines. The additional feedback gain belongs to a separate F10 supervision track and is supported by three seeds. We therefore report both effects without treating their different supervision budgets as interchangeable.
+The no-feedback single-adapter row is now supported by three seeds; its 1.589-point gain over static is a measured U0 result, although matched TTA baselines remain open. The F10 row is 0.832 points lower on the matched three-seed mean and improves in all three seed pairs, but it belongs to a separate supervision track. At seed 42, the no-feedback single and expert systems are identical because neither grows a second effective expert; the dagger row remains a one-seed structural diagnostic. We report both measured effects without treating their different supervision budgets as interchangeable.
 
 \subsection{Two Intuitive Update Alternatives Fail on Validation}
 
@@ -43,7 +43,7 @@ Table~\ref{tab:validation_local} resolves the final validation-only update gate.
 \begin{tabular}{lrrrr}
 \toprule
 Method & Overall & A1 & A2 & Corrected \\
- & \multicolumn{4}{c}{CER (\%)} \\
+ & \multicolumn{3}{c}{CER (\%)} & points \\
 \midrule
 Static & 72.329 & 58.505 & 62.713 & 0.000 \\
 Full replay & 69.637 & 57.250 & 56.712 & $-4.746$ \\
@@ -90,7 +90,7 @@ In the pre-fix diagnostic, frozen validation signatures pass the pre-specified p
 \begin{tabular}{lrrrr}
 \toprule
 Method & Overall & A1 & A2 & Corrected \\
- & \multicolumn{4}{c}{CER (\%)} \\
+ & \multicolumn{3}{c}{CER (\%)} & points \\
 \midrule
 Static & 72.329 & 58.505 & 62.713 & 0.000 \\
 Single adapter & 69.637 & 57.250 & 56.712 & $-4.746$ \\
@@ -105,6 +105,36 @@ The repair nevertheless fails both downstream gates. Relative to one adapter, it
 
 With feedback every ten samples, one controlled seed-42 run with 10\% feedback-character replacement changes CER from 66.728\% to 66.770\%, a degradation of 0.041 points. At feedback every 20, the noisy run is 0.023 points better than clean, but this single-seed difference is smaller than the clean three-seed spread and is not interpreted as an improvement. Under that noisy setting, disabling rollback and reliability worsens CER by 0.039 and 0.076 points relative to the full system. These effects are too small to establish robustness or attribute it to either mechanism; repeated corruptions and equivalence intervals remain necessary.
 
+\subsection{Development-Only Partial Update-Source Comparison on Target-Dev2}
+
+Target-dev2 is an isolated development stream drawn from the official Chinese-LiPS train pool (speakers 015/098/133; 804 clips; A--B--C--A lengths 154/253/243/154). All numbers below are development-only exploratory evidence; they are not test or holdout results, and target-holdout2 remains unread.
+
+On the feedback-every-ten schedule, combined full-sequence replay reaches $60.1061\%$ CER ($13{,}373/22{,}249$ character errors) with accepted/rolled-back/skipped updates $107/2/695$. Feedback-only reaches $60.3218\%$ CER ($13{,}421/22{,}249$) with $78/2/724$ updates; all $724$ non-feedback samples are update-forbidden under that schedule. The paired difference feedback-only $-$ combined is $+0.2157$ CER percentage points, with a paired bootstrap 95\% CI of $[-0.0644,+0.4927]$ points that includes zero. Returning-A (A2) CERs are $52.0945\%$ for feedback-only and $50.8346\%$ for combined. On the revisit difference-of-differences criterion, feedback-only $-$ combined is $+1.0013$ points with 95\% CI $[-0.3415,+2.2740]$ points, again including zero. Exact machine-readable values are retained in the archived analysis artifact.
+
+These runs constitute a partial update-source comparison only: the same stream lacks a pseudo-only arm, so the design cannot support a complete pseudo/feedback/interaction split, nor a claim that reliability-gated pseudo updates yield a significant gain over feedback-only.
+
+On the same target-dev2 stream, a full-replay CTC-error hybrid was evaluated against the full-replay baseline and a matched random-support hybrid control (development-only; strictly accepted protocol checks include 804 UID/order, 80 feedback positions, localization strategy/auxiliary objectives, 33 history, final checkpoint processed-samples count of 804, manifest/sidecar/base hashes, three checkpoints, attempt~1, and zero errors). Full-replay baseline CER is $60.1061\%$ ($13{,}373/22{,}249$). CTC-error hybrid reaches $60.4027\%$ ($13{,}439/22{,}249$) with accepted/skipped updates $109/695$. Random-support hybrid reaches $64.4433\%$ ($14{,}338/22{,}249$) with accepted/rolled-back/skipped $49/53/702$. The paired difference hybrid $-$ full is $+0.2966$ CER percentage points (hybrid worse on the point estimate), with 95\% CI $[-0.1150,+0.6478]$ points that includes zero. Hybrid $-$ random is $-4.0406$ points, 95\% CI $[-4.8926,-3.2626]$, wholly below zero. Returning-A (A2) CERs are $50.8346\%$ (full), $50.7402\%$ (hybrid), and $56.8819\%$ (random). The A2--A1 forgetting difference hybrid $-$ full is $-0.7086$ points, 95\% CI $[-3.3541,+1.0373]$ (includes zero); hybrid $-$ random is $-4.5257$ points, 95\% CI $[-8.3818,-1.5038]$ (wholly below zero). The pre-registered hybrid gate required at least a $0.3$-point CER improvement over full with a CI wholly below zero, and a significant advantage over random. Only the randomized-control criterion holds: the point estimate versus full moves in the wrong direction and the CI includes zero. Therefore the hybrid route is a development NO-GO: target-holdout2 is not run, and no additional hybrid seed or sweep is performed. What can be claimed is that the target-conditioned location signal is real and significant relative to the matched random control. What cannot be claimed is that using that signal as a full-replay auxiliary improves CER or forgetting on this stream. The elevated rollback count under random support is reported as an observation only and is not given a mechanism attribution. No confirmatory holdout number is available.
+
+With the static arm completed on the same target-dev2 stream (development-only; 804 samples, all updates skipped, no feedback used; protocol checks include attempt~1, 33 history entries, final checkpoint processed-samples count of 804, matching UID/order/hashes, zero errors, and three checkpoints), static CER is $61.2747\%$ ($13{,}633/22{,}249$). Segment A1/A2 CERs are $52.6180\%/54.0157\%$ for static and $51.3575\%/50.8346\%$ for full-sequence replay. Full minus static overall CER is $-1.1686$ percentage points, with a paired bootstrap 95\% CI of $[-1.6053,-0.7473]$ points that lies wholly below zero. Table~\ref{tab:dev2_static_corrected} reports static-corrected revisit forgetting (method A2--A1 minus static A2--A1; lower is better). Full-sequence replay improves static-corrected forgetting by $-1.9206$ points, 95\% CI $[-3.6183,-0.2875]$ (wholly below zero). Feedback-only is $-0.9193$ points, 95\% CI $[-2.2787,+0.4746]$ (includes zero). Hybrid is $-2.6292$ points, 95\% CI $[-4.8232,-0.8518]$ (wholly below zero), and random-support is $+1.8965$ points, 95\% CI $[-1.0576,+5.6161]$ (includes zero). Hybrid minus full on this corrected metric remains $-0.7086$ points, 95\% CI $[-3.3541,+1.0373]$ (includes zero), and hybrid remains $0.2966$ points worse than full on overall CER; completing static therefore does not reverse the hybrid NO-GO or reopen holdout2. Exact values are in the archived static-corrected analysis artifact.
+
+\begin{table}[t]
+\centering
+\caption{Target-dev2 development-only results. Corrected forgetting subtracts the static A2--A1 difference; lower is better. Not test/holdout.}
+\label{tab:dev2_static_corrected}
+\begin{tabular}{lrrrr}
+\toprule
+Method & Overall & A1 & A2 & Corrected \\
+ & \multicolumn{3}{c}{CER (\%)} & points \\
+\midrule
+Static & 61.275 & 52.618 & 54.016 & 0.000 \\
+Full replay & 60.106 & 51.357 & 50.835 & $-1.921$ \\
+Feedback-only & 60.322 & 51.616 & 52.094 & $-0.919$ \\
+CTC-error hybrid & 60.403 & 51.972 & 50.740 & $-2.629$ \\
+Random support & 64.443 & 53.588 & 56.882 & $+1.897$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Current Decision}
 
-The evidence supports continuing with a single-adapter application paper using full-sequence replay. The error-localized candidate fails its replay gate despite significantly outperforming randomized support. The current dynamic expert implementation is also a no-go under both diagnostic regimes: the original router collapses, while the validation-calibrated router fragments and is significantly worse than one adapter. The pre-specified gates stop localized test evaluation, further expert seeds, and parameter sweeps. A separate next-round protocol decomposes pseudo-only and feedback-only updates and evaluates the full-replay error hybrid on newly locked development and holdout streams. Until that holdout gate is complete, these additions are protocol extensions rather than evidence and do not alter the selected replay result in this section.
+The evidence supports continuing with a single-adapter application paper using full-sequence replay. The error-localized candidate fails its replay gate despite significantly outperforming randomized support. The current dynamic expert implementation is also a no-go under both diagnostic regimes: the original router collapses, while the validation-calibrated router fragments and is significantly worse than one adapter. The pre-specified gates stop localized test evaluation, further expert seeds, and parameter sweeps. Next-round development evidence on target-dev2 provides an exploratory, non-significant partial comparison of feedback-only versus combined replay. Full-sequence replay significantly improves both overall CER and static-corrected revisit forgetting relative to static on this stream. The hybrid route remains a NO-GO: the CTC-error hybrid significantly beats random support but does not improve CER or static-corrected forgetting relative to full-sequence replay under the pre-registered thresholds, so holdout2 remains frozen/unread and the hybrid route is stopped. Until a holdout gate passes with a fixed candidate, these additions are protocol extensions rather than paper results and do not alter the selected replay conclusion in this section.

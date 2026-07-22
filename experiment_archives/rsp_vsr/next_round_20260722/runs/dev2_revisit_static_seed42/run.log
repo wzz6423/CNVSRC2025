@@ -1,0 +1,112 @@
+[2026-07-22T07:43:53Z] launch attempt 1/4: /hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth plasticity.mode=static feedback.every=0 feedback.noise_rate=0.0 seed=42 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability 
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/lightning_fabric/__init__.py:29: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+持续适应设备：cuda:0
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+已处理 25 条，CER=0.49609375，专家数=1
+已处理 50 条，CER=0.5261655566127498，专家数=1
+已处理 75 条，CER=0.5483443708609271，专家数=1
+已处理 100 条，CER=0.5434782608695652，专家数=1
+已处理 125 条，CER=0.5296474358974359，专家数=1
+已处理 150 条，CER=0.5263157894736842，专家数=1
+已处理 175 条，CER=0.5880971025841817，专家数=1
+已处理 200 条，CER=0.6173557278208441，专家数=1
+已处理 225 条，CER=0.6386212008895478，专家数=1
+已处理 250 条，CER=0.6567524115755627，专家数=1
+已处理 275 条，CER=0.6713357400722022，专家数=1
+已处理 300 条，CER=0.6868712922362652，专家数=1
+已处理 325 条，CER=0.692235071984895，专家数=1
+已处理 350 条，CER=0.6991765586568282，专家数=1
+已处理 375 条，CER=0.7076831917835276，专家数=1
+已处理 400 条，CER=0.7164859199854188，专家数=1
+已处理 425 条，CER=0.7080993704270887，专家数=1
+已处理 450 条，CER=0.6968655045578123，专家数=1
+已处理 475 条，CER=0.6823546989391902，专家数=1
+已处理 500 条，CER=0.6702463676563487，专家数=1
+已处理 525 条，CER=0.6630087789305666，专家数=1
+已处理 550 条，CER=0.6526746381371932，专家数=1
+已处理 575 条，CER=0.6466854302652854，专家数=1
+已处理 600 条，CER=0.6377408106099582，专家数=1
+已处理 625 条，CER=0.6298920745666631，专家数=1
+已处理 650 条，CER=0.6248296109887805，专家数=1
+已处理 675 条，CER=0.6252229299363057，专家数=1
+已处理 700 条，CER=0.6242538798249104，专家数=1
+已处理 725 条，CER=0.6217774762550882，专家数=1
+已处理 750 条，CER=0.6192253188474256，专家数=1
+已处理 775 条，CER=0.6163658132252717，专家数=1
+已处理 800 条，CER=0.6132419885518547，专家数=1
+{
+  "samples": 804,
+  "cer": 0.6127466402984404,
+  "edits": 13633,
+  "characters": 22249,
+  "mean_reliability": 0.7939830239368463,
+  "updates": {
+    "skipped": 804
+  },
+  "attempted_updates": 0,
+  "accepted_update_rate": 0.0,
+  "timing": {
+    "total_video_load_seconds": 39.54331727325916,
+    "total_process_seconds": 1227.7071057148278,
+    "total_seconds": 1267.3085965663195,
+    "mean_video_load_seconds": 0.04918323043937707,
+    "mean_process_seconds": 1.5269988877050096,
+    "mean_total_seconds": 1.5762544733411934
+  },
+  "domains": {
+    "015": {
+      "cer": 0.5332588929653852,
+      "edits": 3343,
+      "characters": 6269,
+      "samples": 308
+    },
+    "098": {
+      "cer": 0.7877515742684282,
+      "edits": 6380,
+      "characters": 8099,
+      "samples": 253
+    },
+    "133": {
+      "cer": 0.49612993274965106,
+      "edits": 3910,
+      "characters": 7881,
+      "samples": 243
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "signature_motion_order": 2,
+    "route_counts": [
+      804
+    ],
+    "accepted_updates": [
+      0
+    ],
+    "prototype_counts": [
+      1
+    ],
+    "pending_shift_count": 0
+  },
+  "mode": "static",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": true,
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+    "manifest_metadata_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "451898b9f199626bd356cb109e1c358ca4edc72606d845ecc1f4f330e93337b0"
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

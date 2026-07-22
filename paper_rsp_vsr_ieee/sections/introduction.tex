@@ -10,7 +10,7 @@ This paper studies that setting with a frozen Mandarin VSR backbone and lightwei
 Our contributions are empirical and methodological:
 \begin{enumerate}
   \item We define an auditable sparse-feedback protocol for continual Mandarin VSR. Predictions are scored before adaptation, stream order and feedback positions are fixed, manifests and checkpoints are hash-locked, and comparisons use utterance-paired bootstrap intervals.
-  \item We separate two measured gains: no-feedback online adapter adaptation improves seed-42 CER by 1.72 points, while one correction every ten utterances produces a stable three-seed total gain of 2.42 points over the static model.
+  \item We separate two measured gains: no-feedback online adapter adaptation improves the three-seed mean CER by 1.59 points over the static model, while one correction every ten utterances improves the matched three-seed mean by a further 0.832 points, for a 2.42-point total gain.
   \item We provide a negative diagnostic for the current expert implementation under two routing regimes: the original expert bank collapses almost entirely to one expert, while a validation-calibrated repair over-fragments into eight experts and performs materially worse than one adapter. These pre-fix runs do not establish that dynamic experts are intrinsically ineffective.
   \item We audit where correction gradients should act. Greedy correct-span preservation is worse than whole-sequence replay. Target-conditioned CTC localization significantly beats same-mass randomized support, yet remains significantly worse than replay and is rejected by its validation gate.
 \end{enumerate}

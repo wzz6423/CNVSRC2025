@@ -8,8 +8,9 @@ Git; their final hashes and sizes are recorded under `provenance/`.
 ## Study tracks
 
 1. Strict no-feedback three-seed replication on the fixed 3,908-clip test
-   stream. Seeds 7 and 123 started from code commit `1d99eb8`; seed 42 is
-   launched only after one GPU slot becomes available.
+   stream. Seeds 7, 42, and 123 completed from code commit `1d99eb8`; their
+   verified mean CER and population standard deviation are recorded under
+   `analysis/`.
 2. Feedback-only ablation on a new hash-locked target-development split drawn
    from previously unused Chinese-LiPS train-pool speakers. Non-feedback samples
    perform prediction only; scheduled ground-truth corrections may update the

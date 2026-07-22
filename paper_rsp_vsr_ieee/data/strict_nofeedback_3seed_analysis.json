@@ -1,0 +1,727 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "seed7": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/single_adapter_nofeedback_seed7",
+      "overall": {
+        "samples": 3908,
+        "edits": 101928,
+        "characters": 149971,
+        "cer": 0.6796513992705256
+      },
+      "run_summary": {
+        "samples": 3908,
+        "cer": 0.6796513992705256,
+        "edits": 101928,
+        "characters": 149971,
+        "mean_reliability": 0.5478436685314835,
+        "updates": {
+          "skipped": 3774,
+          "accepted": 37,
+          "rolled_back": 97
+        },
+        "attempted_updates": 134,
+        "accepted_update_rate": 0.27611940298507465,
+        "timing": {
+          "total_video_load_seconds": 251.42654255405068,
+          "total_process_seconds": 8361.30200080946,
+          "total_seconds": 8613.012383192778,
+          "mean_video_load_seconds": 0.06433637219909179,
+          "mean_process_seconds": 2.1395348006165458,
+          "mean_total_seconds": 2.2039438032734844
+        },
+        "domains": {
+          "019": {
+            "cer": 0.5502674530242765,
+            "edits": 4012,
+            "characters": 7291,
+            "samples": 171
+          },
+          "169": {
+            "cer": 0.6407700709994538,
+            "edits": 4693,
+            "characters": 7324,
+            "samples": 201
+          },
+          "102": {
+            "cer": 0.9497164461247637,
+            "edits": 7536,
+            "characters": 7935,
+            "samples": 206
+          },
+          "143": {
+            "cer": 0.5857504928189242,
+            "edits": 4160,
+            "characters": 7102,
+            "samples": 161
+          },
+          "199": {
+            "cer": 0.6874670879410216,
+            "edits": 5222,
+            "characters": 7596,
+            "samples": 173
+          },
+          "158": {
+            "cer": 0.5184751496226906,
+            "edits": 3985,
+            "characters": 7686,
+            "samples": 191
+          },
+          "078": {
+            "cer": 0.7728401516141681,
+            "edits": 5913,
+            "characters": 7651,
+            "samples": 162
+          },
+          "197": {
+            "cer": 0.5514323883033991,
+            "edits": 3715,
+            "characters": 6737,
+            "samples": 163
+          },
+          "027": {
+            "cer": 0.7572933549432739,
+            "edits": 5607,
+            "characters": 7404,
+            "samples": 144
+          },
+          "081": {
+            "cer": 0.4755986662625038,
+            "edits": 3138,
+            "characters": 6598,
+            "samples": 181
+          },
+          "007": {
+            "cer": 0.6571787358727501,
+            "edits": 4710,
+            "characters": 7167,
+            "samples": 168
+          },
+          "024": {
+            "cer": 0.4896424735307657,
+            "edits": 3191,
+            "characters": 6517,
+            "samples": 255
+          },
+          "074": {
+            "cer": 0.7289719626168224,
+            "edits": 5148,
+            "characters": 7062,
+            "samples": 188
+          },
+          "141": {
+            "cer": 0.8817477284874399,
+            "edits": 6599,
+            "characters": 7484,
+            "samples": 200
+          },
+          "033": {
+            "cer": 0.8004154919127467,
+            "edits": 5394,
+            "characters": 6739,
+            "samples": 192
+          },
+          "182": {
+            "cer": 0.8397380665173186,
+            "edits": 4873,
+            "characters": 5803,
+            "samples": 144
+          },
+          "041": {
+            "cer": 0.6638185032410135,
+            "edits": 4506,
+            "characters": 6788,
+            "samples": 222
+          },
+          "112": {
+            "cer": 0.4912160307438924,
+            "edits": 3579,
+            "characters": 7286,
+            "samples": 195
+          },
+          "040": {
+            "cer": 0.6203366058906031,
+            "edits": 4423,
+            "characters": 7130,
+            "samples": 181
+          },
+          "131": {
+            "cer": 0.6710258645742516,
+            "edits": 4618,
+            "characters": 6882,
+            "samples": 145
+          },
+          "130": {
+            "cer": 0.8866349980742072,
+            "edits": 6906,
+            "characters": 7789,
+            "samples": 265
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            3908
+          ],
+          "accepted_updates": [
+            37
+          ],
+          "prototype_counts": [
+            38
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7ca7116f9e9e58f80d5bfdef0b6c01c522928c6e1f02d28f8733aee969713e29",
+          "manifest_metadata_sha256": "0a105205c6ae780c91039aacb354ac60780f05f2039e4fae0c328d6152e66bbd",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "b7aa9fa4c83703436c364cc08e8fa5e84639da51682ef9c66f43709e16bf384b"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      }
+    },
+    "seed42": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/single_adapter_nofeedback_seed42",
+      "overall": {
+        "samples": 3908,
+        "edits": 101357,
+        "characters": 149971,
+        "cer": 0.6758439965059911
+      },
+      "run_summary": {
+        "samples": 3908,
+        "cer": 0.6758439965059911,
+        "edits": 101357,
+        "characters": 149971,
+        "mean_reliability": 0.5453339491205963,
+        "updates": {
+          "skipped": 3778,
+          "accepted": 37,
+          "rolled_back": 93
+        },
+        "attempted_updates": 130,
+        "accepted_update_rate": 0.2846153846153846,
+        "timing": {
+          "total_video_load_seconds": 236.99668018892407,
+          "total_process_seconds": 7702.058242633939,
+          "total_seconds": 7939.348640486598,
+          "mean_video_load_seconds": 0.06064398162459674,
+          "mean_process_seconds": 1.9708439720148256,
+          "mean_total_seconds": 2.0315631116905317
+        },
+        "domains": {
+          "019": {
+            "cer": 0.5517761623919901,
+            "edits": 4023,
+            "characters": 7291,
+            "samples": 171
+          },
+          "169": {
+            "cer": 0.6379027853631896,
+            "edits": 4672,
+            "characters": 7324,
+            "samples": 201
+          },
+          "102": {
+            "cer": 0.9558916194076874,
+            "edits": 7585,
+            "characters": 7935,
+            "samples": 206
+          },
+          "143": {
+            "cer": 0.5881441847366939,
+            "edits": 4177,
+            "characters": 7102,
+            "samples": 161
+          },
+          "199": {
+            "cer": 0.6844391785150079,
+            "edits": 5199,
+            "characters": 7596,
+            "samples": 173
+          },
+          "158": {
+            "cer": 0.5128805620608899,
+            "edits": 3942,
+            "characters": 7686,
+            "samples": 191
+          },
+          "078": {
+            "cer": 0.7746699777806823,
+            "edits": 5927,
+            "characters": 7651,
+            "samples": 162
+          },
+          "197": {
+            "cer": 0.5429716491019742,
+            "edits": 3658,
+            "characters": 6737,
+            "samples": 163
+          },
+          "027": {
+            "cer": 0.7583738519719071,
+            "edits": 5615,
+            "characters": 7404,
+            "samples": 144
+          },
+          "081": {
+            "cer": 0.4707487117308275,
+            "edits": 3106,
+            "characters": 6598,
+            "samples": 181
+          },
+          "007": {
+            "cer": 0.6539695828101019,
+            "edits": 4687,
+            "characters": 7167,
+            "samples": 168
+          },
+          "024": {
+            "cer": 0.48411845941384074,
+            "edits": 3155,
+            "characters": 6517,
+            "samples": 255
+          },
+          "074": {
+            "cer": 0.7172189181534976,
+            "edits": 5065,
+            "characters": 7062,
+            "samples": 188
+          },
+          "141": {
+            "cer": 0.8784072688401924,
+            "edits": 6574,
+            "characters": 7484,
+            "samples": 200
+          },
+          "033": {
+            "cer": 0.7916604837512984,
+            "edits": 5335,
+            "characters": 6739,
+            "samples": 192
+          },
+          "182": {
+            "cer": 0.8230225745304153,
+            "edits": 4776,
+            "characters": 5803,
+            "samples": 144
+          },
+          "041": {
+            "cer": 0.657631113730112,
+            "edits": 4464,
+            "characters": 6788,
+            "samples": 222
+          },
+          "112": {
+            "cer": 0.4858632994784518,
+            "edits": 3540,
+            "characters": 7286,
+            "samples": 195
+          },
+          "040": {
+            "cer": 0.6201963534361852,
+            "edits": 4422,
+            "characters": 7130,
+            "samples": 181
+          },
+          "131": {
+            "cer": 0.6621621621621622,
+            "edits": 4557,
+            "characters": 6882,
+            "samples": 145
+          },
+          "130": {
+            "cer": 0.8830401848761074,
+            "edits": 6878,
+            "characters": 7789,
+            "samples": 265
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            3908
+          ],
+          "accepted_updates": [
+            37
+          ],
+          "prototype_counts": [
+            38
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7ca7116f9e9e58f80d5bfdef0b6c01c522928c6e1f02d28f8733aee969713e29",
+          "manifest_metadata_sha256": "0a105205c6ae780c91039aacb354ac60780f05f2039e4fae0c328d6152e66bbd",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "114d0cfb4dbea2a9eed525f2752224affa9ebde605607de439520b2bac58a330"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      }
+    },
+    "seed123": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/single_adapter_nofeedback_seed123",
+      "overall": {
+        "samples": 3908,
+        "edits": 101365,
+        "characters": 149971,
+        "cer": 0.6758973401524294
+      },
+      "run_summary": {
+        "samples": 3908,
+        "cer": 0.6758973401524294,
+        "edits": 101365,
+        "characters": 149971,
+        "mean_reliability": 0.5469502726247665,
+        "updates": {
+          "skipped": 3762,
+          "accepted": 26,
+          "rolled_back": 120
+        },
+        "attempted_updates": 146,
+        "accepted_update_rate": 0.1780821917808219,
+        "timing": {
+          "total_video_load_seconds": 261.99078023061156,
+          "total_process_seconds": 8457.262249637395,
+          "total_seconds": 8719.545003458858,
+          "mean_video_load_seconds": 0.06703960599555055,
+          "mean_process_seconds": 2.1640896237557308,
+          "mean_total_seconds": 2.2312039415196665
+        },
+        "domains": {
+          "019": {
+            "cer": 0.5502674530242765,
+            "edits": 4012,
+            "characters": 7291,
+            "samples": 171
+          },
+          "169": {
+            "cer": 0.6305297651556526,
+            "edits": 4618,
+            "characters": 7324,
+            "samples": 201
+          },
+          "102": {
+            "cer": 0.9352236925015753,
+            "edits": 7421,
+            "characters": 7935,
+            "samples": 206
+          },
+          "143": {
+            "cer": 0.5839200225288651,
+            "edits": 4147,
+            "characters": 7102,
+            "samples": 161
+          },
+          "199": {
+            "cer": 0.6831226961558715,
+            "edits": 5189,
+            "characters": 7596,
+            "samples": 173
+          },
+          "158": {
+            "cer": 0.5205568566224303,
+            "edits": 4001,
+            "characters": 7686,
+            "samples": 191
+          },
+          "078": {
+            "cer": 0.7700954123643968,
+            "edits": 5892,
+            "characters": 7651,
+            "samples": 162
+          },
+          "197": {
+            "cer": 0.546237197565682,
+            "edits": 3680,
+            "characters": 6737,
+            "samples": 163
+          },
+          "027": {
+            "cer": 0.7576985413290114,
+            "edits": 5610,
+            "characters": 7404,
+            "samples": 144
+          },
+          "081": {
+            "cer": 0.4737799333131252,
+            "edits": 3126,
+            "characters": 6598,
+            "samples": 181
+          },
+          "007": {
+            "cer": 0.6492256174131436,
+            "edits": 4653,
+            "characters": 7167,
+            "samples": 168
+          },
+          "024": {
+            "cer": 0.4819702317017032,
+            "edits": 3141,
+            "characters": 6517,
+            "samples": 255
+          },
+          "074": {
+            "cer": 0.7267063154913622,
+            "edits": 5132,
+            "characters": 7062,
+            "samples": 188
+          },
+          "141": {
+            "cer": 0.8814804917156601,
+            "edits": 6597,
+            "characters": 7484,
+            "samples": 200
+          },
+          "033": {
+            "cer": 0.8011574417569373,
+            "edits": 5399,
+            "characters": 6739,
+            "samples": 192
+          },
+          "182": {
+            "cer": 0.8175081854213337,
+            "edits": 4744,
+            "characters": 5803,
+            "samples": 144
+          },
+          "041": {
+            "cer": 0.6592516205067767,
+            "edits": 4475,
+            "characters": 6788,
+            "samples": 222
+          },
+          "112": {
+            "cer": 0.49107878122426574,
+            "edits": 3578,
+            "characters": 7286,
+            "samples": 195
+          },
+          "040": {
+            "cer": 0.6187938288920056,
+            "edits": 4412,
+            "characters": 7130,
+            "samples": 181
+          },
+          "131": {
+            "cer": 0.6750944492879977,
+            "edits": 4646,
+            "characters": 6882,
+            "samples": 145
+          },
+          "130": {
+            "cer": 0.8848375914751573,
+            "edits": 6892,
+            "characters": 7789,
+            "samples": 265
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            3908
+          ],
+          "accepted_updates": [
+            26
+          ],
+          "prototype_counts": [
+            27
+          ],
+          "pending_shift_count": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "7ca7116f9e9e58f80d5bfdef0b6c01c522928c6e1f02d28f8733aee969713e29",
+          "manifest_metadata_sha256": "0a105205c6ae780c91039aacb354ac60780f05f2039e4fae0c328d6152e66bbd",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "3c40cd14c1d8a11e4e8246c8e1980ccc04eea085bc953114362cbaafb5e305e4"
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      }
+    }
+  },
+  "comparisons": {},
+  "seed_groups": {
+    "strict_nofeedback": {
+      "experiments": [
+        "seed7",
+        "seed42",
+        "seed123"
+      ],
+      "count": 3,
+      "values": [
+        0.6796513992705256,
+        0.6758439965059911,
+        0.6758973401524294
+      ],
+      "mean": 0.6771309119763154,
+      "population_variance": 3.1769023575735324e-06,
+      "population_std": 0.0017823867025910881
+    }
+  },
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 133,
+      "B": 255,
+      "C": 222,
+      "A2": 132
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

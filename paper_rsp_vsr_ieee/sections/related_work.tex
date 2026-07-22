@@ -3,7 +3,7 @@
 
 \subsection{Mandarin Visual Speech Recognition}
 
-Large-scale VSR systems use 3D convolutional visual front ends and Transformer or Conformer sequence models~\cite{ma2022visual}. Chinese VSR adds a large character vocabulary and severe visual ambiguity. Chinese-LiPS provides 100.84 hours from 207 speakers, including fixed validation and test splits of 1,959 and 3,908 clips~\cite{zhao2025chineselips}. We use its lip video and transcript channels only. The task is cross-dataset deployment: the source checkpoint is fixed before Chinese-LiPS adaptation, and no Chinese-LiPS training sample is used by the online learner.
+Large-scale VSR systems use 3D convolutional visual front ends and Transformer or Conformer sequence models~\cite{ma2022visual}. Chinese VSR adds a large character vocabulary and severe visual ambiguity. Chinese-LiPS provides 100.84 hours from 207 speakers, including fixed validation and test splits of 1,959 and 3,908 clips~\cite{zhao2025chineselips}. We use its lip video and transcript channels only. The task is cross-dataset deployment: the source checkpoint is fixed before Chinese-LiPS adaptation. Its publicly documented training inventory does not list Chinese-LiPS; we do not treat that inventory as a sample-level absolute proof of non-overlap. Subsequent target-dev2 and target-holdout2 streams are a separate target-stream protocol that reuses isolated speakers from the official Chinese-LiPS train pool under a prequential evaluation order.
 
 \subsection{VSR Personalization}
 

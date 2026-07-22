@@ -1,0 +1,76 @@
+{
+  "samples": 804,
+  "cer": 0.6032181221627938,
+  "edits": 13421,
+  "characters": 22249,
+  "mean_reliability": 0.5589015114345703,
+  "updates": {
+    "skipped": 724,
+    "accepted": 78,
+    "rolled_back": 2
+  },
+  "attempted_updates": 80,
+  "accepted_update_rate": 0.975,
+  "timing": {
+    "total_video_load_seconds": 43.894292660057545,
+    "total_process_seconds": 1544.679618485272,
+    "total_seconds": 1588.6336409971118,
+    "mean_video_load_seconds": 0.05459489136823078,
+    "mean_process_seconds": 1.9212433065737213,
+    "mean_total_seconds": 1.9759124888023778
+  },
+  "domains": {
+    "015": {
+      "cer": 0.5185835061413303,
+      "edits": 3251,
+      "characters": 6269,
+      "samples": 308
+    },
+    "098": {
+      "cer": 0.7815779725892086,
+      "edits": 6330,
+      "characters": 8099,
+      "samples": 253
+    },
+    "133": {
+      "cer": 0.48724781119147315,
+      "edits": 3840,
+      "characters": 7881,
+      "samples": 243
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "signature_motion_order": 2,
+    "route_counts": [
+      804
+    ],
+    "accepted_updates": [
+      78
+    ],
+    "prototype_counts": [
+      79
+    ],
+    "pending_shift_count": 0
+  },
+  "mode": "single_adapter",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": false,
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
+    "manifest_metadata_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "18c7c55f2310e0f172b8bbc3a9aa7960411b7cc98f3a75cbf01b38e24b362b20"
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

@@ -1,0 +1,5 @@
+started_at=2026-07-22T05:32:16Z
+git_commit=1d99eb8bb161368329c0c2f59e1f89615d1dea68
+gpu_id=0
+python=Python 3.10.20
+command=/hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_test_model_vocab_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth plasticity.mode=single_adapter feedback.every=0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability seed=7 

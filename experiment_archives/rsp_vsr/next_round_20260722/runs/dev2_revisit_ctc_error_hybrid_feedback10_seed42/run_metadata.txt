@@ -1,0 +1,5 @@
+started_at=2026-07-22T06:47:21Z
+git_commit=353c47dc37351cad410139cbacbd69b5c0e0b14e
+gpu_id=0
+python=Python 3.10.20
+command=/hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev2_revisit_015_098_133_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth plasticity.mode=single_adapter plasticity.feedback_update_strategy=ctc_error_hybrid plasticity.non_feedback_updates_enabled=true plasticity.feedback_local.error_target_weight=1.0 plasticity.feedback_local.insertion_blank_weight=1.0 plasticity.feedback_local.matched_kl_weight=0.5 plasticity.feedback_local.random_control_seed=42 feedback.every=10 feedback.noise_rate=0.0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability seed=42 

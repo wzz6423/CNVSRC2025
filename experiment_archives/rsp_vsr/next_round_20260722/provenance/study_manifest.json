@@ -42,6 +42,47 @@
       "manifest_sidecar_sha256": "0a15e1f2bd0ec6284b9b1df1b924a748a46356be1682c9975c126577f93edc17"
     }
   },
+  "analysis_artifacts": [
+    {
+      "path": "analysis/dev2_update_source_analysis.json",
+      "sha256": "4c4d2dbcd2de25a0f85da13afd8449c617fd9962d866388002bea821814ccb60",
+      "scope": "target_dev2_development_only"
+    },
+    {
+      "path": "analysis/dev2_hybrid_analysis.json",
+      "sha256": "e81c5bbb6d812dff92987053551fcc281cb3bdb897b4f9d3a30a8277b5d6a0db",
+      "scope": "target_dev2_development_only"
+    },
+    {
+      "path": "analysis/dev2_static_corrected_analysis.json",
+      "sha256": "0eccc9cb6913fa68170369bfb36f7bb7de43d43fc182dbc43d54b6cca54d88a3",
+      "scope": "target_dev2_development_only"
+    },
+    {
+      "path": "analysis/strict_nofeedback_3seed_analysis.json",
+      "sha256": "068d6e6a0a8ac826dec64abe9dedba5446222b33c9912b154f0f648a011615d7",
+      "scope": "strict_test_replication"
+    }
+  ],
+  "decisions": [
+    {
+      "name": "target_dev2_hybrid_gate",
+      "status": "no_go",
+      "candidate_minus_full_cer": 0.002966425457323925,
+      "candidate_minus_full_ci_95": [-0.0011502113686500438, 0.006477716978634299],
+      "candidate_minus_random_cer": -0.04040631039597285,
+      "candidate_minus_random_ci_95": [-0.04892561991115201, -0.03262577205382266],
+      "holdout2_unlocked": false
+    },
+    {
+      "name": "strict_nofeedback_3seed_replication",
+      "status": "completed",
+      "seeds": [7, 42, 123],
+      "mean_cer": 0.6771309119763154,
+      "population_variance": 0.0000031769023575735324,
+      "population_std": 0.0017823867025910881
+    }
+  ],
   "runs": [
     {
       "name": "single_adapter_nofeedback_seed7",
@@ -50,7 +91,10 @@
       "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
       "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed7",
       "local_path": "runs/single_adapter_nofeedback_seed7",
-      "status": "running"
+      "status": "completed",
+      "completed_at": "2026-07-22T07:56:03Z",
+      "samples": 3908,
+      "cer": 0.6796513992705256
     },
     {
       "name": "single_adapter_nofeedback_seed123",
@@ -59,7 +103,10 @@
       "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
       "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed123",
       "local_path": "runs/single_adapter_nofeedback_seed123",
-      "status": "running"
+      "status": "completed",
+      "completed_at": "2026-07-22T07:57:49Z",
+      "samples": 3908,
+      "cer": 0.6758973401524294
     },
     {
       "name": "single_adapter_nofeedback_seed42",
@@ -68,7 +115,12 @@
       "code_commit": "1d99eb8bb161368329c0c2f59e1f89615d1dea68",
       "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_test_strict_nofeedback_3seed/single_adapter_nofeedback_seed42",
       "local_path": "runs/single_adapter_nofeedback_seed42",
-      "status": "queued"
+      "status": "completed",
+      "started_at": "2026-07-22T07:58:36Z",
+      "completed_at": "2026-07-22T10:11:07Z",
+      "gpu_id": 0,
+      "samples": 3908,
+      "cer": 0.6758439965059911
     },
     {
       "name": "dev2_revisit_full_replay_feedback10_seed42",
@@ -77,7 +129,10 @@
       "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
       "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_full_replay_feedback10_seed42",
       "local_path": "runs/dev2_revisit_full_replay_feedback10_seed42",
-      "status": "running"
+      "status": "completed",
+      "completed_at": "2026-07-22T06:31:06Z",
+      "samples": 804,
+      "cer": 0.6010607218301947
     },
     {
       "name": "dev2_revisit_feedback_only_feedback10_seed42",
@@ -86,28 +141,52 @@
       "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
       "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_feedback_only_feedback10_seed42",
       "local_path": "runs/dev2_revisit_feedback_only_feedback10_seed42",
-      "status": "running"
+      "status": "completed",
+      "completed_at": "2026-07-22T06:30:06Z",
+      "samples": 804,
+      "cer": 0.6032181221627938
     },
     {
       "name": "dev2_revisit_ctc_error_hybrid_feedback10_seed42",
       "track": "target_dev2",
       "seed": 42,
       "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
-      "status": "queued"
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_feedback10_seed42",
+      "local_path": "runs/dev2_revisit_ctc_error_hybrid_feedback10_seed42",
+      "status": "completed",
+      "started_at": "2026-07-22T06:47:21Z",
+      "completed_at": "2026-07-22T07:18:24Z",
+      "gpu_id": 0,
+      "samples": 804,
+      "cer": 0.6040271472875185
     },
     {
       "name": "dev2_revisit_ctc_error_hybrid_random_feedback10_seed42",
       "track": "target_dev2",
       "seed": 42,
       "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
-      "status": "queued"
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42",
+      "local_path": "runs/dev2_revisit_ctc_error_hybrid_random_feedback10_seed42",
+      "status": "completed",
+      "started_at": "2026-07-22T06:47:21Z",
+      "completed_at": "2026-07-22T07:19:24Z",
+      "gpu_id": 1,
+      "samples": 804,
+      "cer": 0.6444334576834914
     },
     {
       "name": "dev2_revisit_static_seed42",
       "track": "target_dev2",
       "seed": 42,
       "code_commit": "353c47dc37351cad410139cbacbd69b5c0e0b14e",
-      "status": "queued"
+      "server_path": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev2_next_round_353c47d/dev2_revisit_static_seed42",
+      "local_path": "runs/dev2_revisit_static_seed42",
+      "status": "completed",
+      "started_at": "2026-07-22T07:43:53Z",
+      "completed_at": "2026-07-22T08:05:56Z",
+      "gpu_id": 1,
+      "samples": 804,
+      "cer": 0.6127466402984404
     }
   ]
 }
