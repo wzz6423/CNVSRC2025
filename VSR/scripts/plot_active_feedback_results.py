@@ -251,7 +251,7 @@ def write_source_data(path, data):
         )
 
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.writer(handle)
+        writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(("panel", "method", "metric", "point", "ci_lower", "ci_upper"))
         writer.writerows(rows)
 

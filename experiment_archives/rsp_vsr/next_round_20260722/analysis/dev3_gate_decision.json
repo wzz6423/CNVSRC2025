@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "study_id": "rsp_vsr_target_dev3_active_feedback",
+  "scope": "target_dev3_development_only",
+  "generated_at_utc": "2026-07-23T02:17:13Z",
+  "code_commit": "f27a819a02346c91a0b697830ea4b8348b6e1d1f",
+  "analysis_artifact": {
+    "path": "analysis/dev3_active_feedback_analysis.json",
+    "sha256": "e3da525d17d01fa38e2920a42a2a33df54e98d136a1c0fb090b65876094927cd",
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 42
+  },
+  "strict_acceptance": {
+    "all_six_runs_accepted": true,
+    "samples_per_run": 758,
+    "attempt_per_run": 1,
+    "history_rows_per_run": 31,
+    "checkpoint_files_per_run": 3,
+    "final_checkpoint_processed_samples": 758,
+    "error_count_per_run": 0,
+    "manifest_sha256": "e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de",
+    "manifest_sidecar_sha256": "2b731e12d7f1b87f91d3fa047f10ec3cb1051427dd937838a779869c29c52e64"
+  },
+  "criteria": {
+    "uncertainty_vs_periodic_cer": {
+      "requirement": "candidate_minus_baseline <= -0.003 and ci_95.upper < 0",
+      "candidate_minus_baseline": -0.0027151211361737676,
+      "ci_95": {
+        "lower": -0.006846107955170566,
+        "upper": 0.0014739557430320125
+      },
+      "materiality_passed": false,
+      "confidence_interval_passed": false,
+      "passed": false
+    },
+    "uncertainty_vs_random_cer": {
+      "requirement": "candidate_minus_baseline < 0 and ci_95.upper < 0",
+      "candidate_minus_baseline": 0.00020885547201336674,
+      "ci_95": {
+        "lower": -0.004157857032423312,
+        "upper": 0.0045425122683191675
+      },
+      "passed": false
+    },
+    "uncertainty_vs_random_query_true_error_rate": {
+      "requirement": "ci_95.lower > 0",
+      "candidate_minus_baseline": -0.013333333333333334,
+      "candidate_error_rate": 0.9733333333333334,
+      "baseline_error_rate": 0.9866666666666667,
+      "ci_95": {
+        "lower": -0.04,
+        "upper": 0.0
+      },
+      "passed": false
+    },
+    "matched_query_budget": {
+      "requirement": "periodic, random, and uncertainty each issue exactly 75 policy queries",
+      "expected_queries": 75,
+      "observed_queries": {
+        "periodic": 75,
+        "random": 75,
+        "uncertainty": 75
+      },
+      "passed": true
+    },
+    "uncertainty_vs_periodic_static_corrected_forgetting": {
+      "requirement": "revisit_forgetting_difference.ci_95.upper <= 0",
+      "candidate_minus_baseline": -0.0011388970000274772,
+      "ci_95": {
+        "lower": -0.010394217171344065,
+        "upper": 0.007927275377934214
+      },
+      "passed": false
+    }
+  },
+  "decision": "NO_GO",
+  "all_conditions_passed": false,
+  "holdout2_unlocked": false,
+  "holdout2_results_read": false,
+  "follow_up": {
+    "run_holdout2": false,
+    "add_active_query_seeds": false,
+    "tune_or_sweep_query_policy": false
+  }
+}

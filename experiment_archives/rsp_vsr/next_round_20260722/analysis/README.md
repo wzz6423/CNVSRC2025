@@ -21,3 +21,11 @@ hash, history-continuity, checkpoint, and error-log validation.
 - `strict_nofeedback_3seed_analysis.json`: verified strict-test replication of
   no-feedback single-adapter adaptation for seeds 7, 42, and 123. Mean CER is
   0.6771309119763154 with population standard deviation 0.0017823867025910881.
+- `dev3_active_feedback_analysis.json`: verified development-only six-arm
+  comparison on the 758-clip target-dev3 stream. All adaptive arms improve CER
+  over static, but uncertainty does not significantly outperform periodic or
+  random querying and does not enrich the queried true-error rate over random.
+- `dev3_gate_decision.json`: machine-readable evaluation of the five
+  pre-registered active-query conditions. Only the matched 75-query budget
+  passes; the final decision is `NO_GO`, so holdout2 remains frozen and unread.
+  SHA-256: `03aad43ab95ded3e9c822f23c2c58a7b350079033c549ad65385505dcb13fefd`.

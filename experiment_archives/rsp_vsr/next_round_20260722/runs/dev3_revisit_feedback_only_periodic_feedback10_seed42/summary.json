@@ -1,0 +1,106 @@
+{
+  "samples": 758,
+  "cer": 0.6954887218045113,
+  "edits": 16650,
+  "characters": 23940,
+  "mean_reliability": 0.5262281598612188,
+  "updates": {
+    "skipped": 683,
+    "accepted": 72,
+    "rolled_back": 3
+  },
+  "attempted_updates": 75,
+  "accepted_update_rate": 0.96,
+  "timing": {
+    "total_video_load_seconds": 49.44744484126568,
+    "total_process_seconds": 1453.4847475662827,
+    "total_seconds": 1502.991767693311,
+    "mean_video_load_seconds": 0.06523409609665656,
+    "mean_process_seconds": 1.9175260521982622,
+    "mean_total_seconds": 1.9828387436587216
+  },
+  "domains": {
+    "120": {
+      "cer": 0.3907229419139156,
+      "edits": 2805,
+      "characters": 7179,
+      "samples": 269
+    },
+    "176": {
+      "cer": 0.664898798571274,
+      "edits": 6143,
+      "characters": 9239,
+      "samples": 247
+    },
+    "183": {
+      "cer": 1.0239298059026856,
+      "edits": 7702,
+      "characters": 7522,
+      "samples": 242
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "signature_motion_order": 2,
+    "route_counts": [
+      758
+    ],
+    "accepted_updates": [
+      72
+    ],
+    "prototype_counts": [
+      73
+    ],
+    "pending_shift_count": 0
+  },
+  "mode": "single_adapter",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": false,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 10,
+    "total_samples": 758,
+    "planned_budget": 75,
+    "policy_queries": 75,
+    "manifest_queries": 0,
+    "total_queries": 75,
+    "query_rate": 0.09894459102902374,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "not_periodic_slot": 675,
+      "periodic_slot": 75,
+      "partial_window": 8
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev3_revisit_120_176_183_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de",
+    "manifest_metadata_sha256": "2b731e12d7f1b87f91d3fa047f10ec3cb1051427dd937838a779869c29c52e64",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "449ca9f6462e8fed5cdcf6692657029404dde1b4e942bb62d01fee767753b9f3"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "adapter_bank_parameters": 75265,
+    "updatable_parameters": 75265,
+    "updatable_fraction_of_base": 0.00026476077835623467,
+    "samples_per_process_second": 0.5215053004644159,
+    "latest_checkpoint_bytes": 949271,
+    "retained_checkpoint_bytes": 2847685,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1918350848
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev3_active_feedback_f27a819/dev3_revisit_feedback_only_periodic_feedback10_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev3_active_feedback_f27a819/dev3_revisit_feedback_only_periodic_feedback10_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev3_active_feedback_f27a819/dev3_revisit_feedback_only_periodic_feedback10_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev3_active_feedback_f27a819/dev3_revisit_feedback_only_periodic_feedback10_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

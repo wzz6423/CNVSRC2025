@@ -29,6 +29,13 @@ not described as the official validation split. They must not be described as
 test results. A disjoint train-pool holdout is already hash-locked and remains
 untouched until the pre-registered development gate selects a fixed candidate.
 
+All six target-dev3 arms completed and passed strict integrity acceptance at
+758 samples. The active-query gate is `NO_GO`: uncertainty did not meet the
+material CER threshold against periodic, did not significantly beat random,
+did not enrich queried true errors, and did not establish non-degraded
+static-corrected forgetting. No target-holdout2 result was read, and no active
+query seed expansion or policy sweep was run.
+
 ## Layout
 
 - `provenance/study_manifest.json`: immutable study inputs, server paths, code
@@ -37,10 +44,14 @@ untouched until the pre-registered development gate selects a fixed candidate.
   metric history, summaries, and adaptation checkpoints.
 - `analysis/`: paired bootstrap, decision, and resource summaries generated
   only after a run passes integrity checks.
+- `analysis/dev3_gate_decision.json`: five-condition target-dev3 gate outcome
+  and the explicit frozen/unread holdout state.
 - `provenance/dev3_audit.json`: hash, disjointness, video-existence, and
   deterministic-regeneration audit for target-dev3.
 - `provenance/launch_dev3_wave.sh`: exact three-wave server launcher; requires
   `DEV3_CODE_COMMIT` and refuses occupied GPUs or pre-existing run directories.
+- `provenance/run_artifacts.sha256`: content hashes for archived run metadata,
+  logs, streams, histories, summaries, and retained checkpoints.
 
 The 1.1-GiB source checkpoint and raw videos are not duplicated here. Their
 server path and SHA-256 are recorded instead.
