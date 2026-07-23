@@ -40,6 +40,21 @@ class ResidualBottleneckAdapter(nn.Module):
         return features + self.scale * delta
 
 
+class FeatureWiseAffineAdapter(nn.Module):
+    def __init__(self, feature_dim):
+        super().__init__()
+        self.feature_dim = int(feature_dim)
+        self.scale_delta = nn.Parameter(torch.zeros(self.feature_dim))
+        self.shift = nn.Parameter(torch.zeros(self.feature_dim))
+
+    def forward(self, features):
+        if features.size(-1) != self.feature_dim:
+            raise ValueError(
+                f"adapter 特征维度应为 {self.feature_dim}，实际为 {features.size(-1)}"
+            )
+        return features * (1.0 + self.scale_delta) + self.shift
+
+
 def sequence_signature(features, motion_order=0):
     if features.ndim != 3 or features.size(0) != 1:
         raise ValueError("路由签名当前只支持形状为 [1, T, D] 的单条序列")
@@ -78,6 +93,7 @@ class ExpertBank(nn.Module):
         signature_motion_order=0,
         dropout=0.0,
         allow_growth=True,
+        adapter_type="bottleneck",
     ):
         super().__init__()
         self.feature_dim = int(feature_dim)
@@ -93,6 +109,9 @@ class ExpertBank(nn.Module):
         self.prototype_momentum = float(prototype_momentum)
         self.dropout = float(dropout)
         self.allow_growth = bool(allow_growth)
+        self.adapter_type = str(adapter_type)
+        if self.adapter_type not in {"bottleneck", "feature_film"}:
+            raise ValueError("adapter_type 仅支持 bottleneck 或 feature_film")
         if self.max_experts < 1:
             raise ValueError("专家数量上限必须大于 0")
         if self.growth_patience < 1:
@@ -118,9 +137,12 @@ class ExpertBank(nn.Module):
         return len(self.experts)
 
     def _new_adapter(self):
-        adapter = ResidualBottleneckAdapter(
-            self.feature_dim, self.bottleneck_dim, self.dropout
-        )
+        if self.adapter_type == "feature_film":
+            adapter = FeatureWiseAffineAdapter(self.feature_dim)
+        else:
+            adapter = ResidualBottleneckAdapter(
+                self.feature_dim, self.bottleneck_dim, self.dropout
+            )
         return adapter.to(self.prototypes.device)
 
     @torch.no_grad()
@@ -238,6 +260,7 @@ class ExpertBank(nn.Module):
     def summary(self):
         return {
             "expert_count": self.expert_count,
+            "adapter_type": self.adapter_type,
             "signature_motion_order": self.signature_motion_order,
             "route_counts": self.route_counts[: self.expert_count].cpu().tolist(),
             "accepted_updates": self.accepted_updates[: self.expert_count]

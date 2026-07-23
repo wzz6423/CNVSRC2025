@@ -26,7 +26,7 @@ from continual_adapt import (
 )
 from datamodule.transforms import DICT_PATH
 from espnet.nets.ctc_prefix_score import CTCPrefixScoreTH
-from plasticity.adapters import ExpertBank, sequence_signature
+from plasticity.adapters import ExpertBank, FeatureWiseAffineAdapter, sequence_signature
 from plasticity.artifacts import (
     append_metrics_history,
     prepare_metrics_history,
@@ -213,6 +213,26 @@ class EmptyReliabilityGate:
 
 def main():
     torch.manual_seed(7)
+    film = FeatureWiseAffineAdapter(feature_dim=8)
+    film_features = torch.randn(1, 5, 8)
+    film_output = film(film_features)
+    assert torch.equal(film_output, film_features)
+    assert sum(parameter.numel() for parameter in film.parameters()) == 16
+    film_output.sum().backward()
+    assert all(parameter.grad is not None for parameter in film.parameters())
+
+    film_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+        adapter_type="feature_film",
+    )
+    film_bank.ensure_experts(1)
+    assert torch.equal(film_bank(film_features.detach(), 0), film_features.detach())
+    assert sum(parameter.numel() for parameter in film_bank.parameters()) == 16
+    assert film_bank.summary()["adapter_type"] == "feature_film"
+
     scores = [0.9, 0.8, 0.7, 0.6, 0.5] * 5
     periodic = FeedbackQueryPolicy("periodic", 5, len(scores), random_seed=7)
     periodic_queries = [

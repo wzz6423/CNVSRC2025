@@ -58,6 +58,7 @@ feedback:
 plasticity:
   mode: expert_bank
   adaptation_objective: rsp
+  adapter_type: bottleneck
   adapter_bottleneck: 48
   adapter_dropout: 0.0
   max_experts: 8
