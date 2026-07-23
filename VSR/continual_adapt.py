@@ -436,6 +436,7 @@ def main(cfg: DictConfig):
     device = _resolve_device(cfg.device)
     print(f"持续适应设备：{device}")
     if device.type == "cuda":
+        torch.cuda.init()
         torch.cuda.reset_peak_memory_stats(device)
     text_transform = TextTransform()
     model = E2E(len(text_transform.token_list), cfg.model.visual_backbone)

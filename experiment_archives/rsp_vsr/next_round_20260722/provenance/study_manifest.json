@@ -32,6 +32,19 @@
       "manifest_sha256": "7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590",
       "manifest_sidecar_sha256": "6053164ebfba99b8c47dda620287f605cc452467ca83ae9e1158b3cd7c132c77"
     },
+    "target_dev3": {
+      "scope": "development_only",
+      "source_pool": "Chinese-LiPS official train split, disjoint from target_dev2 and target_holdout2",
+      "speakers": ["120", "176", "183"],
+      "segment_lengths": [135, 247, 242, 134],
+      "samples": 758,
+      "source_csv_sha256": "ea188778f5ec9b6da3a7a5e44750001ef17039545561b14331fe801f40ea7ed0",
+      "manifest_sha256": "e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de",
+      "manifest_sidecar_sha256": "2b731e12d7f1b87f91d3fa047f10ec3cb1051427dd937838a779869c29c52e64",
+      "feedback_all_false": true,
+      "cross_split_uid_overlap": 0,
+      "holdout2_results_read": false
+    },
     "target_holdout2": {
       "source_pool": "Chinese-LiPS official train split, untouched confirmation pool",
       "speakers": ["046", "001", "093"],

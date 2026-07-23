@@ -18,6 +18,10 @@ Git; their final hashes and sizes are recorded under `provenance/`.
 3. CTC-error hybrid candidate on the same target-development split. Full-sequence
    feedback replay remains the primary objective and target-conditioned CTC
    error occupancy is an auxiliary term.
+4. Budget-matched active feedback on a disjoint target-development split with
+   speakers 120/176/183. Periodic, random, and online uncertainty queries each
+   request one correction per complete ten-sample window; holdout2 remains
+   unread unless the pre-registered development gate passes.
 
 The latter two tracks are development candidates. The train pool was not used
 by the documented source checkpoint, but this reuse is a protocol change and is
@@ -33,6 +37,10 @@ untouched until the pre-registered development gate selects a fixed candidate.
   metric history, summaries, and adaptation checkpoints.
 - `analysis/`: paired bootstrap, decision, and resource summaries generated
   only after a run passes integrity checks.
+- `provenance/dev3_audit.json`: hash, disjointness, video-existence, and
+  deterministic-regeneration audit for target-dev3.
+- `provenance/launch_dev3_wave.sh`: exact three-wave server launcher; requires
+  `DEV3_CODE_COMMIT` and refuses occupied GPUs or pre-existing run directories.
 
 The 1.1-GiB source checkpoint and raw videos are not duplicated here. Their
 server path and SHA-256 are recorded instead.

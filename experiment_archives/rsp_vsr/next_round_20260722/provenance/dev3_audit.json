@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "scope": "target_dev3_development_only",
+  "generated_with_commit": "0f2dafd3e366b70b1cbded2fc9041654f37a7b24",
+  "speakers": ["120", "176", "183"],
+  "domain_sequence": ["120", "176", "183", "120"],
+  "segment_lengths": {
+    "A1": 135,
+    "B": 247,
+    "C": 242,
+    "A2": 134
+  },
+  "samples": 758,
+  "feedback_all_false": true,
+  "missing_videos": 0,
+  "cross_split_uid_overlap": {
+    "target_dev2": 0,
+    "target_holdout2": 0,
+    "validation": 0,
+    "test": 0
+  },
+  "deterministic_regeneration_byte_identical": true,
+  "files": {
+    "source_csv": {
+      "path": "dev3_source.csv",
+      "sha256": "ea188778f5ec9b6da3a7a5e44750001ef17039545561b14331fe801f40ea7ed0"
+    },
+    "manifest": {
+      "path": "dev3_manifest.jsonl",
+      "sha256": "e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de"
+    },
+    "manifest_sidecar": {
+      "path": "dev3_manifest.meta.json",
+      "sha256": "2b731e12d7f1b87f91d3fa047f10ec3cb1051427dd937838a779869c29c52e64"
+    }
+  },
+  "fixed_input_sha256": {
+    "train_csv": "a1d7a5ba8da02ab3e0284365ab9f1bde00d76657604b5453b41db6a7891c22ab",
+    "text_metadata": "bc0150e082657698019a976b3a280c23f0640df38603f658870f548fe4268bac",
+    "target_vocab": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c"
+  },
+  "holdout2_results_read": false
+}
