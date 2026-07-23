@@ -20,6 +20,8 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
 - Next-round method protocol: partial update-source comparison (feedback-only vs combined replay) plus full-replay CTC-error hybrid on hash-locked development/holdout streams; same-stream pseudo-only still required for a complete causal split. No candidate number is a confirmatory result before the holdout gate passes.
 - Target-dev2: previously unused Chinese-LiPS train-pool speakers `015/098/133`, 804 utterances, A--B--C--A 154/253/243/154, manifest SHA-256 `7defae9074e78d3893edc41bde1654b709cc59efaddb183531fecce20778e590` (development-only).
 - Target-holdout2: disjoint train-pool speakers `046/001/093`, 778 utterances, manifest SHA-256 `29b4005205e18c8a2b1fa643d0fc9fb35bbf6266692e12a4c73ee0ad42a07651`; confirmatory holdout frozen/unread until a single candidate is frozen.
+- Target-dev3: disjoint train-pool speakers `120/176/183`, 758 utterances, A--B--C--A 135/247/242/134, manifest SHA-256 `e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de` (development-only active-query gate).
+- Active-query implementation and target-dev3 protocol commit: `f27a819a02346c91a0b697830ea4b8348b6e1d1f`. Strict results and figures are admitted only after all six target-dev3 arms complete integrity checks.
 - Feedback-only/hybrid implementation commit: `353c47dc37351cad410139cbacbd69b5c0e0b14e`.
 - Target-dev2 machine-readable analysis: `data/dev2_update_source_analysis.json`, SHA-256 `4c4d2dbcd2de25a0f85da13afd8449c617fd9962d866388002bea821814ccb60`.
 - Target-dev2 hybrid analysis: `data/dev2_hybrid_analysis.json`, SHA-256 `e81c5bbb6d812dff92987053551fcc281cb3bdb897b4f9d3a30a8277b5d6a0db`.
