@@ -39,3 +39,13 @@ hash, history-continuity, checkpoint, and error-log validation.
   and promotion decision summary. The replay adapter remains the development
   incumbent; all new dev4 baselines are `NO_GO`, so holdout2 remains frozen and
   unread, with no additional seed or parameter sweep.
+- `dev5_feature_film_analysis.json`: verified development-only static, replay,
+  and Feature-FiLM comparison on the 681-clip target-dev5 stream. Feature-FiLM
+  significantly improves over static, but is significantly worse than replay
+  in overall CER and static-corrected revisit forgetting. SHA-256:
+  `f7faa3f0da3e214cd15bceba92ff0a93d73ebb69ba5e05e57e6b285e58c8afc2`.
+- `dev5_decision_resources.json`: machine-readable dev5 integrity, resource,
+  and promotion decision summary. Feature-FiLM is a development `NO_GO`; the
+  replay adapter remains the incumbent and holdout2 remains frozen and unread,
+  with no additional seed or parameter sweep. SHA-256:
+  `2e8fce06f0f38fab98e79b37f497ccaf59005624a807446111e7484a197fa07c`.

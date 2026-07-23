@@ -26,8 +26,12 @@ Git; their final hashes and sizes are recorded under `provenance/`.
    speakers 128/047/202. The U0 track compares static, BN-TENT-VSR, and ETA-VSR;
    the F10 track compares combined replay with online LoRA under the same 70
    correction positions and similar parameter counts.
+6. Feature-FiLM on a fifth disjoint development split with speakers 071/126/045.
+   Static and the 75,265-parameter replay incumbent are matched against one
+   identity-initialized 1,536-parameter visual feature scale/bias candidate under
+   the same 68 correction positions and pseudo-update protocol.
 
-Tracks 2--5 are development-only. The train pool was not used by the documented
+Tracks 2--6 are development-only. The train pool was not used by the documented
 source checkpoint, but this reuse is a protocol change and is not described as
 the official validation split. They must not be described as test results. A
 disjoint train-pool holdout is already hash-locked and remains untouched until
@@ -48,6 +52,15 @@ both CER and static-corrected revisit forgetting. The dev4 decision is therefore
 to retain replay as the development incumbent and reject all three new baseline
 configurations; holdout2 remains frozen and unread, with no extra seed or sweep.
 
+All three target-dev5 arms completed and passed final integrity acceptance at
+681 samples, with 28 history rows, three checkpoints, attempt 1, and zero
+errors. Feature-FiLM significantly improves static by 0.3442 CER points, but is
+2.8343 points worse than replay and also has significantly worse
+static-corrected revisit forgetting. Its 1,536-parameter state is about 49 times
+smaller than replay, but the pre-registered accuracy and forgetting conditions
+fail. Feature-FiLM is therefore `NO_GO`; holdout2 remains frozen and unread,
+with no extra seed or parameter sweep.
+
 ## Layout
 
 - `provenance/study_manifest.json`: immutable study inputs, server paths, code
@@ -62,12 +75,25 @@ configurations; holdout2 remains frozen and unread, with no extra seed or sweep.
   with 10,000 paired bootstrap replicates.
 - `analysis/dev4_decision_resources.json`: dev4 integrity, resource, and
   promotion decision summary.
+- `analysis/dev5_feature_film_analysis.json`: strict three-arm target-dev5
+  analysis with 10,000 paired bootstrap replicates.
+- `analysis/dev5_decision_resources.json`: dev5 integrity, resource, and
+  promotion decision summary.
 - `provenance/dev3_audit.json`: hash, disjointness, video-existence, and
   deterministic-regeneration audit for target-dev3.
 - `provenance/dev4_audit.json`: source, manifest, stream-order, vocabulary, and
   fixed-commit audit for target-dev4.
 - `provenance/audit_dev4_runs.py`: prefix/final run validator for all five
   dev4 arms.
+- `provenance/audit_dev5_runs.py`: prefix/final run validator for all three
+  dev5 arms.
+- `provenance/dev5_final_audit.json`: accepted final target-dev5 audit output.
+- `provenance/dev5_artifacts.sha256`: immutable target-dev5 analysis,
+  provenance, and accepted-run hashes.
+- `research/dev6_llm_visual_correction_landscape.md`: primary-source review of
+  LLM/VSR correction neighbors, novelty boundaries, and the staged EviCo-VSR
+  falsification plan. SHA-256:
+  `7211fa06e64a01c4ad5974e68da226984b48fc383b9ed5053f16325d3e6e1ff3`.
 - `provenance/dev4_artifacts.sha256`: immutable hashes for dev4 analyses,
   provenance inputs/tools, and accepted run artifacts; process IDs and lock
   files are intentionally excluded. Manifest SHA-256:

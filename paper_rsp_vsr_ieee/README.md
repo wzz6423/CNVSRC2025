@@ -48,6 +48,20 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
   `c2a8fb39339c0fd092e63e5eaf8eb8961ebf5e02c05a5322f94c05f5cc4ba486`;
   editable SVG and 600-dpi PNG/TIFF exports are retained beside it. Source-data
   SHA-256: `f75e895c08c73458ca1cc26410abb2b9238f8c80046cff96362e17a909a89866`.
+- Target-dev5: disjoint train-pool speakers `071/126/045`, 681 utterances,
+  A--B--C--A 115/229/223/114, manifest SHA-256
+  `8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56`
+  (development-only Feature-FiLM gate; one pre-specified seed).
+- Target-dev5 analysis: `data/dev5_feature_film_analysis.json`, SHA-256
+  `f7faa3f0da3e214cd15bceba92ff0a93d73ebb69ba5e05e57e6b285e58c8afc2`.
+  Static, replay, and Feature-FiLM CER are 60.3918%, 57.2133%, and 60.0476%.
+  Feature-FiLM minus replay is +2.8343 points, paired 95% CI
+  [+2.2991, +3.3802]; the static-corrected forgetting difference is +3.1203
+  points, CI [+1.3035, +4.9885].
+- Target-dev5 decision/resources: `data/dev5_decision_resources.json`, SHA-256
+  `2e8fce06f0f38fab98e79b37f497ccaf59005624a807446111e7484a197fa07c`.
+  Feature-FiLM is a development `NO-GO` despite its 1,536-parameter state;
+  replay remains the incumbent and holdout2 remains frozen/unread.
 - Feedback-only/hybrid implementation commit: `353c47dc37351cad410139cbacbd69b5c0e0b14e`.
 - Target-dev2 machine-readable analysis: `data/dev2_update_source_analysis.json`, SHA-256 `4c4d2dbcd2de25a0f85da13afd8449c617fd9962d866388002bea821814ccb60`.
 - Target-dev2 hybrid analysis: `data/dev2_hybrid_analysis.json`, SHA-256 `e81c5bbb6d812dff92987053551fcc281cb3bdb897b4f9d3a30a8277b5d6a0db`.
@@ -63,8 +77,8 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
   development before any confirmatory holdout2 run, and external confirmation
   still requires a provenance-resolved second real shift. The immediate matched
   baseline audit is complete, but full EATA/CoTTA-style VSR adaptations are not
-  claimed. Hybrid, active-query, BN-TENT-VSR, ETA-VSR, and online LoRA-F10 are
-  development `NO-GO`; holdout2 remains unread.
+  claimed. Hybrid, active-query, BN-TENT-VSR, ETA-VSR, online LoRA-F10, and
+  Feature-FiLM are development `NO-GO`; holdout2 remains unread.
 
 ## Build
 
