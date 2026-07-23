@@ -72,7 +72,19 @@ plasticity:
     matched_kl_weight: 0.5
     random_control_seed: ${seed}
   tent:
-    frame_selection: all
+    frame_selection: nonblank
+  eta:
+    entropy_margin: null
+    redundancy_margin: 0.05
+    momentum: 0.9
+  lora:
+    rank: 1
+    alpha: 1.0
+    projections:
+      - linear_q
+      - linear_k
+      - linear_v
+      - linear_out
   route_threshold: 0.9
   growth_patience: 6
   pending_similarity: 0.95

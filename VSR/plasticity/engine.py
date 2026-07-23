@@ -3,6 +3,7 @@ import math
 from dataclasses import asdict, dataclass
 
 import torch
+import torch.nn.functional as F
 
 from .adapters import ExpertBank, RouteDecision, sequence_signature
 from .corrections import (
@@ -21,6 +22,13 @@ from .objectives import (
     occupancy_weighted_token_loss,
     posterior_entropy,
     posterior_kl,
+)
+from .parameter_adaptation import (
+    configure_batch_norm_adaptation,
+    load_parameter_state,
+    named_lora_parameters,
+    parameter_state,
+    validate_named_parameters,
 )
 from .reliability import ReliabilityDecision, ReliabilityGate
 
@@ -78,6 +86,7 @@ class PredictionState:
     augmented_features: torch.Tensor
     base_log_probs: torch.Tensor
     clean_log_probs: torch.Tensor
+    video: torch.Tensor
 
 
 class ContinualAdaptationEngine:
@@ -115,6 +124,11 @@ class ContinualAdaptationEngine:
         non_feedback_updates_enabled=True,
         adaptation_objective="rsp",
         entropy_frame_selection="all",
+        parameter_update_mode="adapter",
+        parameter_module_names=(),
+        eta_entropy_margin=None,
+        eta_redundancy_margin=0.05,
+        eta_momentum=0.9,
     ):
         self.device = torch.device(device)
         self.base_model = base_model.to(self.device)
@@ -122,6 +136,36 @@ class ContinualAdaptationEngine:
         for parameter in self.base_model.parameters():
             parameter.requires_grad_(False)
         self.expert_bank = expert_bank.to(self.device)
+        self.parameter_update_mode = str(parameter_update_mode)
+        if self.parameter_update_mode not in {"adapter", "batch_norm", "lora"}:
+            raise ValueError("参数更新模式仅支持 adapter、batch_norm 或 lora")
+        configured_parameter_module_names = tuple(parameter_module_names)
+        if self.parameter_update_mode == "batch_norm":
+            self._named_adaptation_parameters = validate_named_parameters(
+                configure_batch_norm_adaptation(self.base_model)
+            )
+        elif self.parameter_update_mode == "lora":
+            self.base_model.eval()
+            self.base_model.requires_grad_(False)
+            self._named_adaptation_parameters = validate_named_parameters(
+                named_lora_parameters(self.base_model)
+            )
+            if not self._named_adaptation_parameters:
+                raise ValueError("LoRA 模式没有找到可更新参数")
+            for _, parameter in self._named_adaptation_parameters:
+                parameter.requires_grad_(True)
+        else:
+            self._named_adaptation_parameters = ()
+        self.parameter_module_names = configured_parameter_module_names or tuple(
+            sorted(
+                {
+                    name.rsplit(".", 1)[0]
+                    for name, _ in self._named_adaptation_parameters
+                }
+            )
+        )
+        if self.parameter_update_mode != "adapter":
+            self.expert_bank.requires_grad_(False)
         self.reliability_gate = reliability_gate
         self.decoder = decoder
         self.enabled = bool(enabled)
@@ -176,8 +220,26 @@ class ContinualAdaptationEngine:
         self.feedback_random_control_seed = int(feedback_random_control_seed)
         self.non_feedback_updates_enabled = bool(non_feedback_updates_enabled)
         self.adaptation_objective = str(adaptation_objective)
-        if self.adaptation_objective not in {"rsp", "tent_adapter"}:
-            raise ValueError("适应目标仅支持 rsp 或 tent_adapter")
+        if self.adaptation_objective not in {
+            "rsp",
+            "tent_adapter",
+            "bn_tent",
+            "eta",
+            "online_lora",
+        }:
+            raise ValueError("未知适应目标")
+        expected_parameter_mode = {
+            "rsp": "adapter",
+            "tent_adapter": "adapter",
+            "bn_tent": "batch_norm",
+            "eta": "batch_norm",
+            "online_lora": "lora",
+        }[self.adaptation_objective]
+        if self.parameter_update_mode != expected_parameter_mode:
+            raise ValueError(
+                f"适应目标 {self.adaptation_objective} 要求参数模式 "
+                f"{expected_parameter_mode}"
+            )
         self.entropy_frame_selection = str(entropy_frame_selection)
         if self.entropy_frame_selection not in {"all", "nonblank"}:
             raise ValueError("entropy_frame_selection 仅支持 all 或 nonblank")
@@ -185,7 +247,28 @@ class ContinualAdaptationEngine:
             raise ValueError("每次适应的更新步数必须大于 0")
         if self.gradient_clip <= 0:
             raise ValueError("梯度裁剪阈值必须大于 0")
+        self.eta_entropy_margin = (
+            None if eta_entropy_margin is None else float(eta_entropy_margin)
+        )
+        if self.eta_entropy_margin is not None and self.eta_entropy_margin <= 0:
+            raise ValueError("ETA entropy margin 必须大于 0")
+        self.eta_redundancy_margin = float(eta_redundancy_margin)
+        if not 0.0 <= self.eta_redundancy_margin <= 1.0:
+            raise ValueError("ETA redundancy margin 必须介于 0 和 1 之间")
+        self.eta_momentum = float(eta_momentum)
+        if not 0.0 <= self.eta_momentum < 1.0:
+            raise ValueError("ETA momentum 必须介于 0（含）和 1（不含）之间")
+        if (
+            self.adaptation_objective in {"bn_tent", "eta"}
+            and not self.non_feedback_updates_enabled
+        ):
+            raise ValueError("BN-TENT/ETA 必须启用无反馈更新")
+        self._eta_reference = None
+        self._eta_resolved_entropy_margin = None
+        self._eta_reliable_samples = 0
+        self._eta_nonredundant_samples = 0
         self._optimizers = {}
+        self._parameter_optimizer = None
 
     def _weak_view(self, video):
         augmented = video.detach().clone()
@@ -222,10 +305,100 @@ class ContinualAdaptationEngine:
         ).detach()
 
     def _adapted_features(self, frozen_features, expert_index):
+        if self.parameter_update_mode != "adapter":
+            return frozen_features
         return self.expert_bank(frozen_features, expert_index)
 
     def _log_probs(self, adapted_features):
         return self.base_model.ctc.log_softmax(adapted_features)
+
+    def _forward_parameter_model(self, video):
+        features, _ = self.base_model.encoder(video.unsqueeze(0), None)
+        return features, self._log_probs(features)
+
+    def adaptation_parameters(self):
+        if self.parameter_update_mode == "adapter":
+            if not self.enabled:
+                return ()
+            return tuple(self.expert_bank.parameters())
+        return tuple(parameter for _, parameter in self._named_adaptation_parameters)
+
+    def adaptation_summary(self):
+        return {
+            "parameter_update_mode": self.parameter_update_mode,
+            "parameter_count": sum(
+                parameter.numel() for parameter in self.adaptation_parameters()
+            ),
+            "parameter_tensors": (
+                len(tuple(self.expert_bank.parameters()))
+                if self.parameter_update_mode == "adapter" and self.enabled
+                else len(self._named_adaptation_parameters)
+            ),
+            "parameter_names": [
+                name for name, _ in self._named_adaptation_parameters
+            ],
+            "parameter_modules": list(self.parameter_module_names),
+            "eta_entropy_margin": self.eta_entropy_margin,
+            "eta_resolved_entropy_margin": self._eta_resolved_entropy_margin,
+            "eta_redundancy_margin": self.eta_redundancy_margin,
+            "eta_momentum": self.eta_momentum,
+            "eta_reference_initialized": self._eta_reference is not None,
+            "eta_reliable_samples": self._eta_reliable_samples,
+            "eta_nonredundant_samples": self._eta_nonredundant_samples,
+        }
+
+    def adaptation_state_dict(self):
+        return {
+            "parameter_update_mode": self.parameter_update_mode,
+            "parameters": parameter_state(self._named_adaptation_parameters),
+            "eta_reference": (
+                self._eta_reference.detach().cpu().clone()
+                if self._eta_reference is not None
+                else None
+            ),
+            "eta_resolved_entropy_margin": self._eta_resolved_entropy_margin,
+            "eta_reliable_samples": self._eta_reliable_samples,
+            "eta_nonredundant_samples": self._eta_nonredundant_samples,
+        }
+
+    def load_adaptation_state_dict(self, state):
+        if not isinstance(state, dict):
+            raise ValueError("checkpoint 缺少参数适应状态")
+        if state.get("parameter_update_mode") != self.parameter_update_mode:
+            raise ValueError("checkpoint 参数更新模式与当前配置不一致")
+        load_parameter_state(
+            self._named_adaptation_parameters,
+            state.get("parameters") or {},
+        )
+        eta_reference = state.get("eta_reference")
+        if eta_reference is not None:
+            if not isinstance(eta_reference, torch.Tensor) or eta_reference.ndim != 1:
+                raise ValueError("checkpoint 的 ETA reference 无效")
+            vocabulary_size = getattr(
+                getattr(self.base_model.ctc, "ctc_lo", None),
+                "out_features",
+                None,
+            )
+            if vocabulary_size is not None and eta_reference.numel() != vocabulary_size:
+                raise ValueError("checkpoint 的 ETA reference 词表维度不匹配")
+            eta_reference = eta_reference.to(self.device)
+            if not torch.isfinite(eta_reference).all():
+                raise ValueError("checkpoint 的 ETA reference 包含非有限值")
+        self._eta_reference = eta_reference
+        resolved_margin = state.get("eta_resolved_entropy_margin")
+        if resolved_margin is not None:
+            resolved_margin = float(resolved_margin)
+            if not math.isfinite(resolved_margin) or resolved_margin <= 0:
+                raise ValueError("checkpoint 的 ETA entropy margin 无效")
+        self._eta_resolved_entropy_margin = resolved_margin
+        self._eta_reliable_samples = int(state.get("eta_reliable_samples", 0))
+        self._eta_nonredundant_samples = int(
+            state.get("eta_nonredundant_samples", 0)
+        )
+        if self._eta_reliable_samples < 0 or self._eta_nonredundant_samples < 0:
+            raise ValueError("checkpoint 的 ETA 样本计数无效")
+        if self._eta_nonredundant_samples > self._eta_reliable_samples:
+            raise ValueError("checkpoint 的 ETA 样本计数不守恒")
 
     def _optimizer_for(self, expert_index):
         if expert_index not in self._optimizers:
@@ -236,18 +409,256 @@ class ContinualAdaptationEngine:
             )
         return self._optimizers[expert_index]
 
+    def _parameter_optimizer_for(self):
+        if self.parameter_update_mode == "adapter":
+            raise RuntimeError("adapter 模式不能创建参数级优化器")
+        if self._parameter_optimizer is None:
+            self._parameter_optimizer = torch.optim.AdamW(
+                self.adaptation_parameters(),
+                lr=self.learning_rate,
+                weight_decay=self.weight_decay,
+            )
+        return self._parameter_optimizer
+
     def optimizer_state_dict(self):
+        if self.parameter_update_mode != "adapter":
+            return (
+                {"parameters": self._parameter_optimizer.state_dict()}
+                if self._parameter_optimizer is not None
+                else {}
+            )
         return {
             str(index): optimizer.state_dict()
             for index, optimizer in self._optimizers.items()
         }
 
     def load_optimizer_state_dict(self, states):
+        if self.parameter_update_mode != "adapter":
+            if not states:
+                return
+            if set(states) != {"parameters"}:
+                raise ValueError("参数级优化器 checkpoint 字段无效")
+            self._parameter_optimizer_for().load_state_dict(states["parameters"])
+            return
         for raw_index, state in states.items():
             index = int(raw_index)
             if not 0 <= index < self.expert_bank.expert_count:
                 raise ValueError(f"优化器状态引用了不存在的专家：{index}")
             self._optimizer_for(index).load_state_dict(state)
+
+    @staticmethod
+    def _state_is_finite(value):
+        if isinstance(value, torch.Tensor):
+            return bool(torch.isfinite(value).all())
+        if isinstance(value, dict):
+            return all(
+                ContinualAdaptationEngine._state_is_finite(item)
+                for item in value.values()
+            )
+        if isinstance(value, (list, tuple)):
+            return all(
+                ContinualAdaptationEngine._state_is_finite(item) for item in value
+            )
+        return True
+
+    def _parameter_loss(self, log_probs, target_tokens):
+        if target_tokens is None:
+            return ctc_posterior_entropy(
+                log_probs,
+                blank_id=self.blank_id,
+                frame_selection=self.entropy_frame_selection,
+            )
+        return ctc_sequence_loss(log_probs, target_tokens, self.blank_id)
+
+    def _transactional_parameter_update(
+        self,
+        video,
+        base_log_probs,
+        *,
+        supervision,
+        target_tokens=None,
+        loss_scale=1.0,
+    ):
+        parameters = self.adaptation_parameters()
+        if not parameters:
+            raise RuntimeError("参数级适应没有可更新参数")
+        optimizer = self._parameter_optimizer_for()
+        parameter_snapshot = parameter_state(self._named_adaptation_parameters)
+        optimizer_snapshot = copy.deepcopy(optimizer.state_dict())
+        loss_scale = float(loss_scale)
+        if not math.isfinite(loss_scale) or loss_scale <= 0:
+            raise ValueError("参数级适应的 loss scale 必须为正有限值")
+
+        def restore_snapshot():
+            load_parameter_state(
+                self._named_adaptation_parameters,
+                parameter_snapshot,
+            )
+            optimizer.load_state_dict(optimizer_snapshot)
+            optimizer.zero_grad(set_to_none=True)
+
+        with torch.no_grad():
+            loss_before = float(
+                self._parameter_loss(base_log_probs, target_tokens).item()
+            )
+
+        failure_reason = None
+        for _ in range(self.adaptation_steps):
+            optimizer.zero_grad(set_to_none=True)
+            _, log_probs = self._forward_parameter_model(video)
+            loss = self._parameter_loss(log_probs, target_tokens) * loss_scale
+            if not torch.isfinite(loss):
+                failure_reason = "non_finite_loss"
+                break
+            loss.backward()
+            gradient_norm = torch.nn.utils.clip_grad_norm_(
+                parameters, self.gradient_clip
+            )
+            if not torch.isfinite(gradient_norm):
+                failure_reason = "non_finite_gradient"
+                break
+            optimizer.step()
+            if not self._state_is_finite(parameters) or not self._state_is_finite(
+                optimizer.state_dict()
+            ):
+                failure_reason = "non_finite_parameter_state"
+                break
+
+        if failure_reason:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision=supervision,
+                loss_before=loss_before,
+                loss_after=None,
+                anchor_kl=None,
+                reasons=(failure_reason,),
+            )
+
+        with torch.no_grad():
+            _, post_log_probs = self._forward_parameter_model(video)
+            loss_after = float(
+                self._parameter_loss(post_log_probs, target_tokens).item()
+            )
+            anchor_kl = float(posterior_kl(base_log_probs, post_log_probs).item())
+
+        if not all(
+            math.isfinite(value) for value in (loss_before, loss_after, anchor_kl)
+        ):
+            restore_snapshot()
+            return UpdateOutcome(
+                status="failed",
+                supervision=supervision,
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=("non_finite_post_update_metric",),
+            )
+
+        rejection_reasons = []
+        if loss_after > loss_before + self.max_target_loss_increase:
+            rejection_reasons.append(
+                "entropy_regressed"
+                if target_tokens is None
+                else "target_loss_regressed"
+            )
+        if anchor_kl > self.max_anchor_kl:
+            rejection_reasons.append("anchor_divergence_exceeded")
+        if rejection_reasons and self.rollback_enabled:
+            restore_snapshot()
+            return UpdateOutcome(
+                status="rolled_back",
+                supervision=supervision,
+                loss_before=loss_before,
+                loss_after=loss_after,
+                anchor_kl=anchor_kl,
+                reasons=tuple(rejection_reasons),
+            )
+        return UpdateOutcome(
+            status="accepted",
+            supervision=supervision,
+            loss_before=loss_before,
+            loss_after=loss_after,
+            anchor_kl=anchor_kl,
+            reasons=tuple(rejection_reasons),
+        )
+
+    def _eta_filter(self, log_probs):
+        entropy = float(
+            ctc_posterior_entropy(
+                log_probs,
+                blank_id=self.blank_id,
+                frame_selection=self.entropy_frame_selection,
+            ).item()
+        )
+        if not math.isfinite(entropy):
+            return False, None, "non_finite_entropy"
+        if self._eta_resolved_entropy_margin is None:
+            self._eta_resolved_entropy_margin = (
+                self.eta_entropy_margin
+                if self.eta_entropy_margin is not None
+                else max(1e-6, 0.5 * math.log(log_probs.size(-1)) - 1.0)
+            )
+        margin = self._eta_resolved_entropy_margin
+        if entropy >= margin:
+            return False, None, "eta_unreliable"
+        self._eta_reliable_samples += 1
+
+        probabilities = log_probs.detach().exp()
+        nonblank_frames = log_probs.detach().argmax(dim=-1).ne(self.blank_id)
+        if nonblank_frames.any():
+            probability = probabilities[nonblank_frames].mean(dim=0)
+        else:
+            probability = probabilities.mean(dim=(0, 1))
+        probability = probability.clone()
+        probability[self.blank_id] = 0
+        probability = probability / probability.sum().clamp_min(
+            torch.finfo(probability.dtype).tiny
+        )
+        similarity = None
+        if self._eta_reference is not None:
+            similarity = float(
+                F.cosine_similarity(
+                    self._eta_reference.unsqueeze(0),
+                    probability.unsqueeze(0),
+                    dim=1,
+                ).item()
+            )
+            if not math.isfinite(similarity):
+                return False, None, "non_finite_eta_similarity"
+            if abs(similarity) >= self.eta_redundancy_margin:
+                return False, None, "eta_redundant"
+
+        self._eta_nonredundant_samples += 1
+        if self._eta_reference is None:
+            self._eta_reference = probability.clone()
+        else:
+            self._eta_reference.mul_(self.eta_momentum).add_(
+                probability, alpha=1.0 - self.eta_momentum
+            )
+        coefficient = math.exp(margin - entropy)
+        return True, coefficient, None
+
+    def _parameter_entropy_update(self, prediction):
+        if (
+            self.entropy_frame_selection == "nonblank"
+            and not prediction.clean_log_probs.argmax(dim=-1).ne(self.blank_id).any()
+        ):
+            return self._skip_update("entropy", ["no_nonblank_frames"])
+        loss_scale = 1.0
+        if self.adaptation_objective == "eta":
+            selected, loss_scale, reason = self._eta_filter(
+                prediction.clean_log_probs
+            )
+            if not selected:
+                return self._skip_update("entropy", [reason])
+        return self._transactional_parameter_update(
+            prediction.video,
+            prediction.base_log_probs,
+            supervision="entropy",
+            target_tokens=None,
+            loss_scale=loss_scale,
+        )
 
     def _decode(self, adapted_features, ctc_tokens):
         if self.decoder is None:
@@ -929,12 +1340,13 @@ class ContinualAdaptationEngine:
         signature = sequence_signature(
             clean_features, self.expert_bank.signature_motion_order
         )
-        route = self.expert_bank.route(
-            signature,
-            confirm_shift=False,
+        route = (
+            self.expert_bank.route(signature, confirm_shift=False)
+            if self.parameter_update_mode == "adapter"
+            else RouteDecision(0, False, 1.0, 0, False)
         )
-        adapter = self.expert_bank.experts[route.expert_index]
-        adapter.eval()
+        if self.parameter_update_mode == "adapter":
+            self.expert_bank.experts[route.expert_index].eval()
 
         with torch.no_grad():
             clean_adapted = self._adapted_features(
@@ -967,6 +1379,7 @@ class ContinualAdaptationEngine:
             augmented_features=augmented_features,
             base_log_probs=base_log_probs,
             clean_log_probs=clean_log_probs.detach(),
+            video=video.detach(),
         )
 
     def adapt(self, prediction, feedback_tokens=None, sample_key=None):
@@ -1011,6 +1424,10 @@ class ContinualAdaptationEngine:
                 prediction.clean_features,
                 prediction.base_log_probs,
             )
+        elif self.adaptation_objective in {"bn_tent", "eta"}:
+            update = self._parameter_entropy_update(prediction)
+        elif self.adaptation_objective == "online_lora" and not has_feedback:
+            update = self._skip_update(supervision, ["feedback_required"])
         elif (
             not has_feedback
             and self.reliability_enabled
@@ -1023,6 +1440,13 @@ class ContinualAdaptationEngine:
             update = self._skip_update(supervision, ["empty_target"])
         elif target_error is not None:
             update = self._skip_update(supervision, [target_error])
+        elif self.adaptation_objective == "online_lora":
+            update = self._transactional_parameter_update(
+                prediction.video,
+                prediction.base_log_probs,
+                supervision="feedback",
+                target_tokens=target_tokens,
+            )
         elif has_feedback and self.feedback_update_strategy in {
             "ctc_error_local",
             "ctc_error_local_random",

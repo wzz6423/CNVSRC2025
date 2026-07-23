@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 
 
-CHECKPOINT_VERSION = 2
+CHECKPOINT_VERSION = 3
 
 
 def _extract_model_state(checkpoint):
@@ -75,6 +75,7 @@ def save_adaptation_checkpoint(
     metrics_state=None,
     rng_state=None,
     stream_state=None,
+    adaptation_state=None,
 ):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -87,6 +88,7 @@ def save_adaptation_checkpoint(
                 "expert_bank": expert_bank.state_dict(),
                 "expert_summary": expert_bank.summary(),
                 "optimizer_states": optimizer_states or {},
+                "adaptation_state": adaptation_state,
                 "metrics_state": metrics_state,
                 "rng_state": rng_state,
                 "stream_state": stream_state,

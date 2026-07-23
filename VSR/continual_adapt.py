@@ -31,6 +31,7 @@ from plasticity.decoding import BeamDecoder
 from plasticity.engine import ContinualAdaptationEngine
 from plasticity.feedback import FeedbackQueryPolicy
 from plasticity.metrics import StreamMetrics
+from plasticity.parameter_adaptation import configure_attention_lora_adaptation
 from plasticity.reliability import ReliabilityGate
 from plasticity.stream import iter_stream_manifest, load_stream_video
 
@@ -171,13 +172,18 @@ def _effective_stream_samples(manifest_path, max_samples):
 
 
 def _resource_summary(engine, metrics_summary, checkpoint_path, output_dir, device):
-    base_parameters = sum(
+    model_parameters = sum(
         parameter.numel() for parameter in engine.base_model.parameters()
     )
     adapter_parameters = sum(
         parameter.numel() for parameter in engine.expert_bank.parameters()
     )
-    updatable_parameters = adapter_parameters if engine.enabled else 0
+    adaptation = engine.adaptation_summary()
+    updatable_parameters = int(adaptation["parameter_count"])
+    lora_parameters = (
+        updatable_parameters if engine.parameter_update_mode == "lora" else 0
+    )
+    base_parameters = model_parameters - lora_parameters
     process_seconds = float(metrics_summary["timing"]["total_process_seconds"])
     samples = int(metrics_summary["samples"])
     checkpoint_path = Path(checkpoint_path)
@@ -192,8 +198,11 @@ def _resource_summary(engine, metrics_summary, checkpoint_path, output_dir, devi
             else device.type
         ),
         "base_model_parameters": base_parameters,
+        "model_parameters_with_adaptation": model_parameters,
         "adapter_bank_parameters": adapter_parameters,
         "updatable_parameters": updatable_parameters,
+        "updatable_parameter_tensors": adaptation["parameter_tensors"],
+        "parameter_update_mode": adaptation["parameter_update_mode"],
         "updatable_fraction_of_base": (
             updatable_parameters / base_parameters if base_parameters else 0.0
         ),
@@ -346,8 +355,37 @@ def _experiment_config_sha256(cfg):
 
 def _build_engine(cfg, model, token_list, device):
     mode = str(cfg.plasticity.mode)
-    if mode not in {"static", "single_adapter", "expert_bank"}:
+    if mode not in {
+        "static",
+        "single_adapter",
+        "expert_bank",
+        "parameter_adaptation",
+    }:
         raise ValueError(f"未知持续适应模式：{mode}")
+    adaptation_objective = str(cfg.plasticity.adaptation_objective)
+    parameter_modes = {
+        "bn_tent": "batch_norm",
+        "eta": "batch_norm",
+        "online_lora": "lora",
+    }
+    parameter_update_mode = parameter_modes.get(adaptation_objective, "adapter")
+    if parameter_update_mode == "adapter" and mode == "parameter_adaptation":
+        raise ValueError("parameter_adaptation 模式需要参数级适应目标")
+    if parameter_update_mode != "adapter" and mode != "parameter_adaptation":
+        raise ValueError(
+            f"适应目标 {adaptation_objective} 必须使用 parameter_adaptation 模式"
+        )
+    parameter_module_names = ()
+    if parameter_update_mode == "lora":
+        parameter_module_names, _ = configure_attention_lora_adaptation(
+            model,
+            rank=cfg.plasticity.lora.rank,
+            alpha=cfg.plasticity.lora.alpha,
+            projections=OmegaConf.to_container(
+                cfg.plasticity.lora.projections,
+                resolve=True,
+            ),
+        )
     allow_growth = mode == "expert_bank" and bool(cfg.plasticity.allow_growth)
     max_experts = int(cfg.plasticity.max_experts) if allow_growth else 1
     bank = ExpertBank(
@@ -411,8 +449,13 @@ def _build_engine(cfg, model, token_list, device):
             cfg.plasticity.feedback_local.random_control_seed
         ),
         non_feedback_updates_enabled=cfg.plasticity.non_feedback_updates_enabled,
-        adaptation_objective=cfg.plasticity.adaptation_objective,
+        adaptation_objective=adaptation_objective,
         entropy_frame_selection=cfg.plasticity.tent.frame_selection,
+        parameter_update_mode=parameter_update_mode,
+        parameter_module_names=parameter_module_names,
+        eta_entropy_margin=cfg.plasticity.eta.entropy_margin,
+        eta_redundancy_margin=cfg.plasticity.eta.redundancy_margin,
+        eta_momentum=cfg.plasticity.eta.momentum,
     )
 
 
@@ -478,6 +521,7 @@ def main(cfg: DictConfig):
         processed = int(checkpoint["processed_samples"])
         if processed and checkpoint.get("metrics_state") is None:
             raise ValueError("checkpoint 缺少累积指标，无法精确恢复")
+        engine.load_adaptation_state_dict(checkpoint.get("adaptation_state"))
         engine.load_optimizer_state_dict(checkpoint.get("optimizer_states", {}))
         if checkpoint.get("metrics_state") is not None:
             metrics.load_state_dict(checkpoint["metrics_state"])
@@ -496,6 +540,7 @@ def main(cfg: DictConfig):
             "resumed": bool(resumed),
             **metrics.summary(),
             "expert_bank": engine.expert_bank.summary(),
+            "parameter_adaptation": engine.adaptation_summary(),
         }
 
     def record_history(checkpoint=False, resumed=False):
@@ -515,6 +560,7 @@ def main(cfg: DictConfig):
             OmegaConf.to_container(cfg.plasticity, resolve=True),
             processed,
             optimizer_states=engine.optimizer_state_dict(),
+            adaptation_state=engine.adaptation_state_dict(),
             metrics_state=metrics.state_dict(),
             rng_state=capture_rng_state(),
             stream_state=stream_state,
@@ -646,6 +692,7 @@ def main(cfg: DictConfig):
 
     summary = metrics.summary()
     summary["expert_bank"] = engine.expert_bank.summary()
+    summary["parameter_adaptation"] = engine.adaptation_summary()
     summary["mode"] = str(cfg.plasticity.mode)
     summary["adaptation_objective"] = str(cfg.plasticity.adaptation_objective)
     summary["feedback_update_strategy"] = str(

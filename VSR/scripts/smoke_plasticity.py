@@ -52,6 +52,12 @@ from plasticity.objectives import (
     occupancy_weighted_token_loss,
     posterior_kl,
 )
+from plasticity.parameter_adaptation import (
+    LoRALinear,
+    configure_attention_lora_adaptation,
+    named_lora_parameters,
+    parameter_state,
+)
 from plasticity.reliability import ReliabilityDecision, ReliabilityGate
 from plasticity.routing_diagnostics import summarize_route_records
 from plasticity.stream import iter_stream_manifest
@@ -84,6 +90,77 @@ class MockModel(nn.Module):
     def __init__(self, channels=1, feature_dim=8, vocabulary_size=5):
         super().__init__()
         self.encoder = MockEncoder(channels, feature_dim)
+        self.ctc = MockCTC(feature_dim, vocabulary_size)
+
+
+class MockBatchNormEncoder(nn.Module):
+    def __init__(self, channels=2, feature_dim=8):
+        super().__init__()
+        self.batch_norm = nn.BatchNorm2d(channels)
+        self.projection = nn.Linear(channels, feature_dim, bias=False)
+
+    def forward(self, video, _mask):
+        batch, frames, channels, height, width = video.shape
+        normalized = self.batch_norm(
+            video.reshape(batch * frames, channels, height, width)
+        )
+        pooled = normalized.mean(dim=(-1, -2)).reshape(batch, frames, channels)
+        return self.projection(pooled), None
+
+
+class MockBatchNormModel(nn.Module):
+    def __init__(self, channels=2, feature_dim=8, vocabulary_size=5):
+        super().__init__()
+        self.encoder = MockBatchNormEncoder(channels, feature_dim)
+        self.ctc = MockCTC(feature_dim, vocabulary_size)
+
+
+class MockSelfAttention(nn.Module):
+    def __init__(self, feature_dim):
+        super().__init__()
+        self.linear_q = nn.Linear(feature_dim, feature_dim)
+        self.linear_k = nn.Linear(feature_dim, feature_dim)
+        self.linear_v = nn.Linear(feature_dim, feature_dim)
+        self.linear_out = nn.Linear(feature_dim, feature_dim)
+
+    def forward(self, features):
+        combined = (
+            self.linear_q(features)
+            + self.linear_k(features)
+            + self.linear_v(features)
+        ) / 3.0
+        return self.linear_out(torch.tanh(combined))
+
+
+class MockAttentionLayer(nn.Module):
+    def __init__(self, feature_dim):
+        super().__init__()
+        self.self_attn = MockSelfAttention(feature_dim)
+
+    def forward(self, features):
+        return features + self.self_attn(features)
+
+
+class MockLoRAEncoder(nn.Module):
+    def __init__(self, channels=1, feature_dim=8, layers=2):
+        super().__init__()
+        self.projection = nn.Linear(channels, feature_dim, bias=False)
+        self.encoders = nn.ModuleList(
+            MockAttentionLayer(feature_dim) for _ in range(layers)
+        )
+
+    def forward(self, video, _mask):
+        features = self.projection(video.mean(dim=(-1, -2)))
+        for layer in self.encoders:
+            features = layer(features)
+        return features, None
+
+
+class MockLoRAModel(nn.Module):
+    def __init__(self, channels=1, feature_dim=8, vocabulary_size=5):
+        super().__init__()
+        self.encoder = MockLoRAEncoder(channels, feature_dim)
+        self.decoder = nn.ModuleList((MockAttentionLayer(feature_dim),))
         self.ctc = MockCTC(feature_dim, vocabulary_size)
 
 
@@ -405,6 +482,232 @@ def main():
     assert tent_outcome.update.supervision == "entropy"
     assert tent_outcome.update.loss_after <= tent_outcome.update.loss_before
     assert all(not parameter.requires_grad for parameter in tent_model.parameters())
+
+    bn_video = torch.randn(12, 2, 8, 8)
+    bn_model = MockBatchNormModel()
+    bn_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    bn_engine = ContinualAdaptationEngine(
+        bn_model,
+        bn_bank,
+        gate,
+        device="cpu",
+        decoder=None,
+        adaptation_objective="bn_tent",
+        parameter_update_mode="batch_norm",
+        entropy_frame_selection="nonblank",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    bn_names = [name for name, _ in bn_engine._named_adaptation_parameters]
+    assert bn_names == [
+        "encoder.batch_norm.weight",
+        "encoder.batch_norm.bias",
+    ]
+    assert bn_model.encoder.batch_norm.running_mean is None
+    assert bn_model.encoder.batch_norm.running_var is None
+    bn_before = parameter_state(bn_engine._named_adaptation_parameters)
+    bn_prediction = bn_engine.predict(bn_video)
+    assert torch.equal(bn_prediction.video, bn_video)
+    bn_outcome = bn_engine.adapt(bn_prediction)
+    assert bn_outcome.update.status == "accepted"
+    assert bn_outcome.update.supervision == "entropy"
+    bn_after = parameter_state(bn_engine._named_adaptation_parameters)
+    assert any(not torch.equal(bn_before[name], bn_after[name]) for name in bn_before)
+    assert all(
+        parameter.requires_grad == (name in bn_names)
+        for name, parameter in bn_model.named_parameters()
+    )
+
+    eta_model = MockBatchNormModel()
+    eta_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    eta_engine = ContinualAdaptationEngine(
+        eta_model,
+        eta_bank,
+        gate,
+        device="cpu",
+        decoder=None,
+        adaptation_objective="eta",
+        parameter_update_mode="batch_norm",
+        entropy_frame_selection="nonblank",
+        eta_entropy_margin=10.0,
+        eta_redundancy_margin=0.05,
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    first_eta = eta_engine.process(bn_video)
+    second_eta = eta_engine.process(bn_video)
+    assert first_eta.update.status == "accepted"
+    assert second_eta.update.status == "skipped"
+    assert second_eta.update.reasons == ("eta_redundant",)
+    eta_summary = eta_engine.adaptation_summary()
+    assert eta_summary["eta_reliable_samples"] == 2
+    assert eta_summary["eta_nonredundant_samples"] == 1
+    assert eta_summary["eta_reference_initialized"]
+
+    lora_model = MockLoRAModel()
+    with torch.no_grad():
+        lora_features_before, _ = lora_model.encoder(video.unsqueeze(0), None)
+    lora_modules, lora_parameters = configure_attention_lora_adaptation(
+        lora_model,
+        rank=1,
+        alpha=1.0,
+    )
+    with torch.no_grad():
+        lora_features_after, _ = lora_model.encoder(video.unsqueeze(0), None)
+    assert torch.equal(lora_features_before, lora_features_after)
+    assert len(lora_modules) == 8
+    assert len(lora_parameters) == 16
+    assert all(
+        isinstance(lora_model.get_submodule(name), LoRALinear)
+        for name in lora_modules
+    )
+    initial_lora_model = copy.deepcopy(lora_model)
+    lora_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    lora_engine = ContinualAdaptationEngine(
+        lora_model,
+        lora_bank,
+        gate,
+        device="cpu",
+        decoder=None,
+        adaptation_objective="online_lora",
+        parameter_update_mode="lora",
+        parameter_module_names=lora_modules,
+        non_feedback_updates_enabled=False,
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    no_feedback_lora = lora_engine.process(video)
+    assert no_feedback_lora.update.status == "skipped"
+    assert no_feedback_lora.update.reasons == (
+        "non_feedback_updates_disabled",
+    )
+    lora_before = parameter_state(named_lora_parameters(lora_model))
+    lora_prediction = lora_engine.predict(video)
+    lora_outcome = lora_engine.adapt(lora_prediction, feedback_tokens=[2])
+    assert lora_outcome.update.status == "accepted"
+    assert lora_outcome.update.supervision == "feedback"
+    lora_after = parameter_state(named_lora_parameters(lora_model))
+    assert any(
+        not torch.equal(lora_before[name], lora_after[name]) for name in lora_before
+    )
+    assert lora_engine.adaptation_summary()["parameter_count"] == 128
+    assert all(
+        parameter.requires_grad == (".lora_" in name)
+        for name, parameter in lora_model.named_parameters()
+    )
+
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        lora_checkpoint_path = Path(temporary_directory) / "lora_state.pt"
+        save_adaptation_checkpoint(
+            lora_checkpoint_path,
+            lora_bank,
+            {},
+            2,
+            optimizer_states=lora_engine.optimizer_state_dict(),
+            adaptation_state=lora_engine.adaptation_state_dict(),
+        )
+        restored_lora_bank = ExpertBank(
+            feature_dim=8,
+            bottleneck_dim=4,
+            max_experts=1,
+            allow_growth=False,
+        )
+        restored_lora_checkpoint = load_adaptation_checkpoint(
+            lora_checkpoint_path,
+            restored_lora_bank,
+            "cpu",
+        )
+        restored_lora_engine = ContinualAdaptationEngine(
+            initial_lora_model,
+            restored_lora_bank,
+            gate,
+            device="cpu",
+            decoder=None,
+            adaptation_objective="online_lora",
+            parameter_update_mode="lora",
+            parameter_module_names=lora_modules,
+            non_feedback_updates_enabled=False,
+            learning_rate=0.01,
+            rollback_enabled=False,
+            view_noise_std=0.0,
+            temporal_mask_ratio=0.0,
+        )
+        restored_lora_engine.load_adaptation_state_dict(
+            restored_lora_checkpoint["adaptation_state"]
+        )
+        restored_lora_engine.load_optimizer_state_dict(
+            restored_lora_checkpoint["optimizer_states"]
+        )
+        restored_lora_state = parameter_state(
+            named_lora_parameters(initial_lora_model)
+        )
+        assert all(
+            torch.equal(lora_after[name], restored_lora_state[name])
+            for name in lora_after
+        )
+        assert restored_lora_engine.optimizer_state_dict()["parameters"]["state"]
+
+    nonfinite_model = MockBatchNormModel()
+    nonfinite_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    nonfinite_engine = ContinualAdaptationEngine(
+        nonfinite_model,
+        nonfinite_bank,
+        gate,
+        device="cpu",
+        decoder=None,
+        adaptation_objective="bn_tent",
+        parameter_update_mode="batch_norm",
+        entropy_frame_selection="nonblank",
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    nonfinite_prediction = nonfinite_engine.predict(bn_video)
+    nonfinite_before = parameter_state(
+        nonfinite_engine._named_adaptation_parameters
+    )
+    gradient_hook = nonfinite_engine.adaptation_parameters()[0].register_hook(
+        lambda gradient: torch.full_like(gradient, float("nan"))
+    )
+    nonfinite_outcome = nonfinite_engine.adapt(nonfinite_prediction)
+    gradient_hook.remove()
+    assert nonfinite_outcome.update.status == "failed"
+    assert nonfinite_outcome.update.reasons == ("non_finite_gradient",)
+    nonfinite_after = parameter_state(
+        nonfinite_engine._named_adaptation_parameters
+    )
+    assert all(
+        torch.equal(nonfinite_before[name], nonfinite_after[name])
+        for name in nonfinite_before
+    )
+    assert nonfinite_engine.optimizer_state_dict()["parameters"]["state"] == {}
 
     local_model = MockModel()
     local_bank = ExpertBank(
