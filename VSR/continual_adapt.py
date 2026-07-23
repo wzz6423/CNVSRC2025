@@ -29,6 +29,7 @@ from plasticity.checkpoint import (
 )
 from plasticity.decoding import BeamDecoder
 from plasticity.engine import ContinualAdaptationEngine
+from plasticity.feedback import FeedbackQueryPolicy
 from plasticity.metrics import StreamMetrics
 from plasticity.reliability import ReliabilityGate
 from plasticity.stream import iter_stream_manifest, load_stream_video
@@ -134,6 +135,85 @@ def _prepare_result_file(path, processed_samples):
         finally:
             temporary_path.unlink(missing_ok=True)
     return "a"
+
+
+def _restore_feedback_policy(policy, result_path, processed_samples):
+    if processed_samples == 0:
+        return
+    with Path(result_path).open(encoding="utf-8") as handle:
+        for index, line in enumerate(handle):
+            if index >= processed_samples:
+                break
+            row = json.loads(line)
+            saved = row.get("feedback_query")
+            if not isinstance(saved, dict):
+                raise ValueError("恢复适应时结果缺少 feedback_query 审计字段")
+            decision = policy.decide(
+                index,
+                row["reliability"]["score"],
+                manifest_requested=saved.get("manifest_requested", False),
+            )
+            if decision.to_dict() != saved:
+                raise ValueError(
+                    f"恢复适应时第 {index + 1} 条反馈查询决策不一致"
+                )
+
+
+def _effective_stream_samples(manifest_path, max_samples):
+    with Path(manifest_path).open(encoding="utf-8") as handle:
+        samples = sum(1 for line in handle if line.strip())
+    if max_samples is None:
+        return samples
+    maximum = int(max_samples)
+    if maximum < 0:
+        raise ValueError("max_samples 不能为负数")
+    return min(samples, maximum)
+
+
+def _resource_summary(engine, metrics_summary, checkpoint_path, output_dir, device):
+    base_parameters = sum(
+        parameter.numel() for parameter in engine.base_model.parameters()
+    )
+    adapter_parameters = sum(
+        parameter.numel() for parameter in engine.expert_bank.parameters()
+    )
+    updatable_parameters = adapter_parameters if engine.enabled else 0
+    process_seconds = float(metrics_summary["timing"]["total_process_seconds"])
+    samples = int(metrics_summary["samples"])
+    checkpoint_path = Path(checkpoint_path)
+    checkpoint_files = list(Path(output_dir).glob("*.pt")) + list(
+        (Path(output_dir) / "best_checkpoints").glob("*.pt")
+    )
+    resources = {
+        "device": str(device),
+        "device_name": (
+            torch.cuda.get_device_name(device)
+            if device.type == "cuda"
+            else device.type
+        ),
+        "base_model_parameters": base_parameters,
+        "adapter_bank_parameters": adapter_parameters,
+        "updatable_parameters": updatable_parameters,
+        "updatable_fraction_of_base": (
+            updatable_parameters / base_parameters if base_parameters else 0.0
+        ),
+        "samples_per_process_second": (
+            samples / process_seconds if process_seconds else None
+        ),
+        "latest_checkpoint_bytes": (
+            checkpoint_path.stat().st_size if checkpoint_path.is_file() else None
+        ),
+        "retained_checkpoint_bytes": sum(
+            path.stat().st_size for path in checkpoint_files if path.is_file()
+        ),
+        "retained_checkpoint_files": len(checkpoint_files),
+        "peak_gpu_memory_allocated_bytes": None,
+    }
+    if device.type == "cuda":
+        resources["peak_gpu_memory_allocated_bytes"] = (
+            torch.cuda.max_memory_allocated(device)
+        )
+    return resources
 
 
 def _write_json_atomic(path, value):
@@ -355,6 +435,8 @@ def main(cfg: DictConfig):
 
     device = _resolve_device(cfg.device)
     print(f"持续适应设备：{device}")
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
     text_transform = TextTransform()
     model = E2E(len(text_transform.token_list), cfg.model.visual_backbone)
     load_base_checkpoint(model, cfg.checkpoint_path, device)
@@ -368,6 +450,13 @@ def main(cfg: DictConfig):
     best_checkpoint_directory = output_dir / "best_checkpoints"
     metrics = StreamMetrics()
     processed = 0
+    feedback_policy = FeedbackQueryPolicy(
+        cfg.feedback.strategy,
+        cfg.feedback.every,
+        _effective_stream_samples(cfg.stream_manifest, cfg.max_samples),
+        random_seed=cfg.feedback.random_seed,
+        uncertainty_history_window=cfg.feedback.uncertainty_history_window,
+    )
     stream_state = _stream_state(
         cfg.stream_manifest, require_metadata=bool(cfg.require_manifest_metadata)
     )
@@ -394,6 +483,7 @@ def main(cfg: DictConfig):
         restore_rng_state(checkpoint.get("rng_state"))
 
     result_mode = _prepare_result_file(result_path, processed)
+    _restore_feedback_policy(feedback_policy, result_path, processed)
     if not processed:
         reset_best_checkpoints(best_checkpoint_directory)
     last_history_sample = prepare_metrics_history(metrics_history_path, processed)
@@ -457,11 +547,6 @@ def main(cfg: DictConfig):
                 break
             if index < processed:
                 continue
-            use_feedback = item.feedback or (
-                int(cfg.feedback.every) > 0
-                and (index + 1) % int(cfg.feedback.every) == 0
-            )
-
             sample_started = time.perf_counter()
             video_started = time.perf_counter()
             video = load_stream_video(item)
@@ -469,6 +554,12 @@ def main(cfg: DictConfig):
             _synchronize_device(device)
             process_started = time.perf_counter()
             prediction = engine.predict(video)
+            feedback_query = feedback_policy.decide(
+                index,
+                prediction.reliability.score,
+                manifest_requested=item.feedback,
+            )
+            use_feedback = feedback_query.queried
             if use_feedback and not item.target_tokens:
                 raise ValueError(
                     f"样本 {item.uid} 被标记为反馈，但没有目标 token"
@@ -511,6 +602,7 @@ def main(cfg: DictConfig):
                 "domain": item.domain,
                 "target": item.target_text,
                 "feedback_used": use_feedback,
+                "feedback_query": feedback_query.to_dict(),
                 "runtime": runtime,
                 **outcome.to_dict(),
             }
@@ -561,12 +653,16 @@ def main(cfg: DictConfig):
     summary["non_feedback_updates_enabled"] = bool(
         cfg.plasticity.non_feedback_updates_enabled
     )
+    summary["feedback_query"] = feedback_policy.summary()
     summary["base_checkpoint"] = str(cfg.checkpoint_path)
     summary["stream_manifest"] = str(cfg.stream_manifest)
     summary["stream_state"] = stream_state
     record_history(checkpoint=bool(cfg.save_adaptation_checkpoint))
     if cfg.save_adaptation_checkpoint:
         save_state()
+    summary["resources"] = _resource_summary(
+        engine, summary, checkpoint_path, output_dir, device
+    )
     best_checkpoint_index = best_checkpoint_directory / "index.json"
     summary["artifacts"] = {
         "stream_results": str(result_path),

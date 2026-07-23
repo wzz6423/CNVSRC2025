@@ -49,7 +49,10 @@ decoder:
   ctc_weight: 0.3
 
 feedback:
+  strategy: periodic
   every: 0
+  random_seed: ${seed}
+  uncertainty_history_window: 100
   noise_rate: 0.0
 
 plasticity:

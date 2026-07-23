@@ -37,6 +37,170 @@ def aggregate_character_cer(records):
     }
 
 
+def summarize_feedback_queries(records):
+    records = list(records)
+    available = ["feedback_query" in record for record in records]
+    if not any(available):
+        return {"available": False}
+    if not all(available):
+        raise ValueError("反馈查询审计字段只能全部存在或全部缺失")
+
+    queried_records = []
+    queried_errors = 0
+    nonqueried_errors = 0
+    policy_queries = 0
+    manifest_queries = 0
+    sources = {}
+    reasons = {}
+    policy_queries_by_block = {}
+    queried_reliability = []
+    nonqueried_reliability = []
+    for position, record in enumerate(records, start=1):
+        query = record["feedback_query"]
+        if not isinstance(query, dict):
+            raise ValueError(f"第 {position} 条 feedback_query 必须是 JSON 对象")
+        boolean_names = (
+            "queried",
+            "policy_requested",
+            "manifest_requested",
+        )
+        if any(not isinstance(query.get(name), bool) for name in boolean_names):
+            raise ValueError(f"第 {position} 条反馈查询布尔字段无效")
+        queried = query["queried"]
+        if queried != (
+            query["policy_requested"] or query["manifest_requested"]
+        ):
+            raise ValueError(f"第 {position} 条反馈查询决策不守恒")
+        if record.get("feedback_used") is not queried:
+            raise ValueError(f"第 {position} 条 feedback_used 与查询决策不一致")
+        source = query.get("source")
+        reason = query.get("reason")
+        if not isinstance(source, str) or not isinstance(reason, str):
+            raise ValueError(f"第 {position} 条反馈查询来源或原因无效")
+        sources[source] = sources.get(source, 0) + 1
+        reasons[reason] = reasons.get(reason, 0) + 1
+
+        reliability = record.get("reliability")
+        score = reliability.get("score") if isinstance(reliability, dict) else None
+        if (
+            not isinstance(score, (int, float))
+            or isinstance(score, bool)
+            or not math.isfinite(float(score))
+        ):
+            raise ValueError(f"第 {position} 条可靠度分数无效")
+        target, transcript = _text_pair(record, position)
+        has_error = edit_distance(list(transcript), list(target)) > 0
+        if queried:
+            queried_records.append(record)
+            queried_errors += int(has_error)
+            queried_reliability.append(float(score))
+        else:
+            nonqueried_errors += int(has_error)
+            nonqueried_reliability.append(float(score))
+
+        if query["policy_requested"]:
+            policy_queries += 1
+            block_index = query.get("block_index")
+            if (
+                not isinstance(block_index, int)
+                or isinstance(block_index, bool)
+                or block_index < 0
+            ):
+                raise ValueError(f"第 {position} 条策略查询缺少有效 block_index")
+            policy_queries_by_block[block_index] = (
+                policy_queries_by_block.get(block_index, 0) + 1
+            )
+        manifest_queries += int(query["manifest_requested"])
+
+    query_count = len(queried_records)
+    nonquery_count = len(records) - query_count
+    query_cer = aggregate_character_cer(queried_records)
+    return {
+        "available": True,
+        "samples": len(records),
+        "queries": query_count,
+        "policy_queries": policy_queries,
+        "manifest_queries": manifest_queries,
+        "query_rate": query_count / len(records) if records else 0.0,
+        "queried_true_errors": queried_errors,
+        "queried_true_error_rate": (
+            queried_errors / query_count if query_count else None
+        ),
+        "nonqueried_true_errors": nonqueried_errors,
+        "nonqueried_true_error_rate": (
+            nonqueried_errors / nonquery_count if nonquery_count else None
+        ),
+        "queried_cer": query_cer["cer"],
+        "queried_edits": query_cer["edits"],
+        "queried_characters": query_cer["characters"],
+        "mean_queried_reliability": (
+            math.fsum(queried_reliability) / query_count
+            if query_count
+            else None
+        ),
+        "mean_nonqueried_reliability": (
+            math.fsum(nonqueried_reliability) / nonquery_count
+            if nonquery_count
+            else None
+        ),
+        "sources": sources,
+        "reasons": reasons,
+        "policy_query_blocks": len(policy_queries_by_block),
+        "max_policy_queries_per_block": max(
+            policy_queries_by_block.values(), default=0
+        ),
+    }
+
+
+def summarize_runtime_resources(records):
+    records = list(records)
+    runtime_available = ["runtime" in record for record in records]
+    if not any(runtime_available):
+        return {"available": False}
+    if not all(runtime_available):
+        raise ValueError("runtime 审计字段只能全部存在或全部缺失")
+
+    fields = ("video_load_seconds", "process_seconds", "total_seconds")
+    values = {name: [] for name in fields}
+    gpu_peaks = []
+    for position, record in enumerate(records, start=1):
+        runtime = record["runtime"]
+        if not isinstance(runtime, dict):
+            raise ValueError(f"第 {position} 条 runtime 必须是 JSON 对象")
+        for name in fields:
+            value = runtime.get(name)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+                or value < 0
+            ):
+                raise ValueError(f"第 {position} 条 runtime.{name} 无效")
+            values[name].append(float(value))
+        peak = runtime.get("gpu_max_memory_allocated_bytes")
+        if peak is not None:
+            if not isinstance(peak, int) or isinstance(peak, bool) or peak < 0:
+                raise ValueError(f"第 {position} 条 GPU 峰值显存无效")
+            gpu_peaks.append(peak)
+
+    statistics = {}
+    for name, field_values in values.items():
+        array = np.asarray(field_values, dtype=np.float64)
+        statistics[name] = {
+            "total": float(array.sum()),
+            "mean": float(array.mean()) if len(array) else None,
+            "p50": float(np.quantile(array, 0.5)) if len(array) else None,
+            "p95": float(np.quantile(array, 0.95)) if len(array) else None,
+            "max": float(array.max()) if len(array) else None,
+        }
+    return {
+        "available": True,
+        "samples": len(records),
+        "timing": statistics,
+        "peak_gpu_memory_allocated_bytes": max(gpu_peaks, default=None),
+    }
+
+
 def summarize_feedback_corrections(records):
     feedback_samples = 0
     diagnosed_samples = 0
@@ -473,6 +637,77 @@ def paired_sample_edit_transitions(candidate_records, baseline_records):
         "same": int((edit_differences == 0).sum()),
         "candidate_worse": int((edit_differences > 0).sum()),
         "net_edit_difference": int(edit_differences.sum()),
+    }
+
+
+def _query_errors_by_block(records, source):
+    errors = {}
+    for position, record in enumerate(records, start=1):
+        query = record.get("feedback_query")
+        if not isinstance(query, dict) or not query.get("policy_requested", False):
+            continue
+        block_index = query.get("block_index")
+        if (
+            not isinstance(block_index, int)
+            or isinstance(block_index, bool)
+            or block_index < 0
+        ):
+            raise ValueError(f"{source} 第 {position} 条策略查询 block_index 无效")
+        if block_index in errors:
+            raise ValueError(f"{source} 第 {block_index} 个窗口包含多次策略查询")
+        target, transcript = _text_pair(record, position)
+        errors[block_index] = int(
+            edit_distance(list(transcript), list(target)) > 0
+        )
+    if not errors:
+        raise ValueError(f"{source} 没有可比较的策略查询")
+    return errors
+
+
+def paired_bootstrap_query_error_rate_difference(
+    candidate_records,
+    baseline_records,
+    *,
+    iterations=10000,
+    seed=42,
+    batch_size=256,
+):
+    candidate = _query_errors_by_block(candidate_records, "candidate")
+    baseline = _query_errors_by_block(baseline_records, "baseline")
+    if set(candidate) != set(baseline):
+        raise ValueError("candidate 与 baseline 的反馈查询窗口必须完全一致")
+    iterations = int(iterations)
+    batch_size = int(batch_size)
+    if iterations < 1 or batch_size < 1:
+        raise ValueError("bootstrap iterations 和 batch_size 必须大于 0")
+
+    blocks = sorted(candidate)
+    differences = np.asarray(
+        [candidate[block] - baseline[block] for block in blocks],
+        dtype=np.int64,
+    )
+    point = float(differences.mean())
+    generator = np.random.default_rng(int(seed))
+    samples = np.empty(iterations, dtype=np.float64)
+    written = 0
+    while written < iterations:
+        current_batch = min(batch_size, iterations - written)
+        indices = generator.integers(
+            0, len(blocks), size=(current_batch, len(blocks))
+        )
+        samples[written : written + current_batch] = differences[indices].mean(
+            axis=1
+        )
+        written += current_batch
+    lower, upper = np.quantile(samples, [0.025, 0.975])
+    return {
+        "candidate_minus_baseline": point,
+        "ci_95": {"lower": float(lower), "upper": float(upper)},
+        "candidate_error_rate": math.fsum(candidate.values()) / len(blocks),
+        "baseline_error_rate": math.fsum(baseline.values()) / len(blocks),
+        "iterations": iterations,
+        "seed": int(seed),
+        "paired_blocks": len(blocks),
     }
 
 

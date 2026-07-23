@@ -16,10 +16,13 @@ from plasticity.analysis import (
     paired_bootstrap_cer_difference,
     paired_bootstrap_revisit_forgetting_difference,
     paired_feedback_followup_records,
+    paired_bootstrap_query_error_rate_difference,
     paired_sample_edit_transitions,
     static_corrected_forgetting,
     summarize_feedback_corrections,
+    summarize_feedback_queries,
     summarize_localized_feedback_updates,
+    summarize_runtime_resources,
     summarize_seed_cers,
 )
 from scripts.analyze_continual_results import _load_experiment
@@ -86,6 +89,68 @@ def main():
         "characters": 4,
         "cer": 0.25,
     }
+    candidate_query_records = []
+    baseline_query_records = []
+    for index in range(4):
+        block_index = index // 2
+        candidate_queried = index % 2 == 0
+        baseline_queried = index % 2 == 1
+        for records, queried, transcript, score in (
+            (
+                candidate_query_records,
+                candidate_queried,
+                "错" if candidate_queried else "字",
+                0.2 if candidate_queried else 0.9,
+            ),
+            (baseline_query_records, baseline_queried, "字", 0.8),
+        ):
+            record = make_record(index, "字", transcript)
+            record["feedback_used"] = queried
+            record["feedback_query"] = {
+                "queried": queried,
+                "policy_requested": queried,
+                "manifest_requested": False,
+                "source": "policy" if queried else "none",
+                "reason": "query" if queried else "skip",
+                "block_index": block_index,
+                "position_in_block": index % 2,
+                "reliability_threshold": 0.5,
+            }
+            record["reliability"] = {"score": score}
+            record["runtime"] = {
+                "video_load_seconds": 0.1,
+                "process_seconds": 0.4 + index * 0.1,
+                "total_seconds": 0.5 + index * 0.1,
+                "gpu_max_memory_allocated_bytes": 1000 + index,
+            }
+            records.append(record)
+
+    query_summary = summarize_feedback_queries(candidate_query_records)
+    assert query_summary["available"]
+    assert query_summary["queries"] == 2
+    assert query_summary["policy_queries"] == 2
+    assert query_summary["queried_true_error_rate"] == 1.0
+    assert query_summary["nonqueried_true_error_rate"] == 0.0
+    assert query_summary["max_policy_queries_per_block"] == 1
+    assert_close(query_summary["mean_queried_reliability"], 0.2)
+    runtime_summary = summarize_runtime_resources(candidate_query_records)
+    assert runtime_summary["available"]
+    assert runtime_summary["samples"] == 4
+    assert_close(runtime_summary["timing"]["video_load_seconds"]["total"], 0.4)
+    assert_close(runtime_summary["timing"]["process_seconds"]["p50"], 0.55)
+    assert runtime_summary["peak_gpu_memory_allocated_bytes"] == 1003
+
+    query_difference = paired_bootstrap_query_error_rate_difference(
+        candidate_query_records,
+        baseline_query_records,
+        iterations=101,
+        seed=9,
+        batch_size=7,
+    )
+    assert query_difference["candidate_minus_baseline"] == 1.0
+    assert query_difference["ci_95"] == {"lower": 1.0, "upper": 1.0}
+    assert query_difference["paired_blocks"] == 2
+
     feedback_records = [
         {
             **make_record(0, "字", "错", update="accepted"),
@@ -459,6 +524,12 @@ def main():
         assert analysis["experiments"]["expert"][
             "localized_feedback_updates"
         ]["localized_feedback_samples"] == 0
+        assert not analysis["experiments"]["expert"]["feedback_queries"][
+            "available"
+        ]
+        assert not analysis["experiments"]["expert"]["runtime_resources"][
+            "available"
+        ]
         assert analysis["revisit_protocol"]["segment_lengths"] == {
             "A1": 130,
             "B": 195,

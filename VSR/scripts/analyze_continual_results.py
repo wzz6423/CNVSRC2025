@@ -18,10 +18,13 @@ from plasticity.analysis import (
     paired_bootstrap_cer_difference,
     paired_bootstrap_revisit_forgetting_difference,
     paired_feedback_followup_records,
+    paired_bootstrap_query_error_rate_difference,
     paired_sample_edit_transitions,
     static_corrected_forgetting,
     summarize_feedback_corrections,
+    summarize_feedback_queries,
     summarize_localized_feedback_updates,
+    summarize_runtime_resources,
     summarize_seed_cers,
 )
 from plasticity.artifacts import _write_json_atomic
@@ -225,9 +228,11 @@ def run(args):
             "overall": overall,
             "run_summary": summary,
             "feedback_corrections": summarize_feedback_corrections(records),
+            "feedback_queries": summarize_feedback_queries(records),
             "localized_feedback_updates": summarize_localized_feedback_updates(
                 records
             ),
+            "runtime_resources": summarize_runtime_resources(records),
         }
         if args.feedback_horizon > 0:
             followup = feedback_followup_records(records, args.feedback_horizon)
@@ -316,6 +321,23 @@ def run(args):
                     records_by_name[candidate],
                     records_by_name[baseline],
                     segment_lengths=args.revisit_segment_lengths,
+                    iterations=args.bootstrap_iterations,
+                    seed=args.bootstrap_seed,
+                    batch_size=args.bootstrap_batch_size,
+                )
+            )
+        candidate_queries = experiments[candidate]["feedback_queries"]
+        baseline_queries = experiments[baseline]["feedback_queries"]
+        if (
+            candidate_queries.get("available")
+            and baseline_queries.get("available")
+            and candidate_queries.get("policy_queries", 0) > 0
+            and baseline_queries.get("policy_queries", 0) > 0
+        ):
+            comparison["query_error_rate_difference"] = (
+                paired_bootstrap_query_error_rate_difference(
+                    records_by_name[candidate],
+                    records_by_name[baseline],
                     iterations=args.bootstrap_iterations,
                     seed=args.bootstrap_seed,
                     batch_size=args.bootstrap_batch_size,

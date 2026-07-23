@@ -14,9 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from continual_adapt import (
+    _effective_stream_samples,
     _file_sha256,
     _prepare_result_file,
+    _resource_summary,
     _resolve_device,
+    _restore_feedback_policy,
     _stream_state,
     _validate_stream_state,
     _write_json_atomic,
@@ -38,6 +41,7 @@ from plasticity.checkpoint import (
 )
 from plasticity.corrections import localize_feedback_correction
 from plasticity.engine import ContinualAdaptationEngine
+from plasticity.feedback import FeedbackQueryPolicy
 from plasticity.metrics import StreamMetrics
 from plasticity.objectives import (
     ctc_posterior_entropy,
@@ -132,6 +136,152 @@ class EmptyReliabilityGate:
 
 def main():
     torch.manual_seed(7)
+    scores = [0.9, 0.8, 0.7, 0.6, 0.5] * 5
+    periodic = FeedbackQueryPolicy("periodic", 5, len(scores), random_seed=7)
+    periodic_queries = [
+        index
+        for index, score in enumerate(scores)
+        if periodic.decide(index, score).queried
+    ]
+    assert periodic_queries == [4, 9, 14, 19, 24]
+    assert periodic.summary()["policy_queries"] == 5
+
+    random_policy = FeedbackQueryPolicy("random", 5, len(scores), random_seed=7)
+    repeated_random = FeedbackQueryPolicy("random", 5, len(scores), random_seed=7)
+    random_queries = [
+        index
+        for index, score in enumerate(scores)
+        if random_policy.decide(index, score).queried
+    ]
+    repeated_queries = [
+        index
+        for index, score in enumerate(scores)
+        if repeated_random.decide(index, score).queried
+    ]
+    assert random_queries == repeated_queries
+    assert len(random_queries) == 5
+    assert [index // 5 for index in random_queries] == list(range(5))
+
+    uncertainty_scores = [
+        0.9,
+        0.8,
+        0.7,
+        0.6,
+        0.5,
+        0.4,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+        0.95,
+    ]
+    uncertainty = FeedbackQueryPolicy(
+        "uncertainty", 5, len(uncertainty_scores), random_seed=7
+    )
+    uncertainty_decisions = [
+        uncertainty.decide(index, score)
+        for index, score in enumerate(uncertainty_scores)
+    ]
+    assert [
+        index
+        for index, decision in enumerate(uncertainty_decisions)
+        if decision.queried
+    ] == [4, 5, 14]
+    assert uncertainty_decisions[5].reason == (
+        "uncertainty_below_history_quantile"
+    )
+    assert uncertainty_decisions[14].reason == "uncertainty_window_fallback"
+
+    restored_uncertainty = FeedbackQueryPolicy(
+        "uncertainty", 5, len(uncertainty_scores), random_seed=7
+    )
+    for index, score in enumerate(uncertainty_scores[:8]):
+        assert restored_uncertainty.decide(index, score) == (
+            uncertainty_decisions[index]
+        )
+    for index, score in enumerate(uncertainty_scores[8:], start=8):
+        assert restored_uncertainty.decide(index, score) == (
+            uncertainty_decisions[index]
+        )
+
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        result_path = Path(temporary_directory) / "stream_results.jsonl"
+        with result_path.open("w", encoding="utf-8") as handle:
+            for index, decision in enumerate(uncertainty_decisions[:8]):
+                handle.write(
+                    json.dumps(
+                        {
+                            "reliability": {
+                                "score": uncertainty_scores[index]
+                            },
+                            "feedback_query": decision.to_dict(),
+                        }
+                    )
+                    + "\n"
+                )
+        replayed_uncertainty = FeedbackQueryPolicy(
+            "uncertainty", 5, len(uncertainty_scores), random_seed=7
+        )
+        _restore_feedback_policy(replayed_uncertainty, result_path, 8)
+        for index, score in enumerate(uncertainty_scores[8:], start=8):
+            assert replayed_uncertainty.decide(index, score) == (
+                uncertainty_decisions[index]
+            )
+
+        manifest_path = Path(temporary_directory) / "stream.jsonl"
+        manifest_path.write_text("{}\n{}\n{}\n", encoding="utf-8")
+        assert _effective_stream_samples(manifest_path, None) == 3
+        assert _effective_stream_samples(manifest_path, 2) == 2
+
+    with_manifest = FeedbackQueryPolicy("periodic", 5, 6, random_seed=7)
+    manifest_decision = with_manifest.decide(
+        0, 0.9, manifest_requested=True
+    )
+    assert manifest_decision.queried
+    assert manifest_decision.source == "manifest"
+    assert with_manifest.summary()["manifest_queries"] == 1
+
+    resource_model = MockModel()
+    resource_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    resource_bank.ensure_experts(1)
+    resource_engine = ContinualAdaptationEngine(
+        resource_model,
+        resource_bank,
+        ReliabilityGate(min_score=0.0),
+        device="cpu",
+        decoder=None,
+        enabled=False,
+    )
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        checkpoint_path = Path(temporary_directory) / "adaptation_state.pt"
+        checkpoint_path.write_bytes(b"checkpoint")
+        resources = _resource_summary(
+            resource_engine,
+            {
+                "samples": 5,
+                "timing": {"total_process_seconds": 2.0},
+            },
+            checkpoint_path,
+            temporary_directory,
+            torch.device("cpu"),
+        )
+    assert resources["base_model_parameters"] > 0
+    assert resources["adapter_bank_parameters"] > 0
+    assert resources["updatable_parameters"] == 0
+    assert resources["samples_per_process_second"] == 2.5
+    assert resources["latest_checkpoint_bytes"] == len(b"checkpoint")
+    assert resources["retained_checkpoint_files"] == 1
+    assert resources["peak_gpu_memory_allocated_bytes"] is None
+
     alignment_logits = torch.full((1, 8, 6), -8.0)
     for frame_index, token in enumerate((0, 1, 1, 0, 2, 2, 0, 3)):
         alignment_logits[0, frame_index, token] = 8.0
