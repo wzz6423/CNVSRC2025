@@ -1,0 +1,295 @@
+[2026-07-23T06:00:23Z] launch attempt 1/4: /hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth require_manifest_metadata=true plasticity.allow_growth=false plasticity.max_experts=1 plasticity.feedback_update_strategy=full_sequence feedback.random_seed=42 feedback.uncertainty_history_window=100 feedback.noise_rate=0.0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability checkpoint_selection_mode=max seed=42 plasticity.mode=parameter_adaptation plasticity.adaptation_objective=online_lora plasticity.rollback_enabled=false plasticity.non_feedback_updates_enabled=false feedback.strategy=periodic feedback.every=10 
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/lightning_fabric/__init__.py:29: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+持续适应设备：cuda:0
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+已处理 25 条，CER=0.5959952885747939，专家数=0
+已处理 50 条，CER=0.6706135629709364，专家数=0
+已处理 75 条，CER=0.6694977843426884，专家数=0
+已处理 100 条，CER=0.660558218212574，专家数=0
+已处理 125 条，CER=0.6762754518416838，专家数=0
+已处理 150 条，CER=0.7146892655367232，专家数=0
+已处理 175 条，CER=0.7455046168799612，专家数=0
+已处理 200 条，CER=0.7571631205673759，专家数=0
+已处理 225 条，CER=0.7709195834901518，专家数=0
+已处理 250 条，CER=0.7855039637599094，专家数=0
+已处理 275 条，CER=0.7903607029082315，专家数=0
+已处理 300 条，CER=0.7957322805038541，专家数=0
+已处理 325 条，CER=0.8038875390489414，专家数=0
+已处理 350 条，CER=0.8042936399453244，专家数=0
+已处理 375 条，CER=0.7857684721590047，专家数=0
+已处理 400 条，CER=0.7658327376697641，专家数=0
+已处理 425 条，CER=0.7505236840327049，专家数=0
+已处理 450 条，CER=0.7354777070063694，专家数=0
+已处理 475 条，CER=0.7230349013657056，专家数=0
+已处理 500 条，CER=0.7120701672862454，专家数=0
+已处理 525 条，CER=0.7024439124867784，专家数=0
+已处理 550 条，CER=0.6909129692832765，专家数=0
+已处理 575 条，CER=0.682449688425784，专家数=0
+已处理 600 条，CER=0.6761335814317893，专家数=0
+已处理 625 条，CER=0.6713123187727995，专家数=0
+已处理 650 条，CER=0.6660375662802193，专家数=0
+已处理 675 条，CER=0.6622070691813042，专家数=0
+已处理 700 条，CER=0.6606949420881593，专家数=0
+{
+  "samples": 700,
+  "cer": 0.6606949420881593,
+  "edits": 15858,
+  "characters": 24002,
+  "mean_reliability": 0.7659729177458291,
+  "updates": {
+    "skipped": 630,
+    "accepted": 70
+  },
+  "attempted_updates": 70,
+  "accepted_update_rate": 1.0,
+  "timing": {
+    "total_video_load_seconds": 39.393968626856804,
+    "total_process_seconds": 1182.218196745962,
+    "total_seconds": 1221.6646927595139,
+    "mean_video_load_seconds": 0.05627709803836686,
+    "mean_process_seconds": 1.688883138208517,
+    "mean_total_seconds": 1.745235275370734
+  },
+  "domains": {
+    "128": {
+      "cer": 0.6201097328244275,
+      "edits": 5199,
+      "characters": 8384,
+      "samples": 239
+    },
+    "047": {
+      "cer": 0.8719526912865073,
+      "edits": 7225,
+      "characters": 8286,
+      "samples": 231
+    },
+    "202": {
+      "cer": 0.4683578832515003,
+      "edits": 3434,
+      "characters": 7332,
+      "samples": 230
+    }
+  },
+  "expert_bank": {
+    "expert_count": 0,
+    "signature_motion_order": 2,
+    "route_counts": [],
+    "accepted_updates": [],
+    "prototype_counts": [],
+    "pending_shift_count": 0
+  },
+  "parameter_adaptation": {
+    "parameter_update_mode": "lora",
+    "parameter_count": 73728,
+    "parameter_tensors": 96,
+    "parameter_names": [
+      "encoder.encoders.0.self_attn.linear_q.lora_a",
+      "encoder.encoders.0.self_attn.linear_q.lora_b",
+      "encoder.encoders.0.self_attn.linear_k.lora_a",
+      "encoder.encoders.0.self_attn.linear_k.lora_b",
+      "encoder.encoders.0.self_attn.linear_v.lora_a",
+      "encoder.encoders.0.self_attn.linear_v.lora_b",
+      "encoder.encoders.0.self_attn.linear_out.lora_a",
+      "encoder.encoders.0.self_attn.linear_out.lora_b",
+      "encoder.encoders.1.self_attn.linear_q.lora_a",
+      "encoder.encoders.1.self_attn.linear_q.lora_b",
+      "encoder.encoders.1.self_attn.linear_k.lora_a",
+      "encoder.encoders.1.self_attn.linear_k.lora_b",
+      "encoder.encoders.1.self_attn.linear_v.lora_a",
+      "encoder.encoders.1.self_attn.linear_v.lora_b",
+      "encoder.encoders.1.self_attn.linear_out.lora_a",
+      "encoder.encoders.1.self_attn.linear_out.lora_b",
+      "encoder.encoders.2.self_attn.linear_q.lora_a",
+      "encoder.encoders.2.self_attn.linear_q.lora_b",
+      "encoder.encoders.2.self_attn.linear_k.lora_a",
+      "encoder.encoders.2.self_attn.linear_k.lora_b",
+      "encoder.encoders.2.self_attn.linear_v.lora_a",
+      "encoder.encoders.2.self_attn.linear_v.lora_b",
+      "encoder.encoders.2.self_attn.linear_out.lora_a",
+      "encoder.encoders.2.self_attn.linear_out.lora_b",
+      "encoder.encoders.3.self_attn.linear_q.lora_a",
+      "encoder.encoders.3.self_attn.linear_q.lora_b",
+      "encoder.encoders.3.self_attn.linear_k.lora_a",
+      "encoder.encoders.3.self_attn.linear_k.lora_b",
+      "encoder.encoders.3.self_attn.linear_v.lora_a",
+      "encoder.encoders.3.self_attn.linear_v.lora_b",
+      "encoder.encoders.3.self_attn.linear_out.lora_a",
+      "encoder.encoders.3.self_attn.linear_out.lora_b",
+      "encoder.encoders.4.self_attn.linear_q.lora_a",
+      "encoder.encoders.4.self_attn.linear_q.lora_b",
+      "encoder.encoders.4.self_attn.linear_k.lora_a",
+      "encoder.encoders.4.self_attn.linear_k.lora_b",
+      "encoder.encoders.4.self_attn.linear_v.lora_a",
+      "encoder.encoders.4.self_attn.linear_v.lora_b",
+      "encoder.encoders.4.self_attn.linear_out.lora_a",
+      "encoder.encoders.4.self_attn.linear_out.lora_b",
+      "encoder.encoders.5.self_attn.linear_q.lora_a",
+      "encoder.encoders.5.self_attn.linear_q.lora_b",
+      "encoder.encoders.5.self_attn.linear_k.lora_a",
+      "encoder.encoders.5.self_attn.linear_k.lora_b",
+      "encoder.encoders.5.self_attn.linear_v.lora_a",
+      "encoder.encoders.5.self_attn.linear_v.lora_b",
+      "encoder.encoders.5.self_attn.linear_out.lora_a",
+      "encoder.encoders.5.self_attn.linear_out.lora_b",
+      "encoder.encoders.6.self_attn.linear_q.lora_a",
+      "encoder.encoders.6.self_attn.linear_q.lora_b",
+      "encoder.encoders.6.self_attn.linear_k.lora_a",
+      "encoder.encoders.6.self_attn.linear_k.lora_b",
+      "encoder.encoders.6.self_attn.linear_v.lora_a",
+      "encoder.encoders.6.self_attn.linear_v.lora_b",
+      "encoder.encoders.6.self_attn.linear_out.lora_a",
+      "encoder.encoders.6.self_attn.linear_out.lora_b",
+      "encoder.encoders.7.self_attn.linear_q.lora_a",
+      "encoder.encoders.7.self_attn.linear_q.lora_b",
+      "encoder.encoders.7.self_attn.linear_k.lora_a",
+      "encoder.encoders.7.self_attn.linear_k.lora_b",
+      "encoder.encoders.7.self_attn.linear_v.lora_a",
+      "encoder.encoders.7.self_attn.linear_v.lora_b",
+      "encoder.encoders.7.self_attn.linear_out.lora_a",
+      "encoder.encoders.7.self_attn.linear_out.lora_b",
+      "encoder.encoders.8.self_attn.linear_q.lora_a",
+      "encoder.encoders.8.self_attn.linear_q.lora_b",
+      "encoder.encoders.8.self_attn.linear_k.lora_a",
+      "encoder.encoders.8.self_attn.linear_k.lora_b",
+      "encoder.encoders.8.self_attn.linear_v.lora_a",
+      "encoder.encoders.8.self_attn.linear_v.lora_b",
+      "encoder.encoders.8.self_attn.linear_out.lora_a",
+      "encoder.encoders.8.self_attn.linear_out.lora_b",
+      "encoder.encoders.9.self_attn.linear_q.lora_a",
+      "encoder.encoders.9.self_attn.linear_q.lora_b",
+      "encoder.encoders.9.self_attn.linear_k.lora_a",
+      "encoder.encoders.9.self_attn.linear_k.lora_b",
+      "encoder.encoders.9.self_attn.linear_v.lora_a",
+      "encoder.encoders.9.self_attn.linear_v.lora_b",
+      "encoder.encoders.9.self_attn.linear_out.lora_a",
+      "encoder.encoders.9.self_attn.linear_out.lora_b",
+      "encoder.encoders.10.self_attn.linear_q.lora_a",
+      "encoder.encoders.10.self_attn.linear_q.lora_b",
+      "encoder.encoders.10.self_attn.linear_k.lora_a",
+      "encoder.encoders.10.self_attn.linear_k.lora_b",
+      "encoder.encoders.10.self_attn.linear_v.lora_a",
+      "encoder.encoders.10.self_attn.linear_v.lora_b",
+      "encoder.encoders.10.self_attn.linear_out.lora_a",
+      "encoder.encoders.10.self_attn.linear_out.lora_b",
+      "encoder.encoders.11.self_attn.linear_q.lora_a",
+      "encoder.encoders.11.self_attn.linear_q.lora_b",
+      "encoder.encoders.11.self_attn.linear_k.lora_a",
+      "encoder.encoders.11.self_attn.linear_k.lora_b",
+      "encoder.encoders.11.self_attn.linear_v.lora_a",
+      "encoder.encoders.11.self_attn.linear_v.lora_b",
+      "encoder.encoders.11.self_attn.linear_out.lora_a",
+      "encoder.encoders.11.self_attn.linear_out.lora_b"
+    ],
+    "parameter_modules": [
+      "encoder.encoders.0.self_attn.linear_q",
+      "encoder.encoders.0.self_attn.linear_k",
+      "encoder.encoders.0.self_attn.linear_v",
+      "encoder.encoders.0.self_attn.linear_out",
+      "encoder.encoders.1.self_attn.linear_q",
+      "encoder.encoders.1.self_attn.linear_k",
+      "encoder.encoders.1.self_attn.linear_v",
+      "encoder.encoders.1.self_attn.linear_out",
+      "encoder.encoders.2.self_attn.linear_q",
+      "encoder.encoders.2.self_attn.linear_k",
+      "encoder.encoders.2.self_attn.linear_v",
+      "encoder.encoders.2.self_attn.linear_out",
+      "encoder.encoders.3.self_attn.linear_q",
+      "encoder.encoders.3.self_attn.linear_k",
+      "encoder.encoders.3.self_attn.linear_v",
+      "encoder.encoders.3.self_attn.linear_out",
+      "encoder.encoders.4.self_attn.linear_q",
+      "encoder.encoders.4.self_attn.linear_k",
+      "encoder.encoders.4.self_attn.linear_v",
+      "encoder.encoders.4.self_attn.linear_out",
+      "encoder.encoders.5.self_attn.linear_q",
+      "encoder.encoders.5.self_attn.linear_k",
+      "encoder.encoders.5.self_attn.linear_v",
+      "encoder.encoders.5.self_attn.linear_out",
+      "encoder.encoders.6.self_attn.linear_q",
+      "encoder.encoders.6.self_attn.linear_k",
+      "encoder.encoders.6.self_attn.linear_v",
+      "encoder.encoders.6.self_attn.linear_out",
+      "encoder.encoders.7.self_attn.linear_q",
+      "encoder.encoders.7.self_attn.linear_k",
+      "encoder.encoders.7.self_attn.linear_v",
+      "encoder.encoders.7.self_attn.linear_out",
+      "encoder.encoders.8.self_attn.linear_q",
+      "encoder.encoders.8.self_attn.linear_k",
+      "encoder.encoders.8.self_attn.linear_v",
+      "encoder.encoders.8.self_attn.linear_out",
+      "encoder.encoders.9.self_attn.linear_q",
+      "encoder.encoders.9.self_attn.linear_k",
+      "encoder.encoders.9.self_attn.linear_v",
+      "encoder.encoders.9.self_attn.linear_out",
+      "encoder.encoders.10.self_attn.linear_q",
+      "encoder.encoders.10.self_attn.linear_k",
+      "encoder.encoders.10.self_attn.linear_v",
+      "encoder.encoders.10.self_attn.linear_out",
+      "encoder.encoders.11.self_attn.linear_q",
+      "encoder.encoders.11.self_attn.linear_k",
+      "encoder.encoders.11.self_attn.linear_v",
+      "encoder.encoders.11.self_attn.linear_out"
+    ],
+    "eta_entropy_margin": null,
+    "eta_resolved_entropy_margin": null,
+    "eta_redundancy_margin": 0.05,
+    "eta_momentum": 0.9,
+    "eta_reference_initialized": false,
+    "eta_reliable_samples": 0,
+    "eta_nonredundant_samples": 0
+  },
+  "mode": "parameter_adaptation",
+  "adaptation_objective": "online_lora",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": false,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 10,
+    "total_samples": 700,
+    "planned_budget": 70,
+    "policy_queries": 70,
+    "manifest_queries": 0,
+    "total_queries": 70,
+    "query_rate": 0.1,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "not_periodic_slot": 630,
+      "periodic_slot": 70
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+    "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "91db09693fc26e7dbae396a1445137adadf4dadcef469f03b1330a30bfa6022d"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "model_parameters_with_adaptation": 284349218,
+    "adapter_bank_parameters": 0,
+    "updatable_parameters": 73728,
+    "updatable_parameter_tensors": 96,
+    "parameter_update_mode": "lora",
+    "updatable_fraction_of_base": 0.0002593540512409283,
+    "samples_per_process_second": 0.5921072792879857,
+    "latest_checkpoint_bytes": 1040883,
+    "retained_checkpoint_bytes": 3122585,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1914421760
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

@@ -29,3 +29,13 @@ hash, history-continuity, checkpoint, and error-log validation.
   pre-registered active-query conditions. Only the matched 75-query budget
   passes; the final decision is `NO_GO`, so holdout2 remains frozen and unread.
   SHA-256: `03aad43ab95ded3e9c822f23c2c58a7b350079033c549ad65385505dcb13fefd`.
+- `dev4_strong_baselines_analysis.json`: verified development-only five-arm
+  comparison on the 700-clip target-dev4 stream. BN-TENT-VSR and ETA-VSR are
+  significantly worse than static. Under the matched 70-correction budget,
+  online LoRA improves over static but is significantly worse than combined
+  replay in both CER and static-corrected revisit forgetting. SHA-256:
+  `3fbd637e537c66590ae93a566fe6b2bfc60cc1008dccdd08ab9a6316c94742bd`.
+- `dev4_decision_resources.json`: machine-readable dev4 integrity, resource,
+  and promotion decision summary. The replay adapter remains the development
+  incumbent; all new dev4 baselines are `NO_GO`, so holdout2 remains frozen and
+  unread, with no additional seed or parameter sweep.

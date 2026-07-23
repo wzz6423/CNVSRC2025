@@ -1,0 +1,119 @@
+{
+  "samples": 700,
+  "cer": 0.6687776018665111,
+  "edits": 16052,
+  "characters": 24002,
+  "mean_reliability": 0.7684850827732779,
+  "updates": {
+    "skipped": 700
+  },
+  "attempted_updates": 0,
+  "accepted_update_rate": 0.0,
+  "timing": {
+    "total_video_load_seconds": 39.922523975372314,
+    "total_process_seconds": 1175.0535118505359,
+    "total_seconds": 1215.031232263893,
+    "mean_video_load_seconds": 0.057032177107674734,
+    "mean_process_seconds": 1.6786478740721942,
+    "mean_total_seconds": 1.7357589032341327
+  },
+  "domains": {
+    "128": {
+      "cer": 0.6269083969465649,
+      "edits": 5256,
+      "characters": 8384,
+      "samples": 239
+    },
+    "047": {
+      "cer": 0.8855901520637219,
+      "edits": 7338,
+      "characters": 8286,
+      "samples": 231
+    },
+    "202": {
+      "cer": 0.4716312056737589,
+      "edits": 3458,
+      "characters": 7332,
+      "samples": 230
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "signature_motion_order": 2,
+    "route_counts": [
+      700
+    ],
+    "accepted_updates": [
+      0
+    ],
+    "prototype_counts": [
+      1
+    ],
+    "pending_shift_count": 0
+  },
+  "parameter_adaptation": {
+    "parameter_update_mode": "adapter",
+    "parameter_count": 0,
+    "parameter_tensors": 0,
+    "parameter_names": [],
+    "parameter_modules": [],
+    "eta_entropy_margin": null,
+    "eta_resolved_entropy_margin": null,
+    "eta_redundancy_margin": 0.05,
+    "eta_momentum": 0.9,
+    "eta_reference_initialized": false,
+    "eta_reliable_samples": 0,
+    "eta_nonredundant_samples": 0
+  },
+  "mode": "static",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": false,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 0,
+    "total_samples": 700,
+    "planned_budget": 0,
+    "policy_queries": 0,
+    "manifest_queries": 0,
+    "total_queries": 0,
+    "query_rate": 0.0,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "querying_disabled": 700
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+    "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "8b962fcae5fdcebf632c37e6b97d467488b0c1b28f6cca9cab4799feeed2964f"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "model_parameters_with_adaptation": 284275490,
+    "adapter_bank_parameters": 75265,
+    "updatable_parameters": 0,
+    "updatable_parameter_tensors": 0,
+    "parameter_update_mode": "adapter",
+    "updatable_fraction_of_base": 0.0,
+    "samples_per_process_second": 0.595717550682099,
+    "latest_checkpoint_bytes": 342977,
+    "retained_checkpoint_bytes": 1028867,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1816201728
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-07-23T04:55:00Z",
+  "status": "AUDIT_OK",
+  "code_commit": "4191437d734f34cb524b049ba42415ec224a7ecb",
+  "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+  "manifest_sha256": "e3ecd63cd9b07f1df82bc198f6944a52fb92a660f1b3445308c14257dfc651de",
+  "manifest_sidecar_sha256": "2b731e12d7f1b87f91d3fa047f10ec3cb1051427dd937838a779869c29c52e64",
+  "device": "NVIDIA GeForce RTX 3090",
+  "checks": {
+    "checkpoint_version": 3,
+    "stream_indices_contiguous": true,
+    "stream_uids_unique": true,
+    "history_matches_processed_samples": true,
+    "stream_state_matches_summary": true,
+    "parameter_and_optimizer_states_finite": true,
+    "retained_pt_files_per_run": 3
+  },
+  "runs": {
+    "bn_tent_no_rollback": {
+      "samples": 2,
+      "parameter_update_mode": "batch_norm",
+      "updatable_parameters": 9472,
+      "updatable_parameter_tensors": 38,
+      "attempted_updates": 2,
+      "updates": {"accepted": 2},
+      "feedback_queries": 0,
+      "checkpoint_sha256": "bf6b9178796afc4bab026a009ed78009fff8409ba1925a2386b90f638cfaff3a"
+    },
+    "eta_no_rollback": {
+      "samples": 2,
+      "parameter_update_mode": "batch_norm",
+      "updatable_parameters": 9472,
+      "updatable_parameter_tensors": 38,
+      "attempted_updates": 1,
+      "updates": {"accepted": 1, "skipped": 1},
+      "feedback_queries": 0,
+      "eta_reliable_samples": 2,
+      "eta_nonredundant_samples": 1,
+      "checkpoint_sha256": "46c09b7c19e8d8186cca6f7cc8a891ff448b108b4b6ecd2a60a7d0dbf4e4176f"
+    },
+    "online_lora": {
+      "samples": 2,
+      "parameter_update_mode": "lora",
+      "updatable_parameters": 73728,
+      "updatable_parameter_tensors": 96,
+      "attempted_updates": 2,
+      "updates": {"accepted": 2},
+      "feedback_queries": 2,
+      "checkpoint_sha256": "bf2e24f924e0685085f423cc716b40078e9d54eab737cfb26c8acc9d36db850a"
+    }
+  }
+}

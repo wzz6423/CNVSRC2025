@@ -25,6 +25,29 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
 - Target-dev3 analysis: `data/dev3_active_feedback_analysis.json`, SHA-256 `e3da525d17d01fa38e2920a42a2a33df54e98d136a1c0fb090b65876094927cd` (development-only; not test/holdout). CER is 72.7151% static, 69.7410% pseudo-only, 69.5489% feedback-only, 69.2272% combined-periodic, 68.9348% combined-random, and 68.9557% combined-uncertainty. Pseudo-only, feedback-only, and combined-periodic each significantly improve over static, while combined-periodic does not significantly improve over either single-source arm.
 - Target-dev3 active-query gate: uncertainty - periodic = -0.2715 CER points, paired 95% CI [-0.6846, +0.1474]; uncertainty - random = +0.0209 points, CI [-0.4158, +0.4543]. Queried true-error-rate difference uncertainty - random = -1.333 points, CI [-4.000, 0.000]. Static-corrected forgetting difference uncertainty - periodic = -0.1139 points, CI [-1.0394, +0.7927]. Each policy spends exactly 75 queries, but every effectiveness condition fails. Gate=`NO-GO`: holdout2 remains frozen/unread, with no extra seed or sweep.
 - Target-dev3 figure: `figures/active_feedback_dev3.pdf`, SHA-256 `47dfff9e736547c22a80744120778b1ecb098d0cc0da88cdbccf6836f86b82e1`; editable/source exports are retained beside it, with source-data SHA-256 `17744828f55a231ab4c655d961e575761e2ecccba685521ecbcdf70b4e24a9e9`.
+- Target-dev4: disjoint train-pool speakers `128/047/202`, 700 utterances,
+  A--B--C--A 120/231/230/119, manifest SHA-256
+  `a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132`
+  (development-only strong-baseline audit; one pre-specified seed).
+- Target-dev4 implementation and protocol commit:
+  `4191437d734f34cb524b049ba42415ec224a7ecb`. Static, BN-TENT-VSR, ETA-VSR,
+  combined replay F10, and online LoRA-F10 each passed final integrity checks
+  at 700 samples, attempt 1, with 28 history rows, three retained checkpoints,
+  matching UID/order/hashes, and zero errors.
+- Target-dev4 analysis: `data/dev4_strong_baselines_analysis.json`, SHA-256
+  `3fbd637e537c66590ae93a566fe6b2bfc60cc1008dccdd08ab9a6316c94742bd`.
+  CER is 66.8778% static, 103.6330% BN-TENT-VSR, 105.7537% ETA-VSR,
+  64.8404% combined replay, and 66.0695% online LoRA. LoRA minus replay is
+  +1.2291 points, paired 95% CI [+0.7371, +1.7195]; the static-corrected
+  forgetting difference is +2.2901 points, CI [+0.5995, +3.9699].
+- Target-dev4 decision/resources: `data/dev4_decision_resources.json`, SHA-256
+  `a02e43ed2765386c304b782e3bf920666499941a6d4443bcd98308bf9950b865`.
+  BN-TENT-VSR, ETA-VSR, and online LoRA-F10 are development `NO-GO`; replay is
+  retained as the development incumbent and holdout2 remains frozen/unread.
+- Target-dev4 figure: `figures/dev4_strong_baselines.pdf`, SHA-256
+  `c2a8fb39339c0fd092e63e5eaf8eb8961ebf5e02c05a5322f94c05f5cc4ba486`;
+  editable SVG and 600-dpi PNG/TIFF exports are retained beside it. Source-data
+  SHA-256: `f75e895c08c73458ca1cc26410abb2b9238f8c80046cff96362e17a909a89866`.
 - Feedback-only/hybrid implementation commit: `353c47dc37351cad410139cbacbd69b5c0e0b14e`.
 - Target-dev2 machine-readable analysis: `data/dev2_update_source_analysis.json`, SHA-256 `4c4d2dbcd2de25a0f85da13afd8449c617fd9962d866388002bea821814ccb60`.
 - Target-dev2 hybrid analysis: `data/dev2_hybrid_analysis.json`, SHA-256 `e81c5bbb6d812dff92987053551fcc281cb3bdb897b4f9d3a30a8277b5d6a0db`.
@@ -36,7 +59,12 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
 - Rejected claim: the current pre-fix dynamic expert router provides material specialization or accuracy gains.
 - Resolved validation gate: the calibrated router fragments, fails returning-A reuse, and is significantly worse than one adapter; no repaired-router test run is allowed.
 - Resolved localization gate: target-conditioned localization beats randomized support but is significantly worse than full-sequence replay; no localized test run or tuning is allowed.
-- Pending before submission: a future pre-registered candidate that passes development before any confirmatory holdout2 run, stronger matched TTA/personalization baselines beyond adapter-only TENT, and a second real shift type. Both the hybrid and active-query routes are development `NO-GO`; holdout2 remains unread.
+- Remaining evidence boundary: a future pre-registered candidate must pass
+  development before any confirmatory holdout2 run, and external confirmation
+  still requires a provenance-resolved second real shift. The immediate matched
+  baseline audit is complete, but full EATA/CoTTA-style VSR adaptations are not
+  claimed. Hybrid, active-query, BN-TENT-VSR, ETA-VSR, and online LoRA-F10 are
+  development `NO-GO`; holdout2 remains unread.
 
 ## Build
 

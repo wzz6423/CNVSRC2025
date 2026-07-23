@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "study": "rsp_vsr_dev4_strong_baselines",
+  "scope": "development_only_single_seed",
+  "source_analysis": {
+    "path": "dev4_strong_baselines_analysis.json",
+    "sha256": "3fbd637e537c66590ae93a566fe6b2bfc60cc1008dccdd08ab9a6316c94742bd",
+    "bootstrap_iterations": 10000,
+    "paired_samples": 700,
+    "seed": 42
+  },
+  "integrity": {
+    "final_audit": "AUDIT_OK",
+    "runs": 5,
+    "samples_per_run": 700,
+    "history_rows_per_run": 28,
+    "attempt": 1,
+    "structured_errors": 0,
+    "retained_checkpoints_per_run": 3
+  },
+  "decisions": {
+    "bn_tent_vsr": {
+      "decision": "NO_GO",
+      "reason": "CER is significantly worse than static"
+    },
+    "eta_vsr": {
+      "decision": "NO_GO",
+      "reason": "CER is significantly worse than static"
+    },
+    "online_lora_f10": {
+      "decision": "NO_GO",
+      "reason": "CER and static-corrected forgetting are significantly worse than the matched replay adapter"
+    },
+    "combined_replay_f10": {
+      "decision": "RETAIN_DEVELOPMENT_INCUMBENT",
+      "reason": "Significantly improves CER and static-corrected forgetting over static and significantly outperforms matched online LoRA"
+    },
+    "holdout2": {
+      "decision": "FROZEN_UNREAD",
+      "reason": "No newly pre-registered development candidate passed a promotion gate"
+    }
+  },
+  "methods": {
+    "static": {
+      "supervision_track": "U0",
+      "cer": 0.6687776018665111,
+      "updates": {
+        "skipped": 700
+      },
+      "updatable_parameters": 0,
+      "updatable_parameter_tensors": 0,
+      "throughput_samples_per_process_second": 0.595717550682099,
+      "peak_gpu_memory_allocated_bytes": 1816201728,
+      "retained_checkpoint_bytes": 1028867
+    },
+    "bn_tent": {
+      "supervision_track": "U0",
+      "cer": 1.0363303058078492,
+      "updates": {
+        "accepted": 699,
+        "skipped": 1
+      },
+      "updatable_parameters": 9472,
+      "updatable_parameter_tensors": 38,
+      "throughput_samples_per_process_second": 0.5662572174205975,
+      "peak_gpu_memory_allocated_bytes": 3400598528,
+      "retained_checkpoint_bytes": 597489
+    },
+    "eta": {
+      "supervision_track": "U0",
+      "cer": 1.0575368719273395,
+      "updates": {
+        "accepted": 2,
+        "skipped": 698
+      },
+      "updatable_parameters": 9472,
+      "updatable_parameter_tensors": 38,
+      "throughput_samples_per_process_second": 0.5374475801781994,
+      "peak_gpu_memory_allocated_bytes": 2672180224,
+      "retained_checkpoint_bytes": 651794
+    },
+    "incumbent": {
+      "supervision_track": "F10",
+      "cer": 0.6484042996416965,
+      "updates": {
+        "accepted": 81,
+        "skipped": 619
+      },
+      "updatable_parameters": 75265,
+      "updatable_parameter_tensors": 5,
+      "throughput_samples_per_process_second": 0.538207694060635,
+      "peak_gpu_memory_allocated_bytes": 1892748288,
+      "retained_checkpoint_bytes": 2849285
+    },
+    "online_lora": {
+      "supervision_track": "F10",
+      "cer": 0.6606949420881593,
+      "updates": {
+        "accepted": 70,
+        "skipped": 630
+      },
+      "updatable_parameters": 73728,
+      "updatable_parameter_tensors": 96,
+      "throughput_samples_per_process_second": 0.5921072792879857,
+      "peak_gpu_memory_allocated_bytes": 1914421760,
+      "retained_checkpoint_bytes": 3122585
+    }
+  },
+  "key_comparisons": {
+    "bn_tent_minus_static": {
+      "cer_difference": 0.3675527039413382,
+      "ci_95": [
+        0.32897020502640545,
+        0.41198676444299503
+      ]
+    },
+    "eta_minus_static": {
+      "cer_difference": 0.3887592700608283,
+      "ci_95": [
+        0.3486205801525042,
+        0.43210043861581426
+      ]
+    },
+    "incumbent_minus_static": {
+      "cer_difference": -0.0203733022248146,
+      "ci_95": [
+        -0.025978882532847688,
+        -0.014772690892618399
+      ],
+      "static_corrected_forgetting_difference": -0.036020992366412215,
+      "forgetting_ci_95": [
+        -0.05440044746945102,
+        -0.017194347322702953
+      ]
+    },
+    "online_lora_minus_static": {
+      "cer_difference": -0.008082659778351804,
+      "ci_95": [
+        -0.012973500769228189,
+        -0.003299562101976973
+      ]
+    },
+    "online_lora_minus_incumbent": {
+      "cer_difference": 0.012290642446462795,
+      "ci_95": [
+        0.0073708924742183135,
+        0.017195454848336903
+      ],
+      "static_corrected_forgetting_difference": 0.022900763358778626,
+      "forgetting_ci_95": [
+        0.005994786120444009,
+        0.039699079780652576
+      ]
+    }
+  },
+  "restrictions": {
+    "holdout2_read": false,
+    "additional_seeds": false,
+    "parameter_sweep": false,
+    "confirmatory_claim": false
+  }
+}

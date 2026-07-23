@@ -1,0 +1,1731 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "static": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev4_revisit_static_seed42",
+      "overall": {
+        "samples": 700,
+        "edits": 16052,
+        "characters": 24002,
+        "cer": 0.6687776018665111
+      },
+      "run_summary": {
+        "samples": 700,
+        "cer": 0.6687776018665111,
+        "edits": 16052,
+        "characters": 24002,
+        "mean_reliability": 0.7684850827732779,
+        "updates": {
+          "skipped": 700
+        },
+        "attempted_updates": 0,
+        "accepted_update_rate": 0.0,
+        "timing": {
+          "total_video_load_seconds": 39.922523975372314,
+          "total_process_seconds": 1175.0535118505359,
+          "total_seconds": 1215.031232263893,
+          "mean_video_load_seconds": 0.057032177107674734,
+          "mean_process_seconds": 1.6786478740721942,
+          "mean_total_seconds": 1.7357589032341327
+        },
+        "domains": {
+          "128": {
+            "cer": 0.6269083969465649,
+            "edits": 5256,
+            "characters": 8384,
+            "samples": 239
+          },
+          "047": {
+            "cer": 0.8855901520637219,
+            "edits": 7338,
+            "characters": 8286,
+            "samples": 231
+          },
+          "202": {
+            "cer": 0.4716312056737589,
+            "edits": 3458,
+            "characters": 7332,
+            "samples": 230
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            700
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 0,
+          "parameter_tensors": 0,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "static",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": false,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 0,
+          "total_samples": 700,
+          "planned_budget": 0,
+          "policy_queries": 0,
+          "manifest_queries": 0,
+          "total_queries": 0,
+          "query_rate": 0.0,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "querying_disabled": 700
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+          "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "8b962fcae5fdcebf632c37e6b97d467488b0c1b28f6cca9cab4799feeed2964f"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 0,
+          "updatable_parameter_tensors": 0,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.0,
+          "samples_per_process_second": 0.595717550682099,
+          "latest_checkpoint_bytes": 342977,
+          "retained_checkpoint_bytes": 1028867,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1816201728
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_static_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 700,
+        "queries": 0,
+        "policy_queries": 0,
+        "manifest_queries": 0,
+        "query_rate": 0.0,
+        "queried_true_errors": 0,
+        "queried_true_error_rate": null,
+        "nonqueried_true_errors": 698,
+        "nonqueried_true_error_rate": 0.9971428571428571,
+        "queried_cer": null,
+        "queried_edits": 0,
+        "queried_characters": 0,
+        "mean_queried_reliability": null,
+        "mean_nonqueried_reliability": 0.7684850827732774,
+        "sources": {
+          "none": 700
+        },
+        "reasons": {
+          "querying_disabled": 700
+        },
+        "policy_query_blocks": 0,
+        "max_policy_queries_per_block": 0
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 700,
+        "timing": {
+          "video_load_seconds": {
+            "total": 39.922523975372314,
+            "mean": 0.057032177107674734,
+            "p50": 0.050637032836675644,
+            "p95": 0.13780269045382737,
+            "max": 0.19772783666849136
+          },
+          "process_seconds": {
+            "total": 1175.0535118505359,
+            "mean": 1.6786478740721942,
+            "p50": 1.5980155561119318,
+            "p95": 3.1177627721801398,
+            "max": 4.215098544955254
+          },
+          "total_seconds": {
+            "total": 1215.031232263893,
+            "mean": 1.7357589032341327,
+            "p50": 1.674563316628337,
+            "p95": 3.1880706697702403,
+            "max": 4.358392216265202
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1816201728
+      },
+      "segments": {
+        "A1": {
+          "samples": 120,
+          "edits": 2807,
+          "characters": 4192,
+          "cer": 0.6696087786259542
+        },
+        "B": {
+          "samples": 231,
+          "edits": 7338,
+          "characters": 8286,
+          "cer": 0.8855901520637219
+        },
+        "C": {
+          "samples": 230,
+          "edits": 3458,
+          "characters": 7332,
+          "cer": 0.4716312056737589
+        },
+        "A2": {
+          "samples": 119,
+          "edits": 2449,
+          "characters": 4192,
+          "cer": 0.5842080152671756
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.08540076335877866,
+        "static_a2_minus_a1": -0.08540076335877866,
+        "static_corrected": 0.0
+      }
+    },
+    "bn_tent": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev4_revisit_bn_tent_nofeedback_seed42",
+      "overall": {
+        "samples": 700,
+        "edits": 24874,
+        "characters": 24002,
+        "cer": 1.0363303058078492
+      },
+      "run_summary": {
+        "samples": 700,
+        "cer": 1.0363303058078492,
+        "edits": 24874,
+        "characters": 24002,
+        "mean_reliability": 0.826225706555576,
+        "updates": {
+          "accepted": 699,
+          "skipped": 1
+        },
+        "attempted_updates": 699,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 40.496235240250826,
+          "total_process_seconds": 1236.1873340681195,
+          "total_seconds": 1276.7390059866011,
+          "mean_video_load_seconds": 0.05785176462892975,
+          "mean_process_seconds": 1.7659819058115993,
+          "mean_total_seconds": 1.8239128656951444
+        },
+        "domains": {
+          "128": {
+            "cer": 0.9810353053435115,
+            "edits": 8225,
+            "characters": 8384,
+            "samples": 239
+          },
+          "047": {
+            "cer": 0.9887762490948588,
+            "edits": 8193,
+            "characters": 8286,
+            "samples": 231
+          },
+          "202": {
+            "cer": 1.1533006001091108,
+            "edits": 8456,
+            "characters": 7332,
+            "samples": 230
+          }
+        },
+        "expert_bank": {
+          "expert_count": 0,
+          "signature_motion_order": 2,
+          "route_counts": [],
+          "accepted_updates": [],
+          "prototype_counts": [],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "batch_norm",
+          "parameter_count": 9472,
+          "parameter_tensors": 38,
+          "parameter_names": [
+            "encoder.frontend.trunk.layer1.0.bn1.weight",
+            "encoder.frontend.trunk.layer1.0.bn1.bias",
+            "encoder.frontend.trunk.layer1.0.bn2.weight",
+            "encoder.frontend.trunk.layer1.0.bn2.bias",
+            "encoder.frontend.trunk.layer1.1.bn1.weight",
+            "encoder.frontend.trunk.layer1.1.bn1.bias",
+            "encoder.frontend.trunk.layer1.1.bn2.weight",
+            "encoder.frontend.trunk.layer1.1.bn2.bias",
+            "encoder.frontend.trunk.layer2.0.bn1.weight",
+            "encoder.frontend.trunk.layer2.0.bn1.bias",
+            "encoder.frontend.trunk.layer2.0.bn2.weight",
+            "encoder.frontend.trunk.layer2.0.bn2.bias",
+            "encoder.frontend.trunk.layer2.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer2.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer2.1.bn1.weight",
+            "encoder.frontend.trunk.layer2.1.bn1.bias",
+            "encoder.frontend.trunk.layer2.1.bn2.weight",
+            "encoder.frontend.trunk.layer2.1.bn2.bias",
+            "encoder.frontend.trunk.layer3.0.bn1.weight",
+            "encoder.frontend.trunk.layer3.0.bn1.bias",
+            "encoder.frontend.trunk.layer3.0.bn2.weight",
+            "encoder.frontend.trunk.layer3.0.bn2.bias",
+            "encoder.frontend.trunk.layer3.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer3.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer3.1.bn1.weight",
+            "encoder.frontend.trunk.layer3.1.bn1.bias",
+            "encoder.frontend.trunk.layer3.1.bn2.weight",
+            "encoder.frontend.trunk.layer3.1.bn2.bias",
+            "encoder.frontend.trunk.layer4.0.bn1.weight",
+            "encoder.frontend.trunk.layer4.0.bn1.bias",
+            "encoder.frontend.trunk.layer4.0.bn2.weight",
+            "encoder.frontend.trunk.layer4.0.bn2.bias",
+            "encoder.frontend.trunk.layer4.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer4.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer4.1.bn1.weight",
+            "encoder.frontend.trunk.layer4.1.bn1.bias",
+            "encoder.frontend.trunk.layer4.1.bn2.weight",
+            "encoder.frontend.trunk.layer4.1.bn2.bias"
+          ],
+          "parameter_modules": [
+            "encoder.frontend.trunk.layer1.0.bn1",
+            "encoder.frontend.trunk.layer1.0.bn2",
+            "encoder.frontend.trunk.layer1.1.bn1",
+            "encoder.frontend.trunk.layer1.1.bn2",
+            "encoder.frontend.trunk.layer2.0.bn1",
+            "encoder.frontend.trunk.layer2.0.bn2",
+            "encoder.frontend.trunk.layer2.0.downsample.1",
+            "encoder.frontend.trunk.layer2.1.bn1",
+            "encoder.frontend.trunk.layer2.1.bn2",
+            "encoder.frontend.trunk.layer3.0.bn1",
+            "encoder.frontend.trunk.layer3.0.bn2",
+            "encoder.frontend.trunk.layer3.0.downsample.1",
+            "encoder.frontend.trunk.layer3.1.bn1",
+            "encoder.frontend.trunk.layer3.1.bn2",
+            "encoder.frontend.trunk.layer4.0.bn1",
+            "encoder.frontend.trunk.layer4.0.bn2",
+            "encoder.frontend.trunk.layer4.0.downsample.1",
+            "encoder.frontend.trunk.layer4.1.bn1",
+            "encoder.frontend.trunk.layer4.1.bn2"
+          ],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "parameter_adaptation",
+        "adaptation_objective": "bn_tent",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 0,
+          "total_samples": 700,
+          "planned_budget": 0,
+          "policy_queries": 0,
+          "manifest_queries": 0,
+          "total_queries": 0,
+          "query_rate": 0.0,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "querying_disabled": 700
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+          "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "5ef121d97e6cc461a2749604e14e60e01de7ce319fe6256aac8c9ee0c38c311e"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 0,
+          "updatable_parameters": 9472,
+          "updatable_parameter_tensors": 38,
+          "parameter_update_mode": "batch_norm",
+          "updatable_fraction_of_base": 3.331979130525815e-05,
+          "samples_per_process_second": 0.5662572174205975,
+          "latest_checkpoint_bytes": 199163,
+          "retained_checkpoint_bytes": 597489,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 3400598528
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_bn_tent_nofeedback_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_bn_tent_nofeedback_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_bn_tent_nofeedback_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_bn_tent_nofeedback_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 700,
+        "queries": 0,
+        "policy_queries": 0,
+        "manifest_queries": 0,
+        "query_rate": 0.0,
+        "queried_true_errors": 0,
+        "queried_true_error_rate": null,
+        "nonqueried_true_errors": 700,
+        "nonqueried_true_error_rate": 1.0,
+        "queried_cer": null,
+        "queried_edits": 0,
+        "queried_characters": 0,
+        "mean_queried_reliability": null,
+        "mean_nonqueried_reliability": 0.8262257065555757,
+        "sources": {
+          "none": 700
+        },
+        "reasons": {
+          "querying_disabled": 700
+        },
+        "policy_query_blocks": 0,
+        "max_policy_queries_per_block": 0
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 700,
+        "timing": {
+          "video_load_seconds": {
+            "total": 40.496235240250826,
+            "mean": 0.05785176462892975,
+            "p50": 0.05061508156359196,
+            "p95": 0.14315987024456261,
+            "max": 0.404132641851902
+          },
+          "process_seconds": {
+            "total": 1236.1873340681195,
+            "mean": 1.7659819058115993,
+            "p50": 1.6724223252385855,
+            "p95": 3.21408728994429,
+            "max": 4.836300030350685
+          },
+          "total_seconds": {
+            "total": 1276.7390059866011,
+            "mean": 1.8239128656951444,
+            "p50": 1.7411430161446333,
+            "p95": 3.2897242689505215,
+            "max": 5.056155432015657
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 3400598528
+      },
+      "segments": {
+        "A1": {
+          "samples": 120,
+          "edits": 4126,
+          "characters": 4192,
+          "cer": 0.9842557251908397
+        },
+        "B": {
+          "samples": 231,
+          "edits": 8193,
+          "characters": 8286,
+          "cer": 0.9887762490948588
+        },
+        "C": {
+          "samples": 230,
+          "edits": 8456,
+          "characters": 7332,
+          "cer": 1.1533006001091108
+        },
+        "A2": {
+          "samples": 119,
+          "edits": 4099,
+          "characters": 4192,
+          "cer": 0.9778148854961832
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.006440839694656475,
+        "static_a2_minus_a1": -0.08540076335877866,
+        "static_corrected": 0.07895992366412219
+      }
+    },
+    "eta": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev4_revisit_eta_nofeedback_seed42",
+      "overall": {
+        "samples": 700,
+        "edits": 25383,
+        "characters": 24002,
+        "cer": 1.0575368719273395
+      },
+      "run_summary": {
+        "samples": 700,
+        "cer": 1.0575368719273395,
+        "edits": 25383,
+        "characters": 24002,
+        "mean_reliability": 0.7092350380000598,
+        "updates": {
+          "accepted": 2,
+          "skipped": 698
+        },
+        "attempted_updates": 2,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 44.29937557503581,
+          "total_process_seconds": 1302.4526034109294,
+          "total_seconds": 1346.8073961660266,
+          "mean_video_load_seconds": 0.06328482225005115,
+          "mean_process_seconds": 1.8606465763013278,
+          "mean_total_seconds": 1.9240105659514666
+        },
+        "domains": {
+          "128": {
+            "cer": 0.9375,
+            "edits": 7860,
+            "characters": 8384,
+            "samples": 239
+          },
+          "047": {
+            "cer": 1.3555394641564085,
+            "edits": 11232,
+            "characters": 8286,
+            "samples": 231
+          },
+          "202": {
+            "cer": 0.8580196399345336,
+            "edits": 6291,
+            "characters": 7332,
+            "samples": 230
+          }
+        },
+        "expert_bank": {
+          "expert_count": 0,
+          "signature_motion_order": 2,
+          "route_counts": [],
+          "accepted_updates": [],
+          "prototype_counts": [],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "batch_norm",
+          "parameter_count": 9472,
+          "parameter_tensors": 38,
+          "parameter_names": [
+            "encoder.frontend.trunk.layer1.0.bn1.weight",
+            "encoder.frontend.trunk.layer1.0.bn1.bias",
+            "encoder.frontend.trunk.layer1.0.bn2.weight",
+            "encoder.frontend.trunk.layer1.0.bn2.bias",
+            "encoder.frontend.trunk.layer1.1.bn1.weight",
+            "encoder.frontend.trunk.layer1.1.bn1.bias",
+            "encoder.frontend.trunk.layer1.1.bn2.weight",
+            "encoder.frontend.trunk.layer1.1.bn2.bias",
+            "encoder.frontend.trunk.layer2.0.bn1.weight",
+            "encoder.frontend.trunk.layer2.0.bn1.bias",
+            "encoder.frontend.trunk.layer2.0.bn2.weight",
+            "encoder.frontend.trunk.layer2.0.bn2.bias",
+            "encoder.frontend.trunk.layer2.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer2.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer2.1.bn1.weight",
+            "encoder.frontend.trunk.layer2.1.bn1.bias",
+            "encoder.frontend.trunk.layer2.1.bn2.weight",
+            "encoder.frontend.trunk.layer2.1.bn2.bias",
+            "encoder.frontend.trunk.layer3.0.bn1.weight",
+            "encoder.frontend.trunk.layer3.0.bn1.bias",
+            "encoder.frontend.trunk.layer3.0.bn2.weight",
+            "encoder.frontend.trunk.layer3.0.bn2.bias",
+            "encoder.frontend.trunk.layer3.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer3.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer3.1.bn1.weight",
+            "encoder.frontend.trunk.layer3.1.bn1.bias",
+            "encoder.frontend.trunk.layer3.1.bn2.weight",
+            "encoder.frontend.trunk.layer3.1.bn2.bias",
+            "encoder.frontend.trunk.layer4.0.bn1.weight",
+            "encoder.frontend.trunk.layer4.0.bn1.bias",
+            "encoder.frontend.trunk.layer4.0.bn2.weight",
+            "encoder.frontend.trunk.layer4.0.bn2.bias",
+            "encoder.frontend.trunk.layer4.0.downsample.1.weight",
+            "encoder.frontend.trunk.layer4.0.downsample.1.bias",
+            "encoder.frontend.trunk.layer4.1.bn1.weight",
+            "encoder.frontend.trunk.layer4.1.bn1.bias",
+            "encoder.frontend.trunk.layer4.1.bn2.weight",
+            "encoder.frontend.trunk.layer4.1.bn2.bias"
+          ],
+          "parameter_modules": [
+            "encoder.frontend.trunk.layer1.0.bn1",
+            "encoder.frontend.trunk.layer1.0.bn2",
+            "encoder.frontend.trunk.layer1.1.bn1",
+            "encoder.frontend.trunk.layer1.1.bn2",
+            "encoder.frontend.trunk.layer2.0.bn1",
+            "encoder.frontend.trunk.layer2.0.bn2",
+            "encoder.frontend.trunk.layer2.0.downsample.1",
+            "encoder.frontend.trunk.layer2.1.bn1",
+            "encoder.frontend.trunk.layer2.1.bn2",
+            "encoder.frontend.trunk.layer3.0.bn1",
+            "encoder.frontend.trunk.layer3.0.bn2",
+            "encoder.frontend.trunk.layer3.0.downsample.1",
+            "encoder.frontend.trunk.layer3.1.bn1",
+            "encoder.frontend.trunk.layer3.1.bn2",
+            "encoder.frontend.trunk.layer4.0.bn1",
+            "encoder.frontend.trunk.layer4.0.bn2",
+            "encoder.frontend.trunk.layer4.0.downsample.1",
+            "encoder.frontend.trunk.layer4.1.bn1",
+            "encoder.frontend.trunk.layer4.1.bn2"
+          ],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": 3.202571843803807,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": true,
+          "eta_reliable_samples": 462,
+          "eta_nonredundant_samples": 2
+        },
+        "mode": "parameter_adaptation",
+        "adaptation_objective": "eta",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 0,
+          "total_samples": 700,
+          "planned_budget": 0,
+          "policy_queries": 0,
+          "manifest_queries": 0,
+          "total_queries": 0,
+          "query_rate": 0.0,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "querying_disabled": 700
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+          "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "41ec38b041bb695d541cf8a9e65488ff83dd9d0c48ebae4fdfdb77055154f774"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 0,
+          "updatable_parameters": 9472,
+          "updatable_parameter_tensors": 38,
+          "parameter_update_mode": "batch_norm",
+          "updatable_fraction_of_base": 3.331979130525815e-05,
+          "samples_per_process_second": 0.5374475801781994,
+          "latest_checkpoint_bytes": 217286,
+          "retained_checkpoint_bytes": 651794,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 2672180224
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_eta_nofeedback_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_eta_nofeedback_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_eta_nofeedback_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_eta_nofeedback_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 700,
+        "queries": 0,
+        "policy_queries": 0,
+        "manifest_queries": 0,
+        "query_rate": 0.0,
+        "queried_true_errors": 0,
+        "queried_true_error_rate": null,
+        "nonqueried_true_errors": 700,
+        "nonqueried_true_error_rate": 1.0,
+        "queried_cer": null,
+        "queried_edits": 0,
+        "queried_characters": 0,
+        "mean_queried_reliability": null,
+        "mean_nonqueried_reliability": 0.7092350380000588,
+        "sources": {
+          "none": 700
+        },
+        "reasons": {
+          "querying_disabled": 700
+        },
+        "policy_query_blocks": 0,
+        "max_policy_queries_per_block": 0
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 700,
+        "timing": {
+          "video_load_seconds": {
+            "total": 44.29937557503581,
+            "mean": 0.06328482225005115,
+            "p50": 0.052829207852482796,
+            "p95": 0.16508746705949298,
+            "max": 0.3843352161347866
+          },
+          "process_seconds": {
+            "total": 1302.4526034109294,
+            "mean": 1.8606465763013278,
+            "p50": 1.771935222670436,
+            "p95": 3.462792154401538,
+            "max": 4.4785177409648895
+          },
+          "total_seconds": {
+            "total": 1346.8073961660266,
+            "mean": 1.9240105659514666,
+            "p50": 1.8254019357264042,
+            "p95": 3.5308938885107617,
+            "max": 4.581143151968718
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 2672180224
+      },
+      "segments": {
+        "A1": {
+          "samples": 120,
+          "edits": 4089,
+          "characters": 4192,
+          "cer": 0.9754293893129771
+        },
+        "B": {
+          "samples": 231,
+          "edits": 11232,
+          "characters": 8286,
+          "cer": 1.3555394641564085
+        },
+        "C": {
+          "samples": 230,
+          "edits": 6291,
+          "characters": 7332,
+          "cer": 0.8580196399345336
+        },
+        "A2": {
+          "samples": 119,
+          "edits": 3771,
+          "characters": 4192,
+          "cer": 0.8995706106870229
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.07585877862595414,
+        "static_a2_minus_a1": -0.08540076335877866,
+        "static_corrected": 0.009541984732824527
+      }
+    },
+    "incumbent": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev4_revisit_combined_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 700,
+        "edits": 15563,
+        "characters": 24002,
+        "cer": 0.6484042996416965
+      },
+      "run_summary": {
+        "samples": 700,
+        "cer": 0.6484042996416965,
+        "edits": 15563,
+        "characters": 24002,
+        "mean_reliability": 0.5341238729659674,
+        "updates": {
+          "skipped": 619,
+          "accepted": 81
+        },
+        "attempted_updates": 81,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 40.69456833228469,
+          "total_process_seconds": 1300.6131419613957,
+          "total_seconds": 1341.3588138222694,
+          "mean_video_load_seconds": 0.05813509761754956,
+          "mean_process_seconds": 1.8580187742305654,
+          "mean_total_seconds": 1.9162268768889563
+        },
+        "domains": {
+          "128": {
+            "cer": 0.6038883587786259,
+            "edits": 5063,
+            "characters": 8384,
+            "samples": 239
+          },
+          "047": {
+            "cer": 0.8537291817523533,
+            "edits": 7074,
+            "characters": 8286,
+            "samples": 231
+          },
+          "202": {
+            "cer": 0.4672667757774141,
+            "edits": 3426,
+            "characters": 7332,
+            "samples": 230
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "signature_motion_order": 2,
+          "route_counts": [
+            700
+          ],
+          "accepted_updates": [
+            81
+          ],
+          "prototype_counts": [
+            82
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 75265,
+          "parameter_tensors": 5,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 700,
+          "planned_budget": 70,
+          "policy_queries": 70,
+          "manifest_queries": 0,
+          "total_queries": 70,
+          "query_rate": 0.1,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 630,
+            "periodic_slot": 70
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+          "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "79804f1f7d346ba52674b290c349a7e982100348a0c7c2feb76311a89a9432ea"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 75265,
+          "updatable_parameter_tensors": 5,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.00026476077835623467,
+          "samples_per_process_second": 0.538207694060635,
+          "latest_checkpoint_bytes": 949783,
+          "retained_checkpoint_bytes": 2849285,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1892748288
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_combined_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_combined_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_combined_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_combined_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 70,
+        "diagnosed_feedback_samples": 70,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2010,
+        "target_tokens": 2304,
+        "matched_tokens": 772,
+        "substituted_tokens": 1215,
+        "missing_target_tokens": 317,
+        "extra_prediction_tokens": 23,
+        "mean_token_error_rate": 0.6710809620432858,
+        "mean_matched_frame_rate": 0.055889983621558975
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 700,
+        "queries": 70,
+        "policy_queries": 70,
+        "manifest_queries": 0,
+        "query_rate": 0.1,
+        "queried_true_errors": 70,
+        "queried_true_error_rate": 1.0,
+        "nonqueried_true_errors": 629,
+        "nonqueried_true_error_rate": 0.9984126984126984,
+        "queried_cer": 0.6666666666666666,
+        "queried_edits": 1536,
+        "queried_characters": 2304,
+        "mean_queried_reliability": 0.5322368263223028,
+        "mean_nonqueried_reliability": 0.5343335448152639,
+        "sources": {
+          "none": 630,
+          "policy": 70
+        },
+        "reasons": {
+          "not_periodic_slot": 630,
+          "periodic_slot": 70
+        },
+        "policy_query_blocks": 70,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 70,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 700,
+        "timing": {
+          "video_load_seconds": {
+            "total": 40.69456833228469,
+            "mean": 0.05813509761754956,
+            "p50": 0.04952687956392765,
+            "p95": 0.14098718129098414,
+            "max": 0.2743835560977459
+          },
+          "process_seconds": {
+            "total": 1300.6131419613957,
+            "mean": 1.8580187742305654,
+            "p50": 1.7025427017360926,
+            "p95": 3.5319817278534162,
+            "max": 8.112973187118769
+          },
+          "total_seconds": {
+            "total": 1341.3588138222694,
+            "mean": 1.9162268768889563,
+            "p50": 1.7552974876016378,
+            "p95": 3.612555458210408,
+            "max": 8.183299612253904
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1892748288
+      },
+      "segments": {
+        "A1": {
+          "samples": 120,
+          "edits": 2786,
+          "characters": 4192,
+          "cer": 0.6645992366412213
+        },
+        "B": {
+          "samples": 231,
+          "edits": 7074,
+          "characters": 8286,
+          "cer": 0.8537291817523533
+        },
+        "C": {
+          "samples": 230,
+          "edits": 3426,
+          "characters": 7332,
+          "cer": 0.4672667757774141
+        },
+        "A2": {
+          "samples": 119,
+          "edits": 2277,
+          "characters": 4192,
+          "cer": 0.5431774809160306
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.12142175572519076,
+        "static_a2_minus_a1": -0.08540076335877866,
+        "static_corrected": -0.0360209923664121
+      }
+    },
+    "online_lora": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev4_revisit_online_lora_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 700,
+        "edits": 15858,
+        "characters": 24002,
+        "cer": 0.6606949420881593
+      },
+      "run_summary": {
+        "samples": 700,
+        "cer": 0.6606949420881593,
+        "edits": 15858,
+        "characters": 24002,
+        "mean_reliability": 0.7659729177458291,
+        "updates": {
+          "skipped": 630,
+          "accepted": 70
+        },
+        "attempted_updates": 70,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 39.393968626856804,
+          "total_process_seconds": 1182.218196745962,
+          "total_seconds": 1221.6646927595139,
+          "mean_video_load_seconds": 0.05627709803836686,
+          "mean_process_seconds": 1.688883138208517,
+          "mean_total_seconds": 1.745235275370734
+        },
+        "domains": {
+          "128": {
+            "cer": 0.6201097328244275,
+            "edits": 5199,
+            "characters": 8384,
+            "samples": 239
+          },
+          "047": {
+            "cer": 0.8719526912865073,
+            "edits": 7225,
+            "characters": 8286,
+            "samples": 231
+          },
+          "202": {
+            "cer": 0.4683578832515003,
+            "edits": 3434,
+            "characters": 7332,
+            "samples": 230
+          }
+        },
+        "expert_bank": {
+          "expert_count": 0,
+          "signature_motion_order": 2,
+          "route_counts": [],
+          "accepted_updates": [],
+          "prototype_counts": [],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "lora",
+          "parameter_count": 73728,
+          "parameter_tensors": 96,
+          "parameter_names": [
+            "encoder.encoders.0.self_attn.linear_q.lora_a",
+            "encoder.encoders.0.self_attn.linear_q.lora_b",
+            "encoder.encoders.0.self_attn.linear_k.lora_a",
+            "encoder.encoders.0.self_attn.linear_k.lora_b",
+            "encoder.encoders.0.self_attn.linear_v.lora_a",
+            "encoder.encoders.0.self_attn.linear_v.lora_b",
+            "encoder.encoders.0.self_attn.linear_out.lora_a",
+            "encoder.encoders.0.self_attn.linear_out.lora_b",
+            "encoder.encoders.1.self_attn.linear_q.lora_a",
+            "encoder.encoders.1.self_attn.linear_q.lora_b",
+            "encoder.encoders.1.self_attn.linear_k.lora_a",
+            "encoder.encoders.1.self_attn.linear_k.lora_b",
+            "encoder.encoders.1.self_attn.linear_v.lora_a",
+            "encoder.encoders.1.self_attn.linear_v.lora_b",
+            "encoder.encoders.1.self_attn.linear_out.lora_a",
+            "encoder.encoders.1.self_attn.linear_out.lora_b",
+            "encoder.encoders.2.self_attn.linear_q.lora_a",
+            "encoder.encoders.2.self_attn.linear_q.lora_b",
+            "encoder.encoders.2.self_attn.linear_k.lora_a",
+            "encoder.encoders.2.self_attn.linear_k.lora_b",
+            "encoder.encoders.2.self_attn.linear_v.lora_a",
+            "encoder.encoders.2.self_attn.linear_v.lora_b",
+            "encoder.encoders.2.self_attn.linear_out.lora_a",
+            "encoder.encoders.2.self_attn.linear_out.lora_b",
+            "encoder.encoders.3.self_attn.linear_q.lora_a",
+            "encoder.encoders.3.self_attn.linear_q.lora_b",
+            "encoder.encoders.3.self_attn.linear_k.lora_a",
+            "encoder.encoders.3.self_attn.linear_k.lora_b",
+            "encoder.encoders.3.self_attn.linear_v.lora_a",
+            "encoder.encoders.3.self_attn.linear_v.lora_b",
+            "encoder.encoders.3.self_attn.linear_out.lora_a",
+            "encoder.encoders.3.self_attn.linear_out.lora_b",
+            "encoder.encoders.4.self_attn.linear_q.lora_a",
+            "encoder.encoders.4.self_attn.linear_q.lora_b",
+            "encoder.encoders.4.self_attn.linear_k.lora_a",
+            "encoder.encoders.4.self_attn.linear_k.lora_b",
+            "encoder.encoders.4.self_attn.linear_v.lora_a",
+            "encoder.encoders.4.self_attn.linear_v.lora_b",
+            "encoder.encoders.4.self_attn.linear_out.lora_a",
+            "encoder.encoders.4.self_attn.linear_out.lora_b",
+            "encoder.encoders.5.self_attn.linear_q.lora_a",
+            "encoder.encoders.5.self_attn.linear_q.lora_b",
+            "encoder.encoders.5.self_attn.linear_k.lora_a",
+            "encoder.encoders.5.self_attn.linear_k.lora_b",
+            "encoder.encoders.5.self_attn.linear_v.lora_a",
+            "encoder.encoders.5.self_attn.linear_v.lora_b",
+            "encoder.encoders.5.self_attn.linear_out.lora_a",
+            "encoder.encoders.5.self_attn.linear_out.lora_b",
+            "encoder.encoders.6.self_attn.linear_q.lora_a",
+            "encoder.encoders.6.self_attn.linear_q.lora_b",
+            "encoder.encoders.6.self_attn.linear_k.lora_a",
+            "encoder.encoders.6.self_attn.linear_k.lora_b",
+            "encoder.encoders.6.self_attn.linear_v.lora_a",
+            "encoder.encoders.6.self_attn.linear_v.lora_b",
+            "encoder.encoders.6.self_attn.linear_out.lora_a",
+            "encoder.encoders.6.self_attn.linear_out.lora_b",
+            "encoder.encoders.7.self_attn.linear_q.lora_a",
+            "encoder.encoders.7.self_attn.linear_q.lora_b",
+            "encoder.encoders.7.self_attn.linear_k.lora_a",
+            "encoder.encoders.7.self_attn.linear_k.lora_b",
+            "encoder.encoders.7.self_attn.linear_v.lora_a",
+            "encoder.encoders.7.self_attn.linear_v.lora_b",
+            "encoder.encoders.7.self_attn.linear_out.lora_a",
+            "encoder.encoders.7.self_attn.linear_out.lora_b",
+            "encoder.encoders.8.self_attn.linear_q.lora_a",
+            "encoder.encoders.8.self_attn.linear_q.lora_b",
+            "encoder.encoders.8.self_attn.linear_k.lora_a",
+            "encoder.encoders.8.self_attn.linear_k.lora_b",
+            "encoder.encoders.8.self_attn.linear_v.lora_a",
+            "encoder.encoders.8.self_attn.linear_v.lora_b",
+            "encoder.encoders.8.self_attn.linear_out.lora_a",
+            "encoder.encoders.8.self_attn.linear_out.lora_b",
+            "encoder.encoders.9.self_attn.linear_q.lora_a",
+            "encoder.encoders.9.self_attn.linear_q.lora_b",
+            "encoder.encoders.9.self_attn.linear_k.lora_a",
+            "encoder.encoders.9.self_attn.linear_k.lora_b",
+            "encoder.encoders.9.self_attn.linear_v.lora_a",
+            "encoder.encoders.9.self_attn.linear_v.lora_b",
+            "encoder.encoders.9.self_attn.linear_out.lora_a",
+            "encoder.encoders.9.self_attn.linear_out.lora_b",
+            "encoder.encoders.10.self_attn.linear_q.lora_a",
+            "encoder.encoders.10.self_attn.linear_q.lora_b",
+            "encoder.encoders.10.self_attn.linear_k.lora_a",
+            "encoder.encoders.10.self_attn.linear_k.lora_b",
+            "encoder.encoders.10.self_attn.linear_v.lora_a",
+            "encoder.encoders.10.self_attn.linear_v.lora_b",
+            "encoder.encoders.10.self_attn.linear_out.lora_a",
+            "encoder.encoders.10.self_attn.linear_out.lora_b",
+            "encoder.encoders.11.self_attn.linear_q.lora_a",
+            "encoder.encoders.11.self_attn.linear_q.lora_b",
+            "encoder.encoders.11.self_attn.linear_k.lora_a",
+            "encoder.encoders.11.self_attn.linear_k.lora_b",
+            "encoder.encoders.11.self_attn.linear_v.lora_a",
+            "encoder.encoders.11.self_attn.linear_v.lora_b",
+            "encoder.encoders.11.self_attn.linear_out.lora_a",
+            "encoder.encoders.11.self_attn.linear_out.lora_b"
+          ],
+          "parameter_modules": [
+            "encoder.encoders.0.self_attn.linear_q",
+            "encoder.encoders.0.self_attn.linear_k",
+            "encoder.encoders.0.self_attn.linear_v",
+            "encoder.encoders.0.self_attn.linear_out",
+            "encoder.encoders.1.self_attn.linear_q",
+            "encoder.encoders.1.self_attn.linear_k",
+            "encoder.encoders.1.self_attn.linear_v",
+            "encoder.encoders.1.self_attn.linear_out",
+            "encoder.encoders.2.self_attn.linear_q",
+            "encoder.encoders.2.self_attn.linear_k",
+            "encoder.encoders.2.self_attn.linear_v",
+            "encoder.encoders.2.self_attn.linear_out",
+            "encoder.encoders.3.self_attn.linear_q",
+            "encoder.encoders.3.self_attn.linear_k",
+            "encoder.encoders.3.self_attn.linear_v",
+            "encoder.encoders.3.self_attn.linear_out",
+            "encoder.encoders.4.self_attn.linear_q",
+            "encoder.encoders.4.self_attn.linear_k",
+            "encoder.encoders.4.self_attn.linear_v",
+            "encoder.encoders.4.self_attn.linear_out",
+            "encoder.encoders.5.self_attn.linear_q",
+            "encoder.encoders.5.self_attn.linear_k",
+            "encoder.encoders.5.self_attn.linear_v",
+            "encoder.encoders.5.self_attn.linear_out",
+            "encoder.encoders.6.self_attn.linear_q",
+            "encoder.encoders.6.self_attn.linear_k",
+            "encoder.encoders.6.self_attn.linear_v",
+            "encoder.encoders.6.self_attn.linear_out",
+            "encoder.encoders.7.self_attn.linear_q",
+            "encoder.encoders.7.self_attn.linear_k",
+            "encoder.encoders.7.self_attn.linear_v",
+            "encoder.encoders.7.self_attn.linear_out",
+            "encoder.encoders.8.self_attn.linear_q",
+            "encoder.encoders.8.self_attn.linear_k",
+            "encoder.encoders.8.self_attn.linear_v",
+            "encoder.encoders.8.self_attn.linear_out",
+            "encoder.encoders.9.self_attn.linear_q",
+            "encoder.encoders.9.self_attn.linear_k",
+            "encoder.encoders.9.self_attn.linear_v",
+            "encoder.encoders.9.self_attn.linear_out",
+            "encoder.encoders.10.self_attn.linear_q",
+            "encoder.encoders.10.self_attn.linear_k",
+            "encoder.encoders.10.self_attn.linear_v",
+            "encoder.encoders.10.self_attn.linear_out",
+            "encoder.encoders.11.self_attn.linear_q",
+            "encoder.encoders.11.self_attn.linear_k",
+            "encoder.encoders.11.self_attn.linear_v",
+            "encoder.encoders.11.self_attn.linear_out"
+          ],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "parameter_adaptation",
+        "adaptation_objective": "online_lora",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": false,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 700,
+          "planned_budget": 70,
+          "policy_queries": 70,
+          "manifest_queries": 0,
+          "total_queries": 70,
+          "query_rate": 0.1,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 630,
+            "periodic_slot": 70
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev4_revisit_128_047_202_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "a3b1a5842d05ec2caf09e63eb087a6d0623770ce4edcaeca9e9d9b14eb1bf132",
+          "manifest_metadata_sha256": "a347d97f547498788847c0c9ed9247b7d67cf324d6e5f7cb760ca370542bc2f2",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "91db09693fc26e7dbae396a1445137adadf4dadcef469f03b1330a30bfa6022d"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284349218,
+          "adapter_bank_parameters": 0,
+          "updatable_parameters": 73728,
+          "updatable_parameter_tensors": 96,
+          "parameter_update_mode": "lora",
+          "updatable_fraction_of_base": 0.0002593540512409283,
+          "samples_per_process_second": 0.5921072792879857,
+          "latest_checkpoint_bytes": 1040883,
+          "retained_checkpoint_bytes": 3122585,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1914421760
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev4_strong_baselines_4191437/dev4_revisit_online_lora_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 70,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 700,
+        "queries": 70,
+        "policy_queries": 70,
+        "manifest_queries": 0,
+        "query_rate": 0.1,
+        "queried_true_errors": 70,
+        "queried_true_error_rate": 1.0,
+        "nonqueried_true_errors": 628,
+        "nonqueried_true_error_rate": 0.9968253968253968,
+        "queried_cer": 0.6866319444444444,
+        "queried_edits": 1582,
+        "queried_characters": 2304,
+        "mean_queried_reliability": 0.7637764292037047,
+        "mean_nonqueried_reliability": 0.766216972028288,
+        "sources": {
+          "none": 630,
+          "policy": 70
+        },
+        "reasons": {
+          "not_periodic_slot": 630,
+          "periodic_slot": 70
+        },
+        "policy_query_blocks": 70,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 70,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 700,
+        "timing": {
+          "video_load_seconds": {
+            "total": 39.393968626856804,
+            "mean": 0.05627709803836686,
+            "p50": 0.04987444914877415,
+            "p95": 0.13680719565600152,
+            "max": 0.2106115110218525
+          },
+          "process_seconds": {
+            "total": 1182.218196745962,
+            "mean": 1.688883138208517,
+            "p50": 1.6142455022782087,
+            "p95": 3.1045784715563047,
+            "max": 4.3087056912481785
+          },
+          "total_seconds": {
+            "total": 1221.6646927595139,
+            "mean": 1.745235275370734,
+            "p50": 1.6765997223556042,
+            "p95": 3.1984907573089,
+            "max": 4.446715719997883
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1914421760
+      },
+      "segments": {
+        "A1": {
+          "samples": 120,
+          "edits": 2806,
+          "characters": 4192,
+          "cer": 0.6693702290076335
+        },
+        "B": {
+          "samples": 231,
+          "edits": 7225,
+          "characters": 8286,
+          "cer": 0.8719526912865073
+        },
+        "C": {
+          "samples": 230,
+          "edits": 3434,
+          "characters": 7332,
+          "cer": 0.4683578832515003
+        },
+        "A2": {
+          "samples": 119,
+          "edits": 2393,
+          "characters": 4192,
+          "cer": 0.5708492366412213
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.09852099236641221,
+        "static_a2_minus_a1": -0.08540076335877866,
+        "static_corrected": -0.013120229007633544
+      }
+    }
+  },
+  "comparisons": {
+    "bn_tent_minus_static": {
+      "candidate": "bn_tent",
+      "baseline": "static",
+      "candidate_minus_baseline": 0.3675527039413382,
+      "ci_95": {
+        "lower": 0.32897020502640545,
+        "upper": 0.41198676444299503
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 55,
+        "same": 38,
+        "candidate_worse": 607,
+        "net_edit_difference": 8822
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.07895992366412213,
+        "ci_95": {
+          "lower": -0.07524564855503492,
+          "upper": 0.18376902801408562
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      }
+    },
+    "eta_minus_static": {
+      "candidate": "eta",
+      "baseline": "static",
+      "candidate_minus_baseline": 0.3887592700608283,
+      "ci_95": {
+        "lower": 0.3486205801525042,
+        "upper": 0.43210043861581426
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 32,
+        "same": 30,
+        "candidate_worse": 638,
+        "net_edit_difference": 9331
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.009541984732824471,
+        "ci_95": {
+          "lower": -0.0575623333635761,
+          "upper": 0.0765209673706928
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      }
+    },
+    "eta_minus_bn_tent": {
+      "candidate": "eta",
+      "baseline": "bn_tent",
+      "candidate_minus_baseline": 0.021206566119490042,
+      "ci_95": {
+        "lower": -0.03602836298492634,
+        "upper": 0.07705756258396926
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 311,
+        "same": 73,
+        "candidate_worse": 316,
+        "net_edit_difference": 509
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.06941793893129772,
+        "ci_95": {
+          "lower": -0.18385064406799054,
+          "upper": 0.08914772197342712
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      }
+    },
+    "incumbent_minus_static": {
+      "candidate": "incumbent",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.0203733022248146,
+      "ci_95": {
+        "lower": -0.025978882532847688,
+        "upper": -0.014772690892618399
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 261,
+        "same": 311,
+        "candidate_worse": 128,
+        "net_edit_difference": -489
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.036020992366412215,
+        "ci_95": {
+          "lower": -0.05440044746945102,
+          "upper": -0.017194347322702953
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      }
+    },
+    "online_lora_minus_static": {
+      "candidate": "online_lora",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.008082659778351804,
+      "ci_95": {
+        "lower": -0.012973500769228189,
+        "upper": -0.003299562101976973
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 174,
+        "same": 421,
+        "candidate_worse": 105,
+        "net_edit_difference": -194
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.013120229007633587,
+        "ci_95": {
+          "lower": -0.03023674974599137,
+          "upper": 0.00592590455567071
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      }
+    },
+    "online_lora_minus_incumbent": {
+      "candidate": "online_lora",
+      "baseline": "incumbent",
+      "candidate_minus_baseline": 0.012290642446462795,
+      "ci_95": {
+        "lower": 0.0073708924742183135,
+        "upper": 0.017195454848336903
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 700,
+      "sample_edit_transitions": {
+        "paired_samples": 700,
+        "candidate_better": 151,
+        "same": 321,
+        "candidate_worse": 228,
+        "net_edit_difference": 295
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.022900763358778626,
+        "ci_95": {
+          "lower": 0.005994786120444009,
+          "upper": 0.039699079780652576
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 120,
+          "A2": 119
+        }
+      },
+      "query_error_rate_difference": {
+        "candidate_minus_baseline": 0.0,
+        "ci_95": {
+          "lower": 0.0,
+          "upper": 0.0
+        },
+        "candidate_error_rate": 1.0,
+        "baseline_error_rate": 1.0,
+        "iterations": 10000,
+        "seed": 42,
+        "paired_blocks": 70
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 120,
+      "B": 231,
+      "C": 230,
+      "A2": 119
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

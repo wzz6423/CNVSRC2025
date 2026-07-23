@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "metric": "mean_reliability",
+  "mode": "max",
+  "selection_scope": "cumulative_prequential",
+  "keep": 2,
+  "checkpoints": [
+    {
+      "path": "step_00000700_mean_reliability_0.82622571.pt",
+      "processed_samples": 700,
+      "score": 0.826225706555576
+    },
+    {
+      "path": "step_00000600_mean_reliability_0.81826358.pt",
+      "processed_samples": 600,
+      "score": 0.8182635795513354
+    }
+  ]
+}
