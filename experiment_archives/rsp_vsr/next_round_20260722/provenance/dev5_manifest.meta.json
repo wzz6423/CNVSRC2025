@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "label_mode": "metadata_reencoded",
+  "samples": 681,
+  "source_csv": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_071_126_045_seed42_source.csv",
+  "source_csv_sha256": "fe44c1bc4a99b636d3fcc07b3ab999eb9484c62a4da52cebf6efac88b453eef5",
+  "text_metadata_csv": "/hy-tmp/cn_dataset/chinese_lips/chinese_lips/meta_train.csv",
+  "text_metadata_csv_sha256": "bc0150e082657698019a976b3a280c23f0640df38603f658870f548fe4268bac",
+  "target_vocab": "/hy-tmp/rsp-vsr-dev5-1e61295/VSR/datamodule/char_units.txt",
+  "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+  "oov_policy": "drop",
+  "raw_characters": 25469,
+  "target_characters": 23533,
+  "dropped_characters": 1936,
+  "dropped_rate": 0.07601397777690526,
+  "distinct_dropped_characters": 19,
+  "dropped_character_counts": {
+    "，": 1141,
+    "。": 733,
+    "、": 41,
+    "B": 3,
+    "M": 2,
+    "熠": 2,
+    "；": 2,
+    ",": 1,
+    "A": 1,
+    "D": 1,
+    "E": 1,
+    "I": 1,
+    "S": 1,
+    "T": 1,
+    "喋": 1,
+    "庵": 1,
+    "掣": 1,
+    "玕": 1,
+    "畲": 1
+  },
+  "revisit_protocol": {
+    "domain_sequence": [
+      "071",
+      "126",
+      "045",
+      "071"
+    ],
+    "segment_lengths": {
+      "A1": 115,
+      "B": 229,
+      "C": 223,
+      "A2": 114
+    }
+  }
+}
