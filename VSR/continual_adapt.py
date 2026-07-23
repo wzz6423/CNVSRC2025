@@ -399,6 +399,7 @@ def _build_engine(cfg, model, token_list, device):
         signature_motion_order=cfg.plasticity.signature_motion_order,
         dropout=cfg.plasticity.adapter_dropout,
         allow_growth=allow_growth,
+        adapter_type=cfg.plasticity.adapter_type,
     )
     reliability = ReliabilityGate(
         **OmegaConf.to_container(cfg.plasticity.reliability, resolve=True)
