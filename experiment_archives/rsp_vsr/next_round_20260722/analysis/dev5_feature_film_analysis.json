@@ -1,0 +1,963 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "feature_film": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev5_revisit_feature_film_combined_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 681,
+        "edits": 14131,
+        "characters": 23533,
+        "cer": 0.6004759274210683
+      },
+      "run_summary": {
+        "samples": 681,
+        "cer": 0.6004759274210683,
+        "edits": 14131,
+        "characters": 23533,
+        "mean_reliability": 0.5557892090976516,
+        "updates": {
+          "skipped": 593,
+          "accepted": 88
+        },
+        "attempted_updates": 88,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 43.714987490326166,
+          "total_process_seconds": 1440.7798149883747,
+          "total_seconds": 1484.5469694063067,
+          "mean_video_load_seconds": 0.06419234580077264,
+          "mean_process_seconds": 2.1156825477068644,
+          "mean_total_seconds": 2.1799514969255607
+        },
+        "domains": {
+          "071": {
+            "cer": 0.6183783783783784,
+            "edits": 5148,
+            "characters": 8325,
+            "samples": 229
+          },
+          "126": {
+            "cer": 0.7981173062997827,
+            "edits": 5511,
+            "characters": 6905,
+            "samples": 229
+          },
+          "045": {
+            "cer": 0.4181621100806937,
+            "edits": 3472,
+            "characters": 8303,
+            "samples": 223
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "adapter_type": "feature_film",
+          "signature_motion_order": 2,
+          "route_counts": [
+            681
+          ],
+          "accepted_updates": [
+            88
+          ],
+          "prototype_counts": [
+            89
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 1536,
+          "parameter_tensors": 2,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 681,
+          "planned_budget": 68,
+          "policy_queries": 68,
+          "manifest_queries": 0,
+          "total_queries": 68,
+          "query_rate": 0.09985315712187959,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 612,
+            "periodic_slot": 68,
+            "partial_window": 1
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56",
+          "manifest_metadata_sha256": "27d96cedeba419350abb2daabd1ea9e2be03127d62b0eaf1badd58be7d9421c3",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "aac9c055c5742ac040be761badad6acfd00a9e25f410580a84668073c48d09e9"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 1536,
+          "updatable_parameters": 1536,
+          "updatable_parameter_tensors": 2,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 5.403209400852673e-06,
+          "samples_per_process_second": 0.47266070284687794,
+          "latest_checkpoint_bytes": 61407,
+          "retained_checkpoint_bytes": 184157,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1908683776
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_feature_film_combined_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_feature_film_combined_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_feature_film_combined_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_feature_film_combined_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 68,
+        "diagnosed_feedback_samples": 68,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2158,
+        "target_tokens": 2296,
+        "matched_tokens": 973,
+        "substituted_tokens": 1137,
+        "missing_target_tokens": 186,
+        "extra_prediction_tokens": 48,
+        "mean_token_error_rate": 0.5963972281183902,
+        "mean_matched_frame_rate": 0.0660629769485882
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 681,
+        "queries": 68,
+        "policy_queries": 68,
+        "manifest_queries": 0,
+        "query_rate": 0.09985315712187959,
+        "queried_true_errors": 68,
+        "queried_true_error_rate": 1.0,
+        "nonqueried_true_errors": 612,
+        "nonqueried_true_error_rate": 0.99836867862969,
+        "queried_cer": 0.5683797909407665,
+        "queried_edits": 1305,
+        "queried_characters": 2296,
+        "mean_queried_reliability": 0.5506803102622468,
+        "mean_nonqueried_reliability": 0.5563559384953809,
+        "sources": {
+          "none": 613,
+          "policy": 68
+        },
+        "reasons": {
+          "not_periodic_slot": 612,
+          "periodic_slot": 68,
+          "partial_window": 1
+        },
+        "policy_query_blocks": 68,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 68,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 681,
+        "timing": {
+          "video_load_seconds": {
+            "total": 43.714987490326166,
+            "mean": 0.06419234580077264,
+            "p50": 0.05544315278530121,
+            "p95": 0.14979420602321625,
+            "max": 0.614256102591753
+          },
+          "process_seconds": {
+            "total": 1440.7798149883747,
+            "mean": 2.1156825477068644,
+            "p50": 1.947878472507,
+            "p95": 3.9762134440243244,
+            "max": 7.308989025652409
+          },
+          "total_seconds": {
+            "total": 1484.5469694063067,
+            "mean": 2.1799514969255607,
+            "p50": 2.0362547002732754,
+            "p95": 4.0390275828540325,
+            "max": 7.392029616981745
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1908683776
+      },
+      "feedback_followup": {
+        "horizon": 10,
+        "samples": 671,
+        "edits": 13901,
+        "characters": 23160,
+        "cer": 0.6002158894645941
+      },
+      "segments": {
+        "A1": {
+          "samples": 115,
+          "edits": 2684,
+          "characters": 4349,
+          "cer": 0.6171533685904805
+        },
+        "B": {
+          "samples": 229,
+          "edits": 5511,
+          "characters": 6905,
+          "cer": 0.7981173062997827
+        },
+        "C": {
+          "samples": 223,
+          "edits": 3472,
+          "characters": 8303,
+          "cer": 0.4181621100806937
+        },
+        "A2": {
+          "samples": 114,
+          "edits": 2464,
+          "characters": 3976,
+          "cer": 0.6197183098591549
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.002564941268674348,
+        "static_a2_minus_a1": 0.014486377913375814,
+        "static_corrected": -0.011921436644701466
+      }
+    },
+    "replay": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 681,
+        "edits": 13464,
+        "characters": 23533,
+        "cer": 0.5721327497556623
+      },
+      "run_summary": {
+        "samples": 681,
+        "cer": 0.5721327497556623,
+        "edits": 13464,
+        "characters": 23533,
+        "mean_reliability": 0.5571216720428048,
+        "updates": {
+          "skipped": 592,
+          "accepted": 86,
+          "rolled_back": 3
+        },
+        "attempted_updates": 89,
+        "accepted_update_rate": 0.9662921348314607,
+        "timing": {
+          "total_video_load_seconds": 44.00946908816695,
+          "total_process_seconds": 1408.34480811283,
+          "total_seconds": 1452.4072227738798,
+          "mean_video_load_seconds": 0.06462477105457702,
+          "mean_process_seconds": 2.068054050092261,
+          "mean_total_seconds": 2.132756567949897
+        },
+        "domains": {
+          "071": {
+            "cer": 0.5818618618618618,
+            "edits": 4844,
+            "characters": 8325,
+            "samples": 229
+          },
+          "126": {
+            "cer": 0.7648081100651701,
+            "edits": 5281,
+            "characters": 6905,
+            "samples": 229
+          },
+          "045": {
+            "cer": 0.4021438034445381,
+            "edits": 3339,
+            "characters": 8303,
+            "samples": 223
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "adapter_type": "bottleneck",
+          "signature_motion_order": 2,
+          "route_counts": [
+            681
+          ],
+          "accepted_updates": [
+            86
+          ],
+          "prototype_counts": [
+            87
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 75265,
+          "parameter_tensors": 5,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 681,
+          "planned_budget": 68,
+          "policy_queries": 68,
+          "manifest_queries": 0,
+          "total_queries": 68,
+          "query_rate": 0.09985315712187959,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 612,
+            "periodic_slot": 68,
+            "partial_window": 1
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56",
+          "manifest_metadata_sha256": "27d96cedeba419350abb2daabd1ea9e2be03127d62b0eaf1badd58be7d9421c3",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "867f48385bef58e9e1515149ca4f87c60daedc061507d190267a1ca65ef0b889"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 75265,
+          "updatable_parameter_tensors": 5,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.00026476077835623467,
+          "samples_per_process_second": 0.48354635603232293,
+          "latest_checkpoint_bytes": 949847,
+          "retained_checkpoint_bytes": 2849477,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1909619712
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 68,
+        "diagnosed_feedback_samples": 68,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 2043,
+        "target_tokens": 2296,
+        "matched_tokens": 972,
+        "substituted_tokens": 1047,
+        "missing_target_tokens": 277,
+        "extra_prediction_tokens": 24,
+        "mean_token_error_rate": 0.586786469847846,
+        "mean_matched_frame_rate": 0.06595867036787026
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 681,
+        "queries": 68,
+        "policy_queries": 68,
+        "manifest_queries": 0,
+        "query_rate": 0.09985315712187959,
+        "queried_true_errors": 67,
+        "queried_true_error_rate": 0.9852941176470589,
+        "nonqueried_true_errors": 610,
+        "nonqueried_true_error_rate": 0.9951060358890701,
+        "queried_cer": 0.5387630662020906,
+        "queried_edits": 1237,
+        "queried_characters": 2296,
+        "mean_queried_reliability": 0.5497772939818452,
+        "mean_nonqueried_reliability": 0.5579363828228124,
+        "sources": {
+          "none": 613,
+          "policy": 68
+        },
+        "reasons": {
+          "not_periodic_slot": 612,
+          "periodic_slot": 68,
+          "partial_window": 1
+        },
+        "policy_query_blocks": 68,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 68,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 681,
+        "timing": {
+          "video_load_seconds": {
+            "total": 44.00946908816695,
+            "mean": 0.06462477105457702,
+            "p50": 0.056132275611162186,
+            "p95": 0.14956385642290115,
+            "max": 0.4686738960444927
+          },
+          "process_seconds": {
+            "total": 1408.34480811283,
+            "mean": 2.068054050092261,
+            "p50": 1.9064115062355995,
+            "p95": 4.0018468871712685,
+            "max": 6.973246064037085
+          },
+          "total_seconds": {
+            "total": 1452.4072227738798,
+            "mean": 2.132756567949897,
+            "p50": 1.9876649715006351,
+            "p95": 4.061957202851772,
+            "max": 7.045256461948156
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1909619712
+      },
+      "feedback_followup": {
+        "horizon": 10,
+        "samples": 671,
+        "edits": 13234,
+        "characters": 23160,
+        "cer": 0.5714162348877375
+      },
+      "segments": {
+        "A1": {
+          "samples": 115,
+          "edits": 2590,
+          "characters": 4349,
+          "cer": 0.595539204414808
+        },
+        "B": {
+          "samples": 229,
+          "edits": 5281,
+          "characters": 6905,
+          "cer": 0.7648081100651701
+        },
+        "C": {
+          "samples": 223,
+          "edits": 3339,
+          "characters": 8303,
+          "cer": 0.4021438034445381
+        },
+        "A2": {
+          "samples": 114,
+          "edits": 2254,
+          "characters": 3976,
+          "cer": 0.5669014084507042
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": -0.028637795964103763,
+        "static_a2_minus_a1": 0.014486377913375814,
+        "static_corrected": -0.04312417387747958
+      }
+    },
+    "static": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev5_revisit_static_seed42",
+      "overall": {
+        "samples": 681,
+        "edits": 14212,
+        "characters": 23533,
+        "cer": 0.6039179025198658
+      },
+      "run_summary": {
+        "samples": 681,
+        "cer": 0.6039179025198658,
+        "edits": 14212,
+        "characters": 23533,
+        "mean_reliability": 0.7768733023538519,
+        "updates": {
+          "skipped": 681
+        },
+        "attempted_updates": 0,
+        "accepted_update_rate": 0.0,
+        "timing": {
+          "total_video_load_seconds": 41.887959744781256,
+          "total_process_seconds": 1253.2584808208048,
+          "total_seconds": 1295.2031696289778,
+          "mean_video_load_seconds": 0.06150948567515603,
+          "mean_process_seconds": 1.840320823525411,
+          "mean_total_seconds": 1.901913611789982
+        },
+        "domains": {
+          "071": {
+            "cer": 0.6224624624624625,
+            "edits": 5182,
+            "characters": 8325,
+            "samples": 229
+          },
+          "126": {
+            "cer": 0.8034757422157857,
+            "edits": 5548,
+            "characters": 6905,
+            "samples": 229
+          },
+          "045": {
+            "cer": 0.4193664940382994,
+            "edits": 3482,
+            "characters": 8303,
+            "samples": 223
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "adapter_type": "bottleneck",
+          "signature_motion_order": 2,
+          "route_counts": [
+            681
+          ],
+          "accepted_updates": [
+            0
+          ],
+          "prototype_counts": [
+            1
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 0,
+          "parameter_tensors": 0,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "static",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": false,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 0,
+          "total_samples": 681,
+          "planned_budget": 0,
+          "policy_queries": 0,
+          "manifest_queries": 0,
+          "total_queries": 0,
+          "query_rate": 0.0,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "querying_disabled": 681
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56",
+          "manifest_metadata_sha256": "27d96cedeba419350abb2daabd1ea9e2be03127d62b0eaf1badd58be7d9421c3",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "1105d4fe6c7fe3bb2f044f55a30cf4d30a7ab09d863d5337e8d3e7e77c2b665e"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 0,
+          "updatable_parameter_tensors": 0,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.0,
+          "samples_per_process_second": 0.5433835161873297,
+          "latest_checkpoint_bytes": 343041,
+          "retained_checkpoint_bytes": 1029059,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1882285056
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 0,
+        "diagnosed_feedback_samples": 0,
+        "diagnostic_coverage": 0.0,
+        "predicted_tokens": 0,
+        "target_tokens": 0,
+        "matched_tokens": 0,
+        "substituted_tokens": 0,
+        "missing_target_tokens": 0,
+        "extra_prediction_tokens": 0,
+        "mean_token_error_rate": null,
+        "mean_matched_frame_rate": null
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 681,
+        "queries": 0,
+        "policy_queries": 0,
+        "manifest_queries": 0,
+        "query_rate": 0.0,
+        "queried_true_errors": 0,
+        "queried_true_error_rate": null,
+        "nonqueried_true_errors": 680,
+        "nonqueried_true_error_rate": 0.9985315712187959,
+        "queried_cer": null,
+        "queried_edits": 0,
+        "queried_characters": 0,
+        "mean_queried_reliability": null,
+        "mean_nonqueried_reliability": 0.7768733023538525,
+        "sources": {
+          "none": 681
+        },
+        "reasons": {
+          "querying_disabled": 681
+        },
+        "policy_query_blocks": 0,
+        "max_policy_queries_per_block": 0
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 0,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 681,
+        "timing": {
+          "video_load_seconds": {
+            "total": 41.887959744781256,
+            "mean": 0.06150948567515603,
+            "p50": 0.05473584309220314,
+            "p95": 0.1396309994161129,
+            "max": 0.24624042212963104
+          },
+          "process_seconds": {
+            "total": 1253.2584808208048,
+            "mean": 1.840320823525411,
+            "p50": 1.781815093010664,
+            "p95": 3.1629283726215363,
+            "max": 3.8845122046768665
+          },
+          "total_seconds": {
+            "total": 1295.2031696289778,
+            "mean": 1.901913611789982,
+            "p50": 1.839398480951786,
+            "p95": 3.2317089289426804,
+            "max": 3.958781398832798
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1882285056
+      },
+      "segments": {
+        "A1": {
+          "samples": 115,
+          "edits": 2677,
+          "characters": 4349,
+          "cer": 0.6155438031731433
+        },
+        "B": {
+          "samples": 229,
+          "edits": 5548,
+          "characters": 6905,
+          "cer": 0.8034757422157857
+        },
+        "C": {
+          "samples": 223,
+          "edits": 3482,
+          "characters": 8303,
+          "cer": 0.4193664940382994
+        },
+        "A2": {
+          "samples": 114,
+          "edits": 2505,
+          "characters": 3976,
+          "cer": 0.6300301810865191
+        }
+      },
+      "forgetting": {
+        "method_a2_minus_a1": 0.014486377913375814,
+        "static_a2_minus_a1": 0.014486377913375814,
+        "static_corrected": 0.0
+      }
+    }
+  },
+  "comparisons": {
+    "feature_film_minus_replay": {
+      "candidate": "feature_film",
+      "baseline": "replay",
+      "candidate_minus_baseline": 0.028343177665406026,
+      "ci_95": {
+        "lower": 0.022991255251460486,
+        "upper": 0.03380180348554878
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 681,
+      "sample_edit_transitions": {
+        "paired_samples": 681,
+        "candidate_better": 83,
+        "same": 316,
+        "candidate_worse": 282,
+        "net_edit_difference": 667
+      },
+      "feedback_followup": {
+        "horizon": 10,
+        "candidate_minus_baseline": 0.02879965457685665,
+        "ci_95": {
+          "lower": 0.02341945343670713,
+          "upper": 0.03436592296737909
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": 671,
+        "sample_edit_transitions": {
+          "paired_samples": 671,
+          "candidate_better": 83,
+          "same": 306,
+          "candidate_worse": 282,
+          "net_edit_difference": 667
+        }
+      },
+      "revisit_forgetting_difference": {
+        "point": 0.031202737232778135,
+        "ci_95": {
+          "lower": 0.013034508766118584,
+          "upper": 0.04988532107586618
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 115,
+          "A2": 114
+        }
+      },
+      "query_error_rate_difference": {
+        "candidate_minus_baseline": 0.014705882352941176,
+        "ci_95": {
+          "lower": 0.0,
+          "upper": 0.04411764705882353
+        },
+        "candidate_error_rate": 1.0,
+        "baseline_error_rate": 0.9852941176470589,
+        "iterations": 10000,
+        "seed": 42,
+        "paired_blocks": 68
+      }
+    },
+    "feature_film_minus_static": {
+      "candidate": "feature_film",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.0034419750987974332,
+      "ci_95": {
+        "lower": -0.00585521177089573,
+        "upper": -0.0010738658742750428
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 681,
+      "sample_edit_transitions": {
+        "paired_samples": 681,
+        "candidate_better": 88,
+        "same": 546,
+        "candidate_worse": 47,
+        "net_edit_difference": -81
+      },
+      "feedback_followup": {
+        "horizon": 10,
+        "candidate_minus_baseline": -0.0034974093264248706,
+        "ci_95": {
+          "lower": -0.0059131373346578845,
+          "upper": -0.0010823623949715434
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": 671,
+        "sample_edit_transitions": {
+          "paired_samples": 671,
+          "candidate_better": 88,
+          "same": 536,
+          "candidate_worse": 47,
+          "net_edit_difference": -81
+        }
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.011921436644701505,
+        "ci_95": {
+          "lower": -0.02121245575502467,
+          "upper": -0.003228661259472502
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 115,
+          "A2": 114
+        }
+      }
+    },
+    "replay_minus_static": {
+      "candidate": "replay",
+      "baseline": "static",
+      "candidate_minus_baseline": -0.03178515276420346,
+      "ci_95": {
+        "lower": -0.03733414205007138,
+        "upper": -0.026196254626996568
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 681,
+      "sample_edit_transitions": {
+        "paired_samples": 681,
+        "candidate_better": 305,
+        "same": 295,
+        "candidate_worse": 81,
+        "net_edit_difference": -748
+      },
+      "feedback_followup": {
+        "horizon": 10,
+        "candidate_minus_baseline": -0.03229706390328152,
+        "ci_95": {
+          "lower": -0.03800687640292684,
+          "upper": -0.026713301355829756
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": 671,
+        "sample_edit_transitions": {
+          "paired_samples": 671,
+          "candidate_better": 305,
+          "same": 285,
+          "candidate_worse": 81,
+          "net_edit_difference": -748
+        }
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.04312417387747963,
+        "ci_95": {
+          "lower": -0.06232346117086379,
+          "upper": -0.024437870013410364
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 115,
+          "A2": 114
+        }
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 115,
+      "B": 229,
+      "C": 223,
+      "A2": 114
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

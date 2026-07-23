@@ -59,3 +59,22 @@ skipped；两条 F10 轨必须各有 68 次策略查询。Feature-FiLM 必须恰
 4. 两条 F10 轨均恰好使用 68 次查询，所有严格验收通过。
 
 任一条件失败则为 `NO-GO`：holdout2 继续冻结未读，不追加 seed 或扫参。
+
+## 冻结结果
+
+三路均在 attempt 1 完成 681 条样本、28 条 history 和 3 个 checkpoint，
+最终严格审计为 `AUDIT_OK`，结构化错误为 0。static、replay adapter 和
+Feature-FiLM 的 CER 分别为 `0.6039179025`、`0.5721327498` 和
+`0.6004759274`。
+
+10,000 次配对 bootstrap 显示，Feature-FiLM 相对 replay adapter 的 CER 差为
+`+0.0283431777`，95% CI `[+0.0229912553,+0.0338018035]`；对应的
+static-corrected forgetting 差为 `+0.0312027372`，95% CI
+`[+0.0130345088,+0.0498853211]`。Feature-FiLM 相对 static 的 CER 差为
+`-0.0034419751`，95% CI `[-0.0058552118,-0.0010738659]`。
+
+Feature-FiLM 以 1,536 个可更新参数和 184,157 字节保留 checkpoint 获得了显著
+小于 replay adapter 的状态开销，但未达到主要 CER 门槛，且回访遗忘显著更差。
+因此预注册决策为 `NO-GO`：保留 replay adapter 作为 development incumbent，
+不追加 seed 或参数搜索，holdout2 保持冻结未读。以上结果仅来自 Chinese-LiPS
+训练池构造的 development 流，不作为 test 或 confirmatory 结果报告。

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "study": "rsp_vsr_dev5_feature_film",
+  "status": "AUDIT_OK",
+  "final": true,
+  "audited_at": "2026-07-23T23:17:23Z",
+  "server": "i-1.gpushare.com:1442",
+  "code_commit": "1e61295411e342ce0d567c2476049cd47595fc02",
+  "manifest_sha256": "8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56",
+  "manifest_metadata_sha256": "27d96cedeba419350abb2daabd1ea9e2be03127d62b0eaf1badd58be7d9421c3",
+  "runs": {
+    "dev5_revisit_feature_film_combined_periodic_feedback10_seed42": {
+      "state": "completed",
+      "attempt": 1,
+      "samples": 681,
+      "history_rows": 28,
+      "pt_files": 3,
+      "structured_errors": 0
+    },
+    "dev5_revisit_replay_adapter_combined_periodic_feedback10_seed42": {
+      "state": "completed",
+      "attempt": 1,
+      "samples": 681,
+      "history_rows": 28,
+      "pt_files": 3,
+      "structured_errors": 0
+    },
+    "dev5_revisit_static_seed42": {
+      "state": "completed",
+      "attempt": 1,
+      "samples": 681,
+      "history_rows": 28,
+      "pt_files": 3,
+      "structured_errors": 0
+    }
+  }
+}
