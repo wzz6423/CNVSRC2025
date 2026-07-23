@@ -1,0 +1,153 @@
+[2026-07-23T22:54:30Z] launch attempt 1/4: /hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth require_manifest_metadata=true plasticity.allow_growth=false plasticity.max_experts=1 plasticity.feedback_update_strategy=full_sequence feedback.random_seed=42 feedback.uncertainty_history_window=100 feedback.noise_rate=0.0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability checkpoint_selection_mode=max seed=42 plasticity.mode=static plasticity.adapter_type=bottleneck plasticity.adaptation_objective=rsp plasticity.non_feedback_updates_enabled=false feedback.strategy=periodic feedback.every=0 
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/lightning_fabric/__init__.py:29: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+持续适应设备：cuda:0
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+已处理 25 条，CER=0.5827505827505828，专家数=1
+已处理 50 条，CER=0.618894256575416，专家数=1
+已处理 75 条，CER=0.6175，专家数=1
+已处理 100 条，CER=0.6138955184301247，专家数=1
+已处理 125 条，CER=0.6366968520914187，专家数=1
+已处理 150 条，CER=0.6568627450980392，专家数=1
+已处理 175 条，CER=0.6738744553816363，专家数=1
+已处理 200 条，CER=0.6870699541284404，专家数=1
+已处理 225 条，CER=0.6915306915306916，专家数=1
+已处理 250 条，CER=0.706605222734255，专家数=1
+已处理 275 条，CER=0.7169049437957001，专家数=1
+已处理 300 条，CER=0.7259460547504025，专家数=1
+已处理 325 条，CER=0.7289466305262174，专家数=1
+已处理 350 条，CER=0.7253159041394336，专家数=1
+已处理 375 条，CER=0.7000644329896907，专家数=1
+已处理 400 条，CER=0.6805399325084365，专家数=1
+已处理 425 条，CER=0.6633545588132391，专家数=1
+已处理 450 条，CER=0.6468004196170994，专家数=1
+已处理 475 条，CER=0.6368097397353872，专家数=1
+已处理 500 条，CER=0.6277784311419499，专家数=1
+已处理 525 条，CER=0.6130161729561496，专家数=1
+已处理 550 条，CER=0.6050277851283409，专家数=1
+已处理 575 条，CER=0.5994440232499368，专家数=1
+已处理 600 条，CER=0.5993110809237338，专家数=1
+已处理 625 条，CER=0.6028080977703144，专家数=1
+已处理 650 条，CER=0.6057885568806111，专家数=1
+已处理 675 条，CER=0.6043616381900919，专家数=1
+{
+  "samples": 681,
+  "cer": 0.6039179025198658,
+  "edits": 14212,
+  "characters": 23533,
+  "mean_reliability": 0.7768733023538519,
+  "updates": {
+    "skipped": 681
+  },
+  "attempted_updates": 0,
+  "accepted_update_rate": 0.0,
+  "timing": {
+    "total_video_load_seconds": 41.887959744781256,
+    "total_process_seconds": 1253.2584808208048,
+    "total_seconds": 1295.2031696289778,
+    "mean_video_load_seconds": 0.06150948567515603,
+    "mean_process_seconds": 1.840320823525411,
+    "mean_total_seconds": 1.901913611789982
+  },
+  "domains": {
+    "071": {
+      "cer": 0.6224624624624625,
+      "edits": 5182,
+      "characters": 8325,
+      "samples": 229
+    },
+    "126": {
+      "cer": 0.8034757422157857,
+      "edits": 5548,
+      "characters": 6905,
+      "samples": 229
+    },
+    "045": {
+      "cer": 0.4193664940382994,
+      "edits": 3482,
+      "characters": 8303,
+      "samples": 223
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "adapter_type": "bottleneck",
+    "signature_motion_order": 2,
+    "route_counts": [
+      681
+    ],
+    "accepted_updates": [
+      0
+    ],
+    "prototype_counts": [
+      1
+    ],
+    "pending_shift_count": 0
+  },
+  "parameter_adaptation": {
+    "parameter_update_mode": "adapter",
+    "parameter_count": 0,
+    "parameter_tensors": 0,
+    "parameter_names": [],
+    "parameter_modules": [],
+    "eta_entropy_margin": null,
+    "eta_resolved_entropy_margin": null,
+    "eta_redundancy_margin": 0.05,
+    "eta_momentum": 0.9,
+    "eta_reference_initialized": false,
+    "eta_reliable_samples": 0,
+    "eta_nonredundant_samples": 0
+  },
+  "mode": "static",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": false,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 0,
+    "total_samples": 681,
+    "planned_budget": 0,
+    "policy_queries": 0,
+    "manifest_queries": 0,
+    "total_queries": 0,
+    "query_rate": 0.0,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "querying_disabled": 681
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "8c8e967e7076562da70d47f45883ead84c5c2dd2ef47f69412467db2e89ebf56",
+    "manifest_metadata_sha256": "27d96cedeba419350abb2daabd1ea9e2be03127d62b0eaf1badd58be7d9421c3",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "1105d4fe6c7fe3bb2f044f55a30cf4d30a7ab09d863d5337e8d3e7e77c2b665e"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "model_parameters_with_adaptation": 284275490,
+    "adapter_bank_parameters": 75265,
+    "updatable_parameters": 0,
+    "updatable_parameter_tensors": 0,
+    "parameter_update_mode": "adapter",
+    "updatable_fraction_of_base": 0.0,
+    "samples_per_process_second": 0.5433835161873297,
+    "latest_checkpoint_bytes": 343041,
+    "retained_checkpoint_bytes": 1029059,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1882285056
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev5_feature_film_1e61295/dev5_revisit_static_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

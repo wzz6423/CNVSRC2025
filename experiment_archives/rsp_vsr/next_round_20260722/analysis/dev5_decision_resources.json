@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "study": "rsp_vsr_dev5_feature_film",
+  "scope": "development_only_single_seed",
+  "source_analysis": {
+    "path": "dev5_feature_film_analysis.json",
+    "sha256": "f7faa3f0da3e214cd15bceba92ff0a93d73ebb69ba5e05e57e6b285e58c8afc2",
+    "bootstrap_iterations": 10000,
+    "paired_samples": 681,
+    "seed": 42
+  },
+  "integrity": {
+    "final_audit": "AUDIT_OK",
+    "runs": 3,
+    "samples_per_run": 681,
+    "history_rows_per_run": 28,
+    "attempt": 1,
+    "structured_errors": 0,
+    "retained_checkpoints_per_run": 3
+  },
+  "methods": {
+    "static": {
+      "cer": 0.6039179025198658,
+      "feedback_queries": 0,
+      "updates": {
+        "skipped": 681
+      },
+      "updatable_parameters": 0,
+      "updatable_parameter_tensors": 0,
+      "throughput_samples_per_process_second": 0.5433835161873297,
+      "peak_gpu_memory_allocated_bytes": 1882285056,
+      "retained_checkpoint_bytes": 1029059
+    },
+    "replay_adapter": {
+      "cer": 0.5721327497556623,
+      "feedback_queries": 68,
+      "updates": {
+        "accepted": 86,
+        "rolled_back": 3,
+        "skipped": 592
+      },
+      "static_corrected_forgetting": -0.04312417387747958,
+      "updatable_parameters": 75265,
+      "updatable_parameter_tensors": 5,
+      "throughput_samples_per_process_second": 0.48354635603232293,
+      "peak_gpu_memory_allocated_bytes": 1909619712,
+      "retained_checkpoint_bytes": 2849477
+    },
+    "feature_film": {
+      "cer": 0.6004759274210683,
+      "feedback_queries": 68,
+      "updates": {
+        "accepted": 88,
+        "skipped": 593
+      },
+      "static_corrected_forgetting": -0.011921436644701466,
+      "updatable_parameters": 1536,
+      "updatable_parameter_tensors": 2,
+      "throughput_samples_per_process_second": 0.47266070284687794,
+      "peak_gpu_memory_allocated_bytes": 1908683776,
+      "retained_checkpoint_bytes": 184157
+    }
+  },
+  "key_comparisons": {
+    "feature_film_minus_replay": {
+      "cer_difference": 0.028343177665406026,
+      "ci_95": [
+        0.022991255251460486,
+        0.03380180348554878
+      ],
+      "static_corrected_forgetting_difference": 0.031202737232778135,
+      "forgetting_ci_95": [
+        0.013034508766118584,
+        0.04988532107586618
+      ]
+    },
+    "feature_film_minus_static": {
+      "cer_difference": -0.0034419750987974332,
+      "ci_95": [
+        -0.00585521177089573,
+        -0.0010738658742750428
+      ]
+    },
+    "replay_minus_static": {
+      "cer_difference": -0.03178515276420346,
+      "ci_95": [
+        -0.03733414205007138,
+        -0.026196254626996568
+      ]
+    }
+  },
+  "pre_registered_gate": {
+    "feature_film_beats_replay_by_0_003_with_ci_below_zero": false,
+    "feature_film_beats_static_with_ci_below_zero": true,
+    "feature_film_forgetting_not_worse_than_replay": false,
+    "matched_68_query_budget_and_integrity": true,
+    "decision": "NO_GO"
+  },
+  "decisions": {
+    "feature_film": {
+      "decision": "NO_GO",
+      "reason": "CER and static-corrected forgetting are significantly worse than the matched replay adapter"
+    },
+    "replay_adapter": {
+      "decision": "RETAIN_DEVELOPMENT_INCUMBENT",
+      "reason": "Significantly improves CER and static-corrected forgetting over static and outperforms Feature-FiLM"
+    },
+    "holdout2": {
+      "decision": "FROZEN_UNREAD",
+      "reason": "The pre-registered development candidate failed two promotion conditions"
+    }
+  },
+  "restrictions": {
+    "holdout2_read": false,
+    "additional_seeds": false,
+    "parameter_sweep": false,
+    "confirmatory_claim": false
+  }
+}
