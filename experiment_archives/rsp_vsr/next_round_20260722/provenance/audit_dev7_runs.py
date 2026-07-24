@@ -215,9 +215,7 @@ def check_history(name, spec, history, processed, completed):
     assert steps == list(range(25, processed + 1, 25)), name
     for row in history:
         step = row["processed_samples"]
-        expected_checkpoint = step % 100 == 0 or (
-            completed and step == EXPECTED_SAMPLES
-        )
+        expected_checkpoint = step % 100 == 0
         assert row["checkpoint"] is expected_checkpoint, (name, step)
         parameter = row["parameter_adaptation"]
         assert parameter["parameter_update_mode"] == "adapter", (name, step)

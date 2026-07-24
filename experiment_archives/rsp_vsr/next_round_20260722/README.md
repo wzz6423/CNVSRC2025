@@ -80,18 +80,23 @@ not a completed 681-sample run and not a test of training-time counterfactual
 visual learning. No language model is downloaded or trained, and holdout2
 remains frozen and unread.
 
-Dev7 is pre-registered but has no result at archive time. Its 625-sample stream
-is frozen at manifest SHA-256
-`22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8` and
-sidecar SHA-256
-`108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf`.
-The fixed implementation commit is `b9d6d499dfe88703cf45a661bf4463880cf0a632`.
-No holdout2 data is read or authorized by this component experiment.
+Both target-dev7 arms completed 625 samples and passed final strict acceptance
+at attempt 1 with 25 history rows, 62 fixed queries, three checkpoints, matching
+UID/order/hashes, and zero structured errors. Replay CER is 0.7750089 and the
+counterfactual candidate reaches 0.7731310. Candidate minus replay is -0.0018779
+CER, paired 95% CI [-0.0046971, +0.0010184], so it misses the -0.003 materiality
+threshold and the interval crosses zero. Its A2-minus-A1 forgetting difference
+is -0.0069556, CI [-0.0179301, +0.0040156], whose upper bound exceeds the
+allowed +0.002. All 62 feedback points have valid negatives and positive
+pre-update violations, but the aggregate violation reduction is only 1.929%
+(95% CI [1.712%, 2.154%]), below the required 20%. Dev7 is therefore `NO_GO`:
+no additional seed, parameter sweep, or holdout2 read is performed.
 
 ## Layout
 
-- `provenance/study_manifest.json`: immutable study inputs, server paths, code
-  revisions, and run states.
+- `provenance/study_manifest.json`: initial next-round inputs and run states
+  through target-dev2, plus the frozen target-dev3/holdout inputs. Later tracks
+  use their dedicated audit and artifact-hash files below.
 - `runs/<run_name>/`: unmodified runtime metadata, logs, per-sample results,
   metric history, summaries, and adaptation checkpoints.
 - `analysis/`: paired bootstrap, decision, and resource summaries generated
@@ -106,6 +111,10 @@ No holdout2 data is read or authorized by this component experiment.
   analysis with 10,000 paired bootstrap replicates.
 - `analysis/dev5_decision_resources.json`: dev5 integrity, resource, and
   promotion decision summary.
+- `analysis/dev7_counterfactual_margin_analysis.json`: strict two-arm dev7
+  analysis with 10,000 paired bootstrap replicates.
+- `analysis/dev7_decision_resources.json`: dev7 integrity, mechanism, resource,
+  and component-gate decision summary.
 - `provenance/dev3_audit.json`: hash, disjointness, video-existence, and
   deterministic-regeneration audit for target-dev3.
 - `provenance/dev4_audit.json`: source, manifest, stream-order, vocabulary, and
@@ -134,6 +143,10 @@ No holdout2 data is read or authorized by this component experiment.
 - `provenance/audit_dev7_runs.py`: prefix/final validator for both dev7 arms,
   including N-best, counterfactual arithmetic, rollback, checkpoint, and early
   viability checks.
+- `provenance/dev7_final_audit.json`: accepted final target-dev7 audit output.
+- `provenance/dev7_artifacts.sha256`: immutable hashes for dev7 analyses,
+  provenance inputs/tools, and accepted run artifacts. Manifest SHA-256:
+  `67fc4056466f1a1f72e2b79527748b219aec76ebd45c151ff936d5df64e35f1c`.
 - `provenance/launch_dev7_wave.sh`: hash-locked two-GPU launcher for the sole
   matched replay and counterfactual-margin comparison.
 - `provenance/dev4_artifacts.sha256`: immutable hashes for dev4 analyses,

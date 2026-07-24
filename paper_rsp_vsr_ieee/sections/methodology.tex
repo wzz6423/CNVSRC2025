@@ -27,6 +27,15 @@ As a much smaller alternative to the bottleneck adapter, we evaluate feature-wis
 \end{equation}
 Both vectors are initialized to zero, so the 1,536-parameter module is initially the identity on 768-dimensional features. The backbone and decoder remain frozen, and the candidate reuses the replay objective, correction schedule, pseudo-target admission, and transactional rollback without changing thresholds or learning rate. This isolates whether direct channel-wise visual-feature adaptation is sufficient under the same sparse-feedback protocol.
 
+\subsection{Counterfactual Beam-Margin Candidate}
+
+The beam-repair preflight shows limited direct oracle coverage, but its erroneous sequences can still provide training-time negatives. At a scheduled feedback step, we filter the pre-update top-10 decoder list to valid CTC sequences distinct from the correction $y$, and choose the candidate $y^{-}$ with the lowest pre-update CTC loss. The additional hinge term is
+\begin{equation}
+  \mathcal L_{\mathrm{margin}}=
+  \left[\mathcal L_{\mathrm{CTC}}(y)-\mathcal L_{\mathrm{CTC}}(y^{-})+m\right]_{+},
+\end{equation}
+with $m=0.2$. The candidate optimizes $\mathcal L_{\mathrm{full}}+0.25\mathcal L_{\mathrm{margin}}$; non-feedback samples retain the incumbent reliability-gated replay path. Replay and the candidate share the same prequential prediction protocol, N-best size, correction positions, adapter, optimizer, and transactional checks. The candidate additionally restores the adapter and optimizer whenever its post-update margin violation exceeds the pre-update value by more than $10^{-6}$. This matched component test asks whether decoder errors are useful as contrastive supervision, not whether a language model can rewrite the transcript.
+
 \subsection{Separating Update Sources}
 
 Sparse feedback and unlabeled pseudo-target adaptation are distinct information sources. We distinguish schedules under the same prequential order and adapter parameterization. \emph{Pseudo-only} receives no corrections and may update only when an unlabeled sample passes the reliability gate. \emph{Feedback-only} predicts every sample but disables all non-feedback parameter updates; only a pre-scheduled correction can change the adapter. \emph{Combined replay} retains reliability-gated pseudo updates between the same scheduled corrections. Complete factorial attribution requires four arms on the same stream: static, pseudo-only, feedback-only, and combined. When only feedback-only and combined are available, the comparison is a \emph{partial update-source comparison}: it isolates the incremental effect of enabling reliability-gated pseudo updates between fixed corrections, but cannot attribute gains to autonomous pseudo-only adaptation or to a full interaction term. Feedback-only is implemented as a scheduling rule rather than by changing reliability thresholds, which would confound update admission with post-update safety checks.

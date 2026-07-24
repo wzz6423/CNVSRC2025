@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "scope": "development_only_single_seed",
+  "experiment": "target-dev7-counterfactual-beam-margin",
+  "code_commit": "b9d6d499dfe88703cf45a661bf4463880cf0a632",
+  "analysis_artifact": {
+    "path": "dev7_counterfactual_margin_analysis.json",
+    "sha256": "1a26a147bb1ea83d192c141f7fdb2e4d58c35176f1b4a30a1cc49ddbaf5bba1b",
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 42,
+    "bootstrap_batch_size": 256
+  },
+  "fixed_inputs": {
+    "samples": 625,
+    "segment_lengths": {
+      "A1": 107,
+      "B": 206,
+      "C": 206,
+      "A2": 106
+    },
+    "source_sha256": "7e4ecd49a13c4aaca4de8a35ffe0d267497684b9e284c6bd9c479c18303aa243",
+    "manifest_sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8",
+    "manifest_metadata_sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "feedback_strategy": "periodic",
+    "feedback_every": 10,
+    "planned_queries": 62
+  },
+  "integrity": {
+    "status": "AUDIT_OK",
+    "audit_artifact": "../provenance/dev7_final_audit.json",
+    "audit_artifact_sha256": "9d228d9841000e03cc30a82d264cb2537aae95f6d4b8bf616a427dba8b5d60ed",
+    "auditor_sha256": "76aebce475ee7283920a55ef62d90be644e5e6f3b3948b8a8fa071f247e685b6",
+    "attempt": 1,
+    "samples_per_arm": 625,
+    "history_rows_per_arm": 25,
+    "queries_per_arm": 62,
+    "retained_checkpoint_files_per_arm": 3,
+    "structured_errors_per_arm": 0,
+    "candidate_valid_negatives": 62,
+    "candidate_positive_violations_before": 62
+  },
+  "results": {
+    "replay": {
+      "cer": 0.7750088818961579,
+      "edits": 15270,
+      "characters": 19703,
+      "A1_cer": 0.7937775330396476,
+      "A2_cer": 0.8226865671641791,
+      "accepted_feedback_updates": 62,
+      "accepted_nonfeedback_updates": 2,
+      "skipped_updates": 561
+    },
+    "counterfactual_margin": {
+      "cer": 0.7731309952799066,
+      "edits": 15233,
+      "characters": 19703,
+      "A1_cer": 0.7962555066079295,
+      "A2_cer": 0.8182089552238806,
+      "accepted_feedback_updates": 62,
+      "accepted_nonfeedback_updates": 1,
+      "skipped_updates": 562
+    },
+    "counterfactual_minus_replay": {
+      "cer_difference": -0.0018778866162513324,
+      "cer_difference_ci_95": {
+        "lower": -0.004697090552199648,
+        "upper": 0.001018362386323696
+      },
+      "candidate_better_samples": 90,
+      "same_samples": 467,
+      "candidate_worse_samples": 68,
+      "net_edit_difference": -37,
+      "a2_minus_a1_forgetting_difference": -0.006955585508580446,
+      "a2_minus_a1_forgetting_difference_ci_95": {
+        "lower": -0.017930135587258096,
+        "upper": 0.004015579128182723
+      },
+      "static_corrected_interpretation": "The candidate-minus-replay difference is algebraically unchanged by subtracting the same static A2-minus-A1 term. Dev7 has no static arm, so absolute static-corrected levels are not reported."
+    }
+  },
+  "mechanism": {
+    "valid_negative_pairs": 62,
+    "applied": 62,
+    "rolled_back": 0,
+    "no_valid_negative": 0,
+    "violation_sum_before": 166.6327359676361,
+    "violation_sum_after": 163.41836041212082,
+    "violation_mean_before": 2.68762477367155,
+    "violation_mean_after": 2.63578000664711,
+    "after_minus_before": -0.05184476702444015,
+    "after_minus_before_ci_95": {
+      "lower": -0.059021744011871276,
+      "upper": -0.045170945121395974
+    },
+    "aggregate_relative_reduction": 0.019290180508946264,
+    "relative_reduction_ci_95": {
+      "lower": 0.017120013178715858,
+      "upper": 0.021544894101115132
+    },
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 42,
+    "bootstrap_batch_size": 256
+  },
+  "resources": {
+    "updatable_parameters_per_arm": 75265,
+    "updatable_parameter_tensors_per_arm": 5,
+    "updatable_fraction_of_base_percent": 0.026476077835623467,
+    "replay": {
+      "samples_per_process_second": 0.5302381170870273,
+      "peak_gpu_memory_gib": 1.8021917343139648,
+      "retained_checkpoint_mib": 2.717778205871582
+    },
+    "counterfactual_margin": {
+      "samples_per_process_second": 0.5239114923616353,
+      "peak_gpu_memory_gib": 1.803466796875,
+      "retained_checkpoint_mib": 2.718998908996582
+    }
+  },
+  "preregistered_component_gate": {
+    "cer_material_and_significant": {
+      "criterion": "candidate_minus_replay_cer <= -0.003 and ci_95_upper < 0",
+      "passed": false
+    },
+    "forgetting_non_degradation": {
+      "criterion": "candidate_minus_replay_forgetting <= 0.002 and ci_95_upper <= 0.002",
+      "point_passed": true,
+      "interval_passed": false,
+      "passed": false
+    },
+    "violation_reduction": {
+      "criterion": "aggregate_relative_reduction >= 0.20 and after_minus_before_ci_95_upper < 0",
+      "magnitude_passed": false,
+      "interval_passed": true,
+      "passed": false
+    },
+    "budget_and_integrity": {
+      "criterion": "both arms have 62 queries and pass final strict audit",
+      "passed": true
+    },
+    "all_conditions_passed": false
+  },
+  "decision": {
+    "component_gate": "NO_GO",
+    "additional_seed": false,
+    "parameter_sweep": false,
+    "holdout2_read": false,
+    "holdout2_status": "frozen_unread",
+    "reason": "The CER effect misses the materiality threshold and its interval crosses zero; the forgetting interval exceeds the non-degradation bound; and the statistically directional violation reduction is only 1.929%, far below the required 20%."
+  },
+  "evidence_boundary": {
+    "claimable": "On target-dev7, counterfactual beam-margin training consistently reduces its local violation and has a slightly lower CER point estimate than matched replay.",
+    "not_claimable": "The component materially or significantly improves CER, preserves forgetting under the pre-registered confidence bound, generalizes across seeds, or improves any holdout/test set."
+  }
+}

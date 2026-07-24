@@ -1,0 +1,28 @@
+{
+  "final": true,
+  "runs": {
+    "dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42": {
+      "attempt": 1,
+      "feedback_queries": 62,
+      "history_rows": 25,
+      "positive_violations_before": 62,
+      "pt_files": 3,
+      "samples": 625,
+      "state": "completed",
+      "structured_errors": 0,
+      "valid_negatives": 62
+    },
+    "dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42": {
+      "attempt": 1,
+      "feedback_queries": 62,
+      "history_rows": 25,
+      "positive_violations_before": 0,
+      "pt_files": 3,
+      "samples": 625,
+      "state": "completed",
+      "structured_errors": 0,
+      "valid_negatives": 0
+    }
+  },
+  "status": "AUDIT_OK"
+}

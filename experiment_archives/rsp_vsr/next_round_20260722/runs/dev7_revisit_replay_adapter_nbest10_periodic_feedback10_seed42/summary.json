@@ -1,0 +1,123 @@
+{
+  "samples": 625,
+  "cer": 0.7750088818961579,
+  "edits": 15270,
+  "characters": 19703,
+  "mean_reliability": 0.5166065316848364,
+  "updates": {
+    "skipped": 561,
+    "accepted": 64
+  },
+  "attempted_updates": 64,
+  "accepted_update_rate": 1.0,
+  "timing": {
+    "total_video_load_seconds": 39.33709993213415,
+    "total_process_seconds": 1178.715712543577,
+    "total_seconds": 1218.098048992455,
+    "mean_video_load_seconds": 0.06293935989141464,
+    "mean_process_seconds": 1.8859451400697231,
+    "mean_total_seconds": 1.948956878387928
+  },
+  "domains": {
+    "188": {
+      "cer": 0.8076482383271268,
+      "edits": 5639,
+      "characters": 6982,
+      "samples": 213
+    },
+    "011": {
+      "cer": 0.6697870031203365,
+      "edits": 4937,
+      "characters": 7371,
+      "samples": 206
+    },
+    "036": {
+      "cer": 0.8773831775700934,
+      "edits": 4694,
+      "characters": 5350,
+      "samples": 206
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "adapter_type": "bottleneck",
+    "signature_motion_order": 2,
+    "route_counts": [
+      625
+    ],
+    "accepted_updates": [
+      64
+    ],
+    "prototype_counts": [
+      65
+    ],
+    "pending_shift_count": 0
+  },
+  "parameter_adaptation": {
+    "parameter_update_mode": "adapter",
+    "parameter_count": 75265,
+    "parameter_tensors": 5,
+    "parameter_names": [],
+    "parameter_modules": [],
+    "eta_entropy_margin": null,
+    "eta_resolved_entropy_margin": null,
+    "eta_redundancy_margin": 0.05,
+    "eta_momentum": 0.9,
+    "eta_reference_initialized": false,
+    "eta_reliable_samples": 0,
+    "eta_nonredundant_samples": 0
+  },
+  "mode": "single_adapter",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": true,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 10,
+    "total_samples": 625,
+    "planned_budget": 62,
+    "policy_queries": 62,
+    "manifest_queries": 0,
+    "total_queries": 62,
+    "query_rate": 0.0992,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "not_periodic_slot": 558,
+      "periodic_slot": 62,
+      "partial_window": 5
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8",
+    "manifest_metadata_sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "58ab600ab4959add2028b3344d9717df5dac48281718e3f1edefc080711d17d4"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "model_parameters_with_adaptation": 284275490,
+    "adapter_bank_parameters": 75265,
+    "updatable_parameters": 75265,
+    "updatable_parameter_tensors": 5,
+    "parameter_update_mode": "adapter",
+    "updatable_fraction_of_base": 0.00026476077835623467,
+    "samples_per_process_second": 0.5302381170870273,
+    "latest_checkpoint_bytes": 949975,
+    "retained_checkpoint_bytes": 2849797,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1935088640
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}

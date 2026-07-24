@@ -62,6 +62,26 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
   `2e8fce06f0f38fab98e79b37f497ccaf59005624a807446111e7484a197fa07c`.
   Feature-FiLM is a development `NO-GO` despite its 1,536-parameter state;
   replay remains the incumbent and holdout2 remains frozen/unread.
+- Target-dev6 N-best preflight: `data/dev6_nbest_phase0a_early_stop.json`,
+  SHA-256
+  `6d14ed43cf0e23e497c8692bab3579fa8a838dc90b2d5cb5faa6e36367daf52c`.
+  The audited 356-sample prefix has 3.0391 CER points of oracle headroom, but
+  the full-stream reachability bound caps substitution coverage at 45.162%,
+  below the fixed 55% gate. Direct beam-only text repair is `EARLY_NO_GO`.
+- Target-dev7: disjoint train-pool speakers `188/011/036`, 625 utterances,
+  A--B--C--A 107/206/206/106, manifest SHA-256
+  `22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8`
+  (development-only counterfactual beam-margin gate; one pre-specified seed).
+- Target-dev7 analysis: `data/dev7_counterfactual_margin_analysis.json`, SHA-256
+  `1a26a147bb1ea83d192c141f7fdb2e4d58c35176f1b4a30a1cc49ddbaf5bba1b`.
+  Candidate minus replay is -0.1878 CER points, paired 95% CI
+  [-0.4697, +0.1018]. The forgetting-difference interval crosses the allowed
+  bound, and the local violation falls only 1.929% despite a directional paired
+  interval.
+- Target-dev7 decision/resources: `data/dev7_decision_resources.json`, SHA-256
+  `11b30c143774757bc9edf03ad2e4cd4eec7d7a7e690a34ca5b11c2d898d79bf8`.
+  Counterfactual beam margin is development `NO_GO`; no extra seed, sweep, or
+  holdout2 read is performed.
 - Feedback-only/hybrid implementation commit: `353c47dc37351cad410139cbacbd69b5c0e0b14e`.
 - Target-dev2 machine-readable analysis: `data/dev2_update_source_analysis.json`, SHA-256 `4c4d2dbcd2de25a0f85da13afd8449c617fd9962d866388002bea821814ccb60`.
 - Target-dev2 hybrid analysis: `data/dev2_hybrid_analysis.json`, SHA-256 `e81c5bbb6d812dff92987053551fcc281cb3bdb897b4f9d3a30a8277b5d6a0db`.
@@ -78,7 +98,8 @@ This directory is a clean paper rewrite. It reuses only the IEEE class and bibli
   still requires a provenance-resolved second real shift. The immediate matched
   baseline audit is complete, but full EATA/CoTTA-style VSR adaptations are not
   claimed. Hybrid, active-query, BN-TENT-VSR, ETA-VSR, online LoRA-F10, and
-  Feature-FiLM are development `NO-GO`; holdout2 remains unread.
+  Feature-FiLM and counterfactual beam margin are development `NO-GO`; holdout2
+  remains unread.
 
 ## Build
 

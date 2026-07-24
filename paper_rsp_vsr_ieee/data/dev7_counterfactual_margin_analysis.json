@@ -1,0 +1,599 @@
+{
+  "schema_version": 1,
+  "experiments": {
+    "replay": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 625,
+        "edits": 15270,
+        "characters": 19703,
+        "cer": 0.7750088818961579
+      },
+      "run_summary": {
+        "samples": 625,
+        "cer": 0.7750088818961579,
+        "edits": 15270,
+        "characters": 19703,
+        "mean_reliability": 0.5166065316848364,
+        "updates": {
+          "skipped": 561,
+          "accepted": 64
+        },
+        "attempted_updates": 64,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 39.33709993213415,
+          "total_process_seconds": 1178.715712543577,
+          "total_seconds": 1218.098048992455,
+          "mean_video_load_seconds": 0.06293935989141464,
+          "mean_process_seconds": 1.8859451400697231,
+          "mean_total_seconds": 1.948956878387928
+        },
+        "domains": {
+          "188": {
+            "cer": 0.8076482383271268,
+            "edits": 5639,
+            "characters": 6982,
+            "samples": 213
+          },
+          "011": {
+            "cer": 0.6697870031203365,
+            "edits": 4937,
+            "characters": 7371,
+            "samples": 206
+          },
+          "036": {
+            "cer": 0.8773831775700934,
+            "edits": 4694,
+            "characters": 5350,
+            "samples": 206
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "adapter_type": "bottleneck",
+          "signature_motion_order": 2,
+          "route_counts": [
+            625
+          ],
+          "accepted_updates": [
+            64
+          ],
+          "prototype_counts": [
+            65
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 75265,
+          "parameter_tensors": 5,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 625,
+          "planned_budget": 62,
+          "policy_queries": 62,
+          "manifest_queries": 0,
+          "total_queries": 62,
+          "query_rate": 0.0992,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 558,
+            "periodic_slot": 62,
+            "partial_window": 5
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8",
+          "manifest_metadata_sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "58ab600ab4959add2028b3344d9717df5dac48281718e3f1edefc080711d17d4"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 75265,
+          "updatable_parameter_tensors": 5,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.00026476077835623467,
+          "samples_per_process_second": 0.5302381170870273,
+          "latest_checkpoint_bytes": 949975,
+          "retained_checkpoint_bytes": 2849797,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1935088640
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 62,
+        "diagnosed_feedback_samples": 62,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 1712,
+        "target_tokens": 1896,
+        "matched_tokens": 522,
+        "substituted_tokens": 1156,
+        "missing_target_tokens": 218,
+        "extra_prediction_tokens": 34,
+        "mean_token_error_rate": 0.761824280412055,
+        "mean_matched_frame_rate": 0.035731881871939666
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 625,
+        "queries": 62,
+        "policy_queries": 62,
+        "manifest_queries": 0,
+        "query_rate": 0.0992,
+        "queried_true_errors": 62,
+        "queried_true_error_rate": 1.0,
+        "nonqueried_true_errors": 563,
+        "nonqueried_true_error_rate": 1.0,
+        "queried_cer": 0.82542194092827,
+        "queried_edits": 1565,
+        "queried_characters": 1896,
+        "mean_queried_reliability": 0.5285656935214389,
+        "mean_nonqueried_reliability": 0.5152895369532748,
+        "sources": {
+          "none": 563,
+          "policy": 62
+        },
+        "reasons": {
+          "not_periodic_slot": 558,
+          "periodic_slot": 62,
+          "partial_window": 5
+        },
+        "policy_query_blocks": 62,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 62,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 625,
+        "timing": {
+          "video_load_seconds": {
+            "total": 39.33709993213415,
+            "mean": 0.06293935989141464,
+            "p50": 0.0551762618124485,
+            "p95": 0.1464712403714656,
+            "max": 0.38963818177580833
+          },
+          "process_seconds": {
+            "total": 1178.715712543577,
+            "mean": 1.8859451400697231,
+            "p50": 1.7360165975987911,
+            "p95": 3.461587212234735,
+            "max": 7.607017297297716
+          },
+          "total_seconds": {
+            "total": 1218.098048992455,
+            "mean": 1.948956878387928,
+            "p50": 1.802688378840685,
+            "p95": 3.5491888679563997,
+            "max": 7.682994589209557
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1935088640
+      },
+      "segments": {
+        "A1": {
+          "samples": 107,
+          "edits": 2883,
+          "characters": 3632,
+          "cer": 0.7937775330396476
+        },
+        "B": {
+          "samples": 206,
+          "edits": 4937,
+          "characters": 7371,
+          "cer": 0.6697870031203365
+        },
+        "C": {
+          "samples": 206,
+          "edits": 4694,
+          "characters": 5350,
+          "cer": 0.8773831775700934
+        },
+        "A2": {
+          "samples": 106,
+          "edits": 2756,
+          "characters": 3350,
+          "cer": 0.8226865671641791
+        }
+      }
+    },
+    "counterfactual": {
+      "directory": "/Users/wzz/个人/lip_reading/Chinese_lip_reading/experiment_archives/rsp_vsr/next_round_20260722/runs/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42",
+      "overall": {
+        "samples": 625,
+        "edits": 15233,
+        "characters": 19703,
+        "cer": 0.7731309952799066
+      },
+      "run_summary": {
+        "samples": 625,
+        "cer": 0.7731309952799066,
+        "edits": 15233,
+        "characters": 19703,
+        "mean_reliability": 0.5116859240266627,
+        "updates": {
+          "skipped": 562,
+          "accepted": 63
+        },
+        "attempted_updates": 63,
+        "accepted_update_rate": 1.0,
+        "timing": {
+          "total_video_load_seconds": 39.40205244719982,
+          "total_process_seconds": 1192.9495899826288,
+          "total_seconds": 1232.4004094079137,
+          "mean_video_load_seconds": 0.06304328391551972,
+          "mean_process_seconds": 1.908719343972206,
+          "mean_total_seconds": 1.971840655052662
+        },
+        "domains": {
+          "188": {
+            "cer": 0.8067888857061014,
+            "edits": 5633,
+            "characters": 6982,
+            "samples": 213
+          },
+          "011": {
+            "cer": 0.6700583367250034,
+            "edits": 4939,
+            "characters": 7371,
+            "samples": 206
+          },
+          "036": {
+            "cer": 0.871214953271028,
+            "edits": 4661,
+            "characters": 5350,
+            "samples": 206
+          }
+        },
+        "expert_bank": {
+          "expert_count": 1,
+          "adapter_type": "bottleneck",
+          "signature_motion_order": 2,
+          "route_counts": [
+            625
+          ],
+          "accepted_updates": [
+            63
+          ],
+          "prototype_counts": [
+            64
+          ],
+          "pending_shift_count": 0
+        },
+        "parameter_adaptation": {
+          "parameter_update_mode": "adapter",
+          "parameter_count": 75265,
+          "parameter_tensors": 5,
+          "parameter_names": [],
+          "parameter_modules": [],
+          "eta_entropy_margin": null,
+          "eta_resolved_entropy_margin": null,
+          "eta_redundancy_margin": 0.05,
+          "eta_momentum": 0.9,
+          "eta_reference_initialized": false,
+          "eta_reliable_samples": 0,
+          "eta_nonredundant_samples": 0,
+          "counterfactual_margin": {
+            "enabled": true,
+            "margin": 0.2,
+            "weight": 0.25,
+            "rollback_tolerance": 1e-06,
+            "feedback_attempts": 62,
+            "valid_negatives": 62,
+            "positive_violations_before": 62,
+            "applied": 62,
+            "rolled_back": 0,
+            "failed": 0,
+            "no_valid_negative": 0,
+            "violation_before_sum": 166.6327359676361,
+            "violation_after_sum": 163.41836041212082
+          }
+        },
+        "counterfactual_margin": {
+          "enabled": true,
+          "margin": 0.2,
+          "weight": 0.25,
+          "rollback_tolerance": 1e-06,
+          "feedback_attempts": 62,
+          "valid_negatives": 62,
+          "positive_violations_before": 62,
+          "applied": 62,
+          "rolled_back": 0,
+          "failed": 0,
+          "no_valid_negative": 0,
+          "violation_before_sum": 166.6327359676361,
+          "violation_after_sum": 163.41836041212082
+        },
+        "mode": "single_adapter",
+        "adaptation_objective": "rsp",
+        "feedback_update_strategy": "full_sequence",
+        "non_feedback_updates_enabled": true,
+        "feedback_query": {
+          "strategy": "periodic",
+          "every": 10,
+          "total_samples": 625,
+          "planned_budget": 62,
+          "policy_queries": 62,
+          "manifest_queries": 0,
+          "total_queries": 62,
+          "query_rate": 0.0992,
+          "random_seed": 42,
+          "uncertainty_history_window": 100,
+          "reason_counts": {
+            "not_periodic_slot": 558,
+            "periodic_slot": 62,
+            "partial_window": 5
+          }
+        },
+        "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+        "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl",
+        "stream_state": {
+          "manifest_sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8",
+          "manifest_metadata_sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf",
+          "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+          "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+          "experiment_config_sha256": "8da0a9e78880873dab454b1143812f1a4b43462360824c4be1900b62bc135b82"
+        },
+        "resources": {
+          "device": "cuda:0",
+          "device_name": "NVIDIA GeForce RTX 3090",
+          "base_model_parameters": 284275490,
+          "model_parameters_with_adaptation": 284275490,
+          "adapter_bank_parameters": 75265,
+          "updatable_parameters": 75265,
+          "updatable_parameter_tensors": 5,
+          "parameter_update_mode": "adapter",
+          "updatable_fraction_of_base": 0.00026476077835623467,
+          "samples_per_process_second": 0.5239114923616353,
+          "latest_checkpoint_bytes": 950359,
+          "retained_checkpoint_bytes": 2851077,
+          "retained_checkpoint_files": 3,
+          "peak_gpu_memory_allocated_bytes": 1936457728
+        },
+        "artifacts": {
+          "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/stream_results.jsonl",
+          "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/metrics_history.jsonl",
+          "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/adaptation_state.pt",
+          "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/best_checkpoints/index.json",
+          "checkpoint_file_limit": 3
+        }
+      },
+      "feedback_corrections": {
+        "feedback_samples": 62,
+        "diagnosed_feedback_samples": 62,
+        "diagnostic_coverage": 1.0,
+        "predicted_tokens": 1704,
+        "target_tokens": 1896,
+        "matched_tokens": 514,
+        "substituted_tokens": 1156,
+        "missing_target_tokens": 226,
+        "extra_prediction_tokens": 34,
+        "mean_token_error_rate": 0.7660197210929861,
+        "mean_matched_frame_rate": 0.03514644019906559
+      },
+      "feedback_queries": {
+        "available": true,
+        "samples": 625,
+        "queries": 62,
+        "policy_queries": 62,
+        "manifest_queries": 0,
+        "query_rate": 0.0992,
+        "queried_true_errors": 62,
+        "queried_true_error_rate": 1.0,
+        "nonqueried_true_errors": 563,
+        "nonqueried_true_error_rate": 1.0,
+        "queried_cer": 0.8280590717299579,
+        "queried_edits": 1570,
+        "queried_characters": 1896,
+        "mean_queried_reliability": 0.5236197703258412,
+        "mean_nonqueried_reliability": 0.5103717171517964,
+        "sources": {
+          "none": 563,
+          "policy": 62
+        },
+        "reasons": {
+          "not_periodic_slot": 558,
+          "periodic_slot": 62,
+          "partial_window": 5
+        },
+        "policy_query_blocks": 62,
+        "max_policy_queries_per_block": 1
+      },
+      "localized_feedback_updates": {
+        "feedback_samples": 62,
+        "localized_feedback_samples": 0,
+        "localization_coverage": 0.0,
+        "strategies": {},
+        "randomized_support_samples": 0,
+        "update_statuses": {},
+        "ctc_frames": 0,
+        "matched_target_tokens": 0,
+        "error_target_tokens": 0,
+        "substitution_target_tokens": 0,
+        "deletion_target_tokens": 0,
+        "insertion_frames": 0,
+        "insertion_frame_coverage": null,
+        "mean_target_log_likelihood": null,
+        "mean_matched_occupancy_mass": null,
+        "mean_error_occupancy_mass": null,
+        "mean_matched_effective_frames": null,
+        "mean_error_effective_frames": null,
+        "objective_samples": 0,
+        "mean_objective_before": null,
+        "mean_objective_after": null,
+        "mean_objective_delta": null,
+        "objective_improved_samples": 0
+      },
+      "runtime_resources": {
+        "available": true,
+        "samples": 625,
+        "timing": {
+          "video_load_seconds": {
+            "total": 39.40205244719982,
+            "mean": 0.06304328391551972,
+            "p50": 0.053897786885499954,
+            "p95": 0.14435209035873411,
+            "max": 0.3941989690065384
+          },
+          "process_seconds": {
+            "total": 1192.9495899826288,
+            "mean": 1.908719343972206,
+            "p50": 1.7344108149409294,
+            "p95": 3.5538384206593014,
+            "max": 7.951839711517096
+          },
+          "total_seconds": {
+            "total": 1232.4004094079137,
+            "mean": 1.971840655052662,
+            "p50": 1.8134393617510796,
+            "p95": 3.6914935559034343,
+            "max": 8.040366996079683
+          }
+        },
+        "peak_gpu_memory_allocated_bytes": 1936457728
+      },
+      "segments": {
+        "A1": {
+          "samples": 107,
+          "edits": 2892,
+          "characters": 3632,
+          "cer": 0.7962555066079295
+        },
+        "B": {
+          "samples": 206,
+          "edits": 4939,
+          "characters": 7371,
+          "cer": 0.6700583367250034
+        },
+        "C": {
+          "samples": 206,
+          "edits": 4661,
+          "characters": 5350,
+          "cer": 0.871214953271028
+        },
+        "A2": {
+          "samples": 106,
+          "edits": 2741,
+          "characters": 3350,
+          "cer": 0.8182089552238806
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "counterfactual_minus_replay": {
+      "candidate": "counterfactual",
+      "baseline": "replay",
+      "candidate_minus_baseline": -0.0018778866162513324,
+      "ci_95": {
+        "lower": -0.004697090552199648,
+        "upper": 0.001018362386323696
+      },
+      "iterations": 10000,
+      "seed": 42,
+      "paired_samples": 625,
+      "sample_edit_transitions": {
+        "paired_samples": 625,
+        "candidate_better": 90,
+        "same": 467,
+        "candidate_worse": 68,
+        "net_edit_difference": -37
+      },
+      "revisit_forgetting_difference": {
+        "point": -0.006955585508580446,
+        "ci_95": {
+          "lower": -0.017930135587258096,
+          "upper": 0.004015579128182723
+        },
+        "iterations": 10000,
+        "seed": 42,
+        "paired_samples": {
+          "A1": 107,
+          "A2": 106
+        }
+      },
+      "query_error_rate_difference": {
+        "candidate_minus_baseline": 0.0,
+        "ci_95": {
+          "lower": 0.0,
+          "upper": 0.0
+        },
+        "candidate_error_rate": 1.0,
+        "baseline_error_rate": 1.0,
+        "iterations": 10000,
+        "seed": 42,
+        "paired_blocks": 62
+      }
+    }
+  },
+  "seed_groups": {},
+  "revisit_protocol": {
+    "segment_lengths": {
+      "A1": 107,
+      "B": 206,
+      "C": 206,
+      "A2": 106
+    }
+  },
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 42,
+    "batch_size": 256
+  }
+}

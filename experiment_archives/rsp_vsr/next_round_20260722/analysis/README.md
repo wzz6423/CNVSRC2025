@@ -61,3 +61,13 @@ hash, history-continuity, checkpoint, and error-log validation.
   strictly audited 356-sample prefix. This is intentionally partial evidence,
   not a completed stream result. SHA-256:
   `0b7cfbd4bcfa8175983776cb95ae1cc4b5b77144a69288ddcad12c872107b029`.
+- `dev7_counterfactual_margin_analysis.json`: verified development-only replay
+  versus counterfactual beam-margin comparison on 625 samples. Candidate minus
+  replay is -0.0018779 CER, 95% CI [-0.0046971, +0.0010184], and therefore
+  misses both materiality and significance conditions. SHA-256:
+  `1a26a147bb1ea83d192c141f7fdb2e4d58c35176f1b4a30a1cc49ddbaf5bba1b`.
+- `dev7_decision_resources.json`: machine-readable integrity, local-mechanism,
+  resource, and gate summary. The violation reduction is directional but only
+  1.929%, so the component is `NO_GO`; holdout2 remains frozen and unread.
+  SHA-256:
+  `11b30c143774757bc9edf03ad2e4cd4eec7d7a7e690a34ca5b11c2d898d79bf8`.

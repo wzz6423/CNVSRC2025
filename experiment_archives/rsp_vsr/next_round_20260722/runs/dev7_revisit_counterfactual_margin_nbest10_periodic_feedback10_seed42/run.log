@@ -1,0 +1,184 @@
+[2026-07-24T01:29:45Z] launch attempt 1/1: /hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth require_manifest_metadata=true decoder.beam_size=12 decoder.ctc_weight=0.3 decoder.nbest_size=10 plasticity.mode=single_adapter plasticity.adapter_type=bottleneck plasticity.adaptation_objective=rsp plasticity.allow_growth=false plasticity.max_experts=1 plasticity.feedback_update_strategy=full_sequence plasticity.non_feedback_updates_enabled=true plasticity.rollback_enabled=true plasticity.counterfactual_margin.margin=0.2 plasticity.counterfactual_margin.weight=0.25 plasticity.counterfactual_margin.rollback_tolerance=0.000001 feedback.strategy=periodic feedback.every=10 feedback.random_seed=42 feedback.uncertainty_history_window=100 feedback.noise_rate=0.0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability checkpoint_selection_mode=max seed=42 plasticity.counterfactual_margin.enabled=true 
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/lightning_fabric/__init__.py:29: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+持续适应设备：cuda:0
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+已处理 25 条，CER=0.7865707434052758，专家数=1
+已处理 50 条，CER=0.7873432155074116，专家数=1
+已处理 75 条，CER=0.7901376146788991，专家数=1
+已处理 100 条，CER=0.7972933215651662，专家数=1
+已处理 125 条，CER=0.7828931993456415，专家数=1
+已处理 150 条，CER=0.7592165898617511，专家数=1
+已处理 175 条，CER=0.7447959350926078，专家数=1
+已处理 200 条，CER=0.7373291571753986，专家数=1
+已处理 225 条，CER=0.7305404379192507，专家数=1
+已处理 250 条，CER=0.7239772727272727，专家数=1
+已处理 275 条，CER=0.7177527625735826，专家数=1
+已处理 300 条，CER=0.7122480030429821，专家数=1
+已处理 325 条，CER=0.7209445766146797，专家数=1
+已处理 350 条，CER=0.7279387279387279，专家数=1
+已处理 375 条，CER=0.7336036250894348，专家数=1
+已处理 400 条，CER=0.7395136778115502，专家数=1
+已处理 425 条，CER=0.7446545454545455，专家数=1
+已处理 450 条，CER=0.7498611882287618，专家数=1
+已处理 475 条，CER=0.7536183773735228，专家数=1
+已处理 500 条，CER=0.759646353015472，专家数=1
+已处理 525 条，CER=0.7642498031376824，专家数=1
+已处理 550 条，CER=0.7655084696768226，专家数=1
+已处理 575 条，CER=0.7674636920868076，专家数=1
+已处理 600 条，CER=0.7759441447159632，专家数=1
+已处理 625 条，CER=0.7731309952799066，专家数=1
+{
+  "samples": 625,
+  "cer": 0.7731309952799066,
+  "edits": 15233,
+  "characters": 19703,
+  "mean_reliability": 0.5116859240266627,
+  "updates": {
+    "skipped": 562,
+    "accepted": 63
+  },
+  "attempted_updates": 63,
+  "accepted_update_rate": 1.0,
+  "timing": {
+    "total_video_load_seconds": 39.40205244719982,
+    "total_process_seconds": 1192.9495899826288,
+    "total_seconds": 1232.4004094079137,
+    "mean_video_load_seconds": 0.06304328391551972,
+    "mean_process_seconds": 1.908719343972206,
+    "mean_total_seconds": 1.971840655052662
+  },
+  "domains": {
+    "188": {
+      "cer": 0.8067888857061014,
+      "edits": 5633,
+      "characters": 6982,
+      "samples": 213
+    },
+    "011": {
+      "cer": 0.6700583367250034,
+      "edits": 4939,
+      "characters": 7371,
+      "samples": 206
+    },
+    "036": {
+      "cer": 0.871214953271028,
+      "edits": 4661,
+      "characters": 5350,
+      "samples": 206
+    }
+  },
+  "expert_bank": {
+    "expert_count": 1,
+    "adapter_type": "bottleneck",
+    "signature_motion_order": 2,
+    "route_counts": [
+      625
+    ],
+    "accepted_updates": [
+      63
+    ],
+    "prototype_counts": [
+      64
+    ],
+    "pending_shift_count": 0
+  },
+  "parameter_adaptation": {
+    "parameter_update_mode": "adapter",
+    "parameter_count": 75265,
+    "parameter_tensors": 5,
+    "parameter_names": [],
+    "parameter_modules": [],
+    "eta_entropy_margin": null,
+    "eta_resolved_entropy_margin": null,
+    "eta_redundancy_margin": 0.05,
+    "eta_momentum": 0.9,
+    "eta_reference_initialized": false,
+    "eta_reliable_samples": 0,
+    "eta_nonredundant_samples": 0,
+    "counterfactual_margin": {
+      "enabled": true,
+      "margin": 0.2,
+      "weight": 0.25,
+      "rollback_tolerance": 1e-06,
+      "feedback_attempts": 62,
+      "valid_negatives": 62,
+      "positive_violations_before": 62,
+      "applied": 62,
+      "rolled_back": 0,
+      "failed": 0,
+      "no_valid_negative": 0,
+      "violation_before_sum": 166.6327359676361,
+      "violation_after_sum": 163.41836041212082
+    }
+  },
+  "counterfactual_margin": {
+    "enabled": true,
+    "margin": 0.2,
+    "weight": 0.25,
+    "rollback_tolerance": 1e-06,
+    "feedback_attempts": 62,
+    "valid_negatives": 62,
+    "positive_violations_before": 62,
+    "applied": 62,
+    "rolled_back": 0,
+    "failed": 0,
+    "no_valid_negative": 0,
+    "violation_before_sum": 166.6327359676361,
+    "violation_after_sum": 163.41836041212082
+  },
+  "mode": "single_adapter",
+  "adaptation_objective": "rsp",
+  "feedback_update_strategy": "full_sequence",
+  "non_feedback_updates_enabled": true,
+  "feedback_query": {
+    "strategy": "periodic",
+    "every": 10,
+    "total_samples": 625,
+    "planned_budget": 62,
+    "policy_queries": 62,
+    "manifest_queries": 0,
+    "total_queries": 62,
+    "query_rate": 0.0992,
+    "random_seed": 42,
+    "uncertainty_history_window": 100,
+    "reason_counts": {
+      "not_periodic_slot": 558,
+      "periodic_slot": 62,
+      "partial_window": 5
+    }
+  },
+  "base_checkpoint": "/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth",
+  "stream_manifest": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl",
+  "stream_state": {
+    "manifest_sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8",
+    "manifest_metadata_sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf",
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "base_checkpoint_sha256": "577cd9558eea111683a406bc25d69c7161cdb79534c2273fc0d0f044c356231c",
+    "experiment_config_sha256": "8da0a9e78880873dab454b1143812f1a4b43462360824c4be1900b62bc135b82"
+  },
+  "resources": {
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 3090",
+    "base_model_parameters": 284275490,
+    "model_parameters_with_adaptation": 284275490,
+    "adapter_bank_parameters": 75265,
+    "updatable_parameters": 75265,
+    "updatable_parameter_tensors": 5,
+    "parameter_update_mode": "adapter",
+    "updatable_fraction_of_base": 0.00026476077835623467,
+    "samples_per_process_second": 0.5239114923616353,
+    "latest_checkpoint_bytes": 950359,
+    "retained_checkpoint_bytes": 2851077,
+    "retained_checkpoint_files": 3,
+    "peak_gpu_memory_allocated_bytes": 1936457728
+  },
+  "artifacts": {
+    "stream_results": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/stream_results.jsonl",
+    "metrics_history": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/metrics_history.jsonl",
+    "latest_checkpoint": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/adaptation_state.pt",
+    "best_checkpoint_index": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_counterfactual_margin_nbest10_periodic_feedback10_seed42/best_checkpoints/index.json",
+    "checkpoint_file_limit": 3
+  }
+}
