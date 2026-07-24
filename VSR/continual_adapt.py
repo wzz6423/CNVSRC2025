@@ -340,10 +340,14 @@ def _validate_stream_state(saved_state, current_state):
 
 
 def _experiment_config_sha256(cfg):
+    decoder = OmegaConf.to_container(cfg.decoder, resolve=True)
+    # 默认关闭时沿用旧哈希，保证既有 checkpoint 仍可精确恢复。
+    if decoder.get("nbest_size", 0) == 0:
+        decoder.pop("nbest_size", None)
     value = {
         "seed": int(cfg.seed),
         "model": OmegaConf.to_container(cfg.model, resolve=True),
-        "decoder": OmegaConf.to_container(cfg.decoder, resolve=True),
+        "decoder": decoder,
         "feedback": OmegaConf.to_container(cfg.feedback, resolve=True),
         "plasticity": OmegaConf.to_container(cfg.plasticity, resolve=True),
     }
@@ -409,6 +413,7 @@ def _build_engine(cfg, model, token_list, device):
         token_list,
         beam_size=cfg.decoder.beam_size,
         ctc_weight=cfg.decoder.ctc_weight,
+        nbest_size=OmegaConf.select(cfg, "decoder.nbest_size", default=0),
     )
     return ContinualAdaptationEngine(
         base_model=model,

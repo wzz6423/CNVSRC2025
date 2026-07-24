@@ -23,6 +23,21 @@ def _write_json_atomic(path, value):
         temporary_path.unlink(missing_ok=True)
 
 
+def _write_jsonl_atomic(path, records):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(f".{path.name}.tmp")
+    try:
+        with temporary_path.open("w", encoding="utf-8") as handle:
+            for record in records:
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
 def _history_step(record, line_number=None):
     step = record.get("processed_samples") if isinstance(record, dict) else None
     if not isinstance(step, int) or isinstance(step, bool) or step < 0:

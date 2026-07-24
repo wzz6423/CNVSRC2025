@@ -56,6 +56,7 @@ class UpdateOutcome:
 class ProcessOutcome:
     transcript: str
     decoder_tokens: tuple[int, ...]
+    decoder_nbest: tuple[dict, ...]
     ctc_tokens: tuple[int, ...]
     route: RouteDecision
     adaptation_expert_index: int
@@ -63,7 +64,7 @@ class ProcessOutcome:
     update: UpdateOutcome
 
     def to_dict(self):
-        return {
+        value = {
             "transcript": self.transcript,
             "decoder_tokens": list(self.decoder_tokens),
             "ctc_tokens": list(self.ctc_tokens),
@@ -72,12 +73,16 @@ class ProcessOutcome:
             "reliability": self.reliability.to_dict(),
             "update": self.update.to_dict(),
         }
+        if self.decoder_nbest:
+            value["decoder_nbest"] = copy.deepcopy(list(self.decoder_nbest))
+        return value
 
 
 @dataclass(frozen=True)
 class PredictionState:
     transcript: str
     decoder_tokens: tuple[int, ...]
+    decoder_nbest: tuple[dict, ...]
     ctc_tokens: tuple[int, ...]
     route: RouteDecision
     reliability: ReliabilityDecision
@@ -662,8 +667,12 @@ class ContinualAdaptationEngine:
 
     def _decode(self, adapted_features, ctc_tokens):
         if self.decoder is None:
-            return " ".join(map(str, ctc_tokens)), list(ctc_tokens)
-        return self.decoder(adapted_features.squeeze(0))
+            return " ".join(map(str, ctc_tokens)), list(ctc_tokens), ()
+        features = adapted_features.squeeze(0)
+        if hasattr(self.decoder, "decode_with_nbest"):
+            return self.decoder.decode_with_nbest(features)
+        transcript, tokens = self.decoder(features)
+        return transcript, tokens, ()
 
     def _skip_update(
         self, supervision, reasons, *, correction=None, localization=None
@@ -822,7 +831,7 @@ class ContinualAdaptationEngine:
             post_ctc_tokens, _ = self.reliability_gate.evaluate(
                 post_clean_log_probs, post_augmented_log_probs
             )
-            _, post_decoder_tokens = self._decode(
+            _, post_decoder_tokens, _ = self._decode(
                 post_clean.detach(), post_ctc_tokens
             )
             _, post_reliability = self.reliability_gate.evaluate(
@@ -1108,7 +1117,7 @@ class ContinualAdaptationEngine:
             post_ctc_tokens, _ = self.reliability_gate.evaluate(
                 post_clean_log_probs, post_augmented_log_probs
             )
-            _, post_decoder_tokens = self._decode(
+            _, post_decoder_tokens, _ = self._decode(
                 post_clean.detach(), post_ctc_tokens
             )
             _, post_reliability = self.reliability_gate.evaluate(
@@ -1362,7 +1371,7 @@ class ContinualAdaptationEngine:
         provisional_tokens, _ = self.reliability_gate.evaluate(
             clean_log_probs, augmented_log_probs
         )
-        transcript, decoder_tokens = self._decode(
+        transcript, decoder_tokens, decoder_nbest = self._decode(
             clean_adapted.detach(), provisional_tokens
         )
         pseudo_tokens, reliability = self.reliability_gate.evaluate(
@@ -1371,6 +1380,7 @@ class ContinualAdaptationEngine:
         return PredictionState(
             transcript=transcript,
             decoder_tokens=tuple(decoder_tokens),
+            decoder_nbest=tuple(decoder_nbest),
             ctc_tokens=tuple(pseudo_tokens),
             route=route,
             reliability=reliability,
@@ -1502,6 +1512,7 @@ class ContinualAdaptationEngine:
         return ProcessOutcome(
             transcript=prediction.transcript,
             decoder_tokens=prediction.decoder_tokens,
+            decoder_nbest=prediction.decoder_nbest,
             ctc_tokens=prediction.ctc_tokens,
             route=prediction.route,
             adaptation_expert_index=adaptation_expert_index,

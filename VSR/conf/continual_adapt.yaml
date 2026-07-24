@@ -47,6 +47,7 @@ model:
 decoder:
   beam_size: 12
   ctc_weight: 0.3
+  nbest_size: 0
 
 feedback:
   strategy: periodic
