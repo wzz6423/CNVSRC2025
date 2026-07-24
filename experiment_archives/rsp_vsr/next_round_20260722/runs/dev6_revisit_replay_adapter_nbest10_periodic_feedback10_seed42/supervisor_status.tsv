@@ -1,0 +1,7 @@
+state	running
+updated_at	2026-07-24T00:38:12Z
+attempt	1
+gpu_id	0
+worker_pid	1172127
+result_bytes	2302602
+detail	worker healthy

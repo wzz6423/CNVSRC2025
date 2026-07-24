@@ -25,6 +25,7 @@ def build_parser():
     parser.add_argument("--top-k", type=int, default=10)
     parser.add_argument("--min-oracle-headroom", type=float, default=0.02)
     parser.add_argument("--min-substitution-coverage", type=float, default=0.55)
+    parser.add_argument("--reference-stream-results", type=Path)
     return parser
 
 
@@ -45,6 +46,82 @@ def _char_alignment(prediction, target):
 
 def _ratio(numerator, denominator):
     return numerator / denominator if denominator else None
+
+
+def coverage_reachability_bound(
+    records, reference_records, *, min_substitution_coverage=0.55
+):
+    if len(records) > len(reference_records):
+        raise ValueError("evidence 不能长于完整 reference stream")
+    total_substitutions = 0
+    prefix_substitutions = 0
+    prefix_covered = 0
+    for index, reference in enumerate(reference_records):
+        if reference.get("index") != index:
+            raise ValueError(f"reference stream index 不连续：{index}")
+        target = reference.get("target")
+        one_best = reference.get("transcript")
+        if not isinstance(target, str) or not isinstance(one_best, str):
+            raise ValueError(f"reference 样本 {index} target/transcript 非法")
+        substitutions = {
+            target_index
+            for operation, _, target_index in _char_alignment(one_best, target)
+            if operation == "substitution"
+        }
+        total_substitutions += len(substitutions)
+        if index >= len(records):
+            continue
+
+        record = records[index]
+        if (
+            record.get("index") != index
+            or record.get("uid") != reference.get("uid")
+            or record.get("target") != target
+            or record.get("one_best") != one_best
+        ):
+            raise ValueError(f"evidence 与 reference 在样本 {index} 不一致")
+        matched_target_indices = set()
+        for hypothesis in record["nbest"]:
+            matched_target_indices.update(
+                target_index
+                for operation, _, target_index in _char_alignment(
+                    hypothesis["transcript"], target
+                )
+                if operation == "match"
+            )
+        prefix_substitutions += len(substitutions)
+        prefix_covered += len(substitutions & matched_target_indices)
+
+    remaining_substitutions = total_substitutions - prefix_substitutions
+    if total_substitutions:
+        maximum_final_coverage = (
+            prefix_covered + remaining_substitutions
+        ) / total_substitutions
+        required_remaining_coverage = (
+            float(min_substitution_coverage) * total_substitutions - prefix_covered
+        )
+        required_remaining_coverage = (
+            required_remaining_coverage / remaining_substitutions
+            if remaining_substitutions
+            else None
+        )
+        unreachable = maximum_final_coverage < float(min_substitution_coverage)
+    else:
+        maximum_final_coverage = None
+        required_remaining_coverage = None
+        unreachable = False
+    return {
+        "reference_samples": len(reference_records),
+        "observed_samples": len(records),
+        "total_reference_substitutions": total_substitutions,
+        "observed_substitutions": prefix_substitutions,
+        "observed_substitutions_covered": prefix_covered,
+        "remaining_substitutions": remaining_substitutions,
+        "required_remaining_coverage": required_remaining_coverage,
+        "maximum_final_coverage": maximum_final_coverage,
+        "minimum_substitution_coverage": float(min_substitution_coverage),
+        "mathematically_unreachable": unreachable,
+    }
 
 
 def analyze_nbest_evidence(
@@ -235,6 +312,32 @@ def run(args):
         "path": str(args.evidence.resolve()),
         "sha256": _sha256(args.evidence),
     }
+    if args.reference_stream_results:
+        reference_records = read_jsonl(args.reference_stream_results)
+        reachability = coverage_reachability_bound(
+            records,
+            reference_records,
+            min_substitution_coverage=args.min_substitution_coverage,
+        )
+        if (
+            reachability["observed_substitutions"]
+            != analysis["error_position_coverage"]["substitutions"]
+        ):
+            raise ValueError("reference 与 evidence 的 substitution 统计不一致")
+        if (
+            reachability["observed_substitutions_covered"]
+            != analysis["error_position_coverage"]["substitutions_covered"]
+        ):
+            raise ValueError("reference 与 evidence 的 coverage 统计不一致")
+        reachability["reference"] = {
+            "path": str(args.reference_stream_results.resolve()),
+            "sha256": _sha256(args.reference_stream_results),
+        }
+        analysis["phase0a_gate"]["coverage_reachability"] = reachability
+        if reachability["mathematically_unreachable"]:
+            analysis["phase0a_gate"]["decision"] = "NO_GO"
+            analysis["phase0a_gate"]["termination"] = "EARLY_NO_GO"
+            analysis["phase0a_gate"]["authorizes"] = "stop_llm_route"
     _write_json_atomic(args.output, analysis)
     return analysis
 

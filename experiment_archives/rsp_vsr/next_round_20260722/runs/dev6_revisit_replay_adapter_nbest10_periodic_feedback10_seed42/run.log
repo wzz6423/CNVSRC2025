@@ -1,0 +1,20 @@
+[2026-07-24T00:26:12Z] launch attempt 1/4: /hy-tmp/envs/rsp-vsr/bin/python -u continual_adapt.py output_dir=/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev6_grounded_repair_8f28af0/dev6_revisit_replay_adapter_nbest10_periodic_feedback10_seed42 data_root_dir=/hy-tmp/cn_dataset/chinese_lips/chinese_lips stream_manifest=/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev5_revisit_071_126_045_seed42.jsonl checkpoint_path=/hy-tmp/rsp-vsr/VSR/pretrained_models/model_avg_cncvs_2_3_cnvsrc.pth require_manifest_metadata=true plasticity.allow_growth=false plasticity.max_experts=1 plasticity.feedback_update_strategy=full_sequence feedback.random_seed=42 feedback.uncertainty_history_window=100 feedback.noise_rate=0.0 log_every=25 checkpoint_every=100 checkpoint_file_limit=3 metrics_history_every=25 checkpoint_selection_metric=mean_reliability checkpoint_selection_mode=max seed=42 plasticity.mode=single_adapter plasticity.adapter_type=bottleneck plasticity.adaptation_objective=rsp plasticity.non_feedback_updates_enabled=true feedback.strategy=periodic feedback.every=10 decoder.nbest_size=10 
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/lightning_fabric/__init__.py:29: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  __import__("pkg_resources").declare_namespace(__name__)
+持续适应设备：cuda:0
+/hy-tmp/envs/rsp-vsr/lib/python3.10/site-packages/torch/_utils.py:776: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+已处理 25 条，CER=0.583916083916084，专家数=1
+已处理 50 条，CER=0.6065485775630703，专家数=1
+已处理 75 条，CER=0.6035714285714285，专家数=1
+已处理 100 条，CER=0.5974542561654733，专家数=1
+已处理 125 条，CER=0.6136265631737818，专家数=1
+已处理 150 条，CER=0.6322604513503515，专家数=1
+已处理 175 条，CER=0.6504760367919962，专家数=1
+已处理 200 条，CER=0.6615538990825688，专家数=1
+已处理 225 条，CER=0.6662781662781663，专家数=1
+已处理 250 条，CER=0.6801370672338414，专家数=1
+已处理 275 条，CER=0.6875477463712758，专家数=1
+已处理 300 条，CER=0.6955515297906603，专家数=1
+已处理 325 条，CER=0.6974483596597812，专家数=1
+已处理 350 条，CER=0.6943790849673203，专家数=1

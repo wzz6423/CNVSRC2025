@@ -49,3 +49,15 @@ hash, history-continuity, checkpoint, and error-log validation.
   replay adapter remains the incumbent and holdout2 remains frozen and unread,
   with no additional seed or parameter sweep. SHA-256:
   `2e8fce06f0f38fab98e79b37f497ccaf59005624a807446111e7484a197fa07c`.
+- `dev6_nbest_phase0a_early_stop.json`: development-only beam-10 prefix
+  analysis at 356/681 samples. Oracle headroom passes at 0.03039 CER, but
+  substitution coverage is 0.07871. The full replay reference proves that even
+  perfect coverage of all remaining substitutions could reach at most 0.45162,
+  below the pre-registered 0.55 threshold. The resulting `EARLY_NO_GO` stops
+  direct small-language-model repair from the existing beam candidates without
+  reading holdout2. SHA-256:
+  `6d14ed43cf0e23e497c8692bab3579fa8a838dc90b2d5cb5faa6e36367daf52c`.
+- `dev6_nbest_early_stop_evidence.jsonl`: compact top-10 hypotheses for the
+  strictly audited 356-sample prefix. This is intentionally partial evidence,
+  not a completed stream result. SHA-256:
+  `0b7cfbd4bcfa8175983776cb95ae1cc4b5b77144a69288ddcad12c872107b029`.

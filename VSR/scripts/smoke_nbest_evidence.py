@@ -14,7 +14,10 @@ sys.path.insert(0, str(ROOT))
 from espnet.nets.beam_search import Hypothesis
 from plasticity.artifacts import _write_jsonl_atomic
 from plasticity.decoding import BeamDecoder
-from scripts.analyze_nbest_evidence import analyze_nbest_evidence
+from scripts.analyze_nbest_evidence import (
+    analyze_nbest_evidence,
+    coverage_reachability_bound,
+)
 from scripts.audit_nbest_replay import check_nbest, check_stream
 from scripts.export_nbest_evidence import compact_nbest_evidence, read_jsonl
 
@@ -184,6 +187,22 @@ def main():
     )
     assert incomplete["phase0a_gate"]["complete_top_k_pass"] is False
     assert incomplete["phase0a_gate"]["decision"] == "NO_GO"
+
+    unrecoverable = dict(
+        compact[0],
+        nbest=[
+            _candidate(1, "甲丙", -1.0),
+            _candidate(2, "甲丁", -2.0),
+        ],
+    )
+    reachability = coverage_reachability_bound(
+        [unrecoverable],
+        [stream_records[0]],
+        min_substitution_coverage=0.55,
+    )
+    assert reachability["total_reference_substitutions"] == 1
+    assert reachability["maximum_final_coverage"] == 0.0
+    assert reachability["mathematically_unreachable"] is True
 
     with tempfile.TemporaryDirectory() as temporary_directory:
         stream_path = Path(temporary_directory) / "stream_results.jsonl"

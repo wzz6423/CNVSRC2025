@@ -30,8 +30,11 @@ Git; their final hashes and sizes are recorded under `provenance/`.
    Static and the 75,265-parameter replay incumbent are matched against one
    identity-initialized 1,536-parameter visual feature scale/bias candidate under
    the same 68 correction positions and pseudo-update protocol.
+7. A development-only beam-10 recoverability preflight on the consumed dev5
+   replay stream. It tests whether the frozen decoder candidates contain enough
+   target characters to justify a grounded small-language-model repair stage.
 
-Tracks 2--6 are development-only. The train pool was not used by the documented
+Tracks 2--7 are development-only. The train pool was not used by the documented
 source checkpoint, but this reuse is a protocol change and is not described as
 the official validation split. They must not be described as test results. A
 disjoint train-pool holdout is already hash-locked and remains untouched until
@@ -60,6 +63,18 @@ static-corrected revisit forgetting. Its 1,536-parameter state is about 49 times
 smaller than replay, but the pre-registered accuracy and forgetting conditions
 fail. Feature-FiLM is therefore `NO_GO`; holdout2 remains frozen and unread,
 with no extra seed or parameter sweep.
+
+The dev6 beam-10 preflight was intentionally stopped at 356/681 samples after
+the pre-registered substitution-coverage condition became mathematically
+unreachable. The prefix exactly reproduces replay rank-1 predictions, query
+decisions, and update states, and contains ten finite-scored hypotheses per
+sample with zero structured errors. N-best oracle headroom is 0.03039 CER, but
+substitution coverage is only 0.07871. Even perfect coverage on every remaining
+substitution could raise final coverage to at most 0.45162, below the 0.55 gate.
+This is an `EARLY_NO_GO` for direct repair from the existing beam candidates,
+not a completed 681-sample run and not a test of training-time counterfactual
+visual learning. No language model is downloaded or trained, and holdout2
+remains frozen and unread.
 
 ## Layout
 
@@ -90,6 +105,12 @@ with no extra seed or parameter sweep.
 - `provenance/dev5_final_audit.json`: accepted final target-dev5 audit output.
 - `provenance/dev5_artifacts.sha256`: immutable target-dev5 analysis,
   provenance, and accepted-run hashes.
+- `analysis/dev6_nbest_phase0a_early_stop.json`: machine-readable prefix
+  evidence and the final-coverage reachability bound.
+- `provenance/dev6_phase0a_early_stop.json`: intentional-stop state, prefix
+  integrity, resource checks, input hashes, and archived-artifact hashes.
+- `provenance/dev6_artifacts.sha256`: immutable hashes for the dev6 preflight,
+  analysis tools, research note, launcher, and archived partial run.
 - `research/dev6_llm_visual_correction_landscape.md`: primary-source review of
   LLM/VSR correction neighbors, novelty boundaries, and the staged EviCo-VSR
   falsification plan. SHA-256:
