@@ -1,0 +1,82 @@
+{
+  "artifacts": {
+    "manifest": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl",
+      "sha256": "22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8"
+    },
+    "manifest_sidecar": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_revisit_188_011_036_seed42.jsonl.meta.json",
+      "sha256": "108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf"
+    },
+    "source_csv": {
+      "path": "/hy-tmp/datasets/manifests/chinese_lips_trainpool_dev7_188_011_036_seed42_source.csv",
+      "sha256": "7e4ecd49a13c4aaca4de8a35ffe0d267497684b9e284c6bd9c479c18303aa243"
+    },
+    "target_vocab_sha256": "635e12ebb5f7dcd60637a4f3c329cd543f1e0e34aa4a6d62ba87185c3666aae0",
+    "text_metadata_csv_sha256": "bc0150e082657698019a976b3a280c23f0640df38603f658870f548fe4268bac",
+    "train_csv_sha256": "a1d7a5ba8da02ab3e0284365ab9f1bde00d76657604b5453b41db6a7891c22ab"
+  },
+  "code_commit": "b9d6d499dfe88703cf45a661bf4463880cf0a632",
+  "domain_sequence": [
+    "188",
+    "011",
+    "036",
+    "188"
+  ],
+  "excluded_speakers": [
+    "001",
+    "013",
+    "015",
+    "045",
+    "046",
+    "047",
+    "071",
+    "093",
+    "098",
+    "120",
+    "126",
+    "128",
+    "133",
+    "176",
+    "183",
+    "202"
+  ],
+  "feedback_all_false": true,
+  "planned_periodic_feedback_queries": 62,
+  "ranked_selection": [
+    [
+      "188",
+      213
+    ],
+    [
+      "011",
+      206
+    ],
+    [
+      "036",
+      206
+    ]
+  ],
+  "samples": 625,
+  "schema_version": 1,
+  "seed": 42,
+  "segment_lengths": {
+    "A1": 107,
+    "A2": 106,
+    "B": 206,
+    "C": 206
+  },
+  "selection_rule": "largest eligible train counts, speaker id tie-break",
+  "speaker_counts": {
+    "011": 206,
+    "036": 206,
+    "188": 213
+  },
+  "speakers": [
+    "188",
+    "011",
+    "036"
+  ],
+  "status": "AUDIT_OK",
+  "uid_unique": true
+}

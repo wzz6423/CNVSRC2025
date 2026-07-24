@@ -33,8 +33,12 @@ Git; their final hashes and sizes are recorded under `provenance/`.
 7. A development-only beam-10 recoverability preflight on the consumed dev5
    replay stream. It tests whether the frozen decoder candidates contain enough
    target characters to justify a grounded small-language-model repair stage.
+8. Counterfactual beam-margin adaptation on a sixth disjoint development split
+   with speakers 188/011/036. Matched replay and the single frozen candidate use
+   the same 62 feedback positions and top-10 decoder evidence; only the candidate
+   adds one hard-negative sequence-margin term at feedback updates.
 
-Tracks 2--7 are development-only. The train pool was not used by the documented
+Tracks 2--8 are development-only. The train pool was not used by the documented
 source checkpoint, but this reuse is a protocol change and is not described as
 the official validation split. They must not be described as test results. A
 disjoint train-pool holdout is already hash-locked and remains untouched until
@@ -76,6 +80,14 @@ not a completed 681-sample run and not a test of training-time counterfactual
 visual learning. No language model is downloaded or trained, and holdout2
 remains frozen and unread.
 
+Dev7 is pre-registered but has no result at archive time. Its 625-sample stream
+is frozen at manifest SHA-256
+`22e94cffece7f496219225058c4547ec038f4046eb2f794a2cf6187d299467b8` and
+sidecar SHA-256
+`108649b9c751bda793f34ea4d9b7840c483ee996b9519fb8e2b69cf93800bedf`.
+The fixed implementation commit is `b9d6d499dfe88703cf45a661bf4463880cf0a632`.
+No holdout2 data is read or authorized by this component experiment.
+
 ## Layout
 
 - `provenance/study_manifest.json`: immutable study inputs, server paths, code
@@ -115,6 +127,15 @@ remains frozen and unread.
   LLM/VSR correction neighbors, novelty boundaries, and the staged EviCo-VSR
   falsification plan. SHA-256:
   `7211fa06e64a01c4ad5974e68da226984b48fc383b9ed5053f16325d3e6e1ff3`.
+- `provenance/dev7_source.csv`, `dev7_manifest.jsonl`, and
+  `dev7_manifest.meta.json`: frozen dev7 source rows and A-B-C-A stream.
+- `provenance/dev7_manifest_audit.json`: deterministic speaker-selection,
+  ordering, UID, feedback, and input-hash audit for dev7.
+- `provenance/audit_dev7_runs.py`: prefix/final validator for both dev7 arms,
+  including N-best, counterfactual arithmetic, rollback, checkpoint, and early
+  viability checks.
+- `provenance/launch_dev7_wave.sh`: hash-locked two-GPU launcher for the sole
+  matched replay and counterfactual-margin comparison.
 - `provenance/dev4_artifacts.sha256`: immutable hashes for dev4 analyses,
   provenance inputs/tools, and accepted run artifacts; process IDs and lock
   files are intentionally excluded. Manifest SHA-256:
