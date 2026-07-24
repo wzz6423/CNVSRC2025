@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "status": "PHASE0_NO_GO",
+  "completed_at_utc": "2026-07-24T02:53:16Z",
+  "development_only": true,
+  "code_commit": "d123cf3cca7b900be0c8baa6538fd6237081be14",
+  "selector": {
+    "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "prompt_version": "dev8-constrained-choice-v1",
+    "generation": {
+      "do_sample": false,
+      "max_new_tokens": 8
+    }
+  },
+  "dev6_replication": {
+    "samples": 356,
+    "characters": 11714,
+    "baseline_cer": 0.6883216663821069,
+    "selected_cer": 0.6883216663821069,
+    "selected_minus_baseline_cer": 0.0,
+    "paired_bootstrap_ci95": [0.0, 0.0],
+    "parsed": 171,
+    "parse_rate": 0.4803370786516854,
+    "selected_rank_changes": 0,
+    "oracle_cer": 0.6579306812361277,
+    "final_audit": "AUDIT_OK",
+    "results_sha256": "260c2e2bc74ebc3479e848804b36ba58d7a43b2fd9a017d6ac45009317b376e4"
+  },
+  "dev7_primary": {
+    "samples": 625,
+    "characters": 19703,
+    "baseline_cer": 0.7750088818961579,
+    "selected_cer": 0.7750088818961579,
+    "selected_minus_baseline_cer": 0.0,
+    "paired_bootstrap_ci95": [0.0, 0.0],
+    "parsed": 247,
+    "parse_rate": 0.3952,
+    "selected_rank_changes": 0,
+    "oracle_cer": 0.744708927574481,
+    "final_audit": "AUDIT_OK",
+    "results_sha256": "713ce67530ae6460065c55e7e353607de57e7a6385e24076927dbc4bbbeec14b"
+  },
+  "response_diagnostics": {
+    "valid_responses": "all parsed responses selected rank 1",
+    "dev6_unparsed_exclamation_responses": 185,
+    "dev7_unparsed_exclamation_responses": 378,
+    "fallback_rank": 1
+  },
+  "gate": {
+    "all_responses_parsed": false,
+    "primary_delta_at_most_minus_0_003": false,
+    "primary_ci_entirely_below_zero": false,
+    "passed": false
+  },
+  "decision": {
+    "start_disjoint_dev8_visual_stream": false,
+    "try_additional_model_sizes_or_prompts": false,
+    "run_additional_seeds": false,
+    "read_holdout2": false,
+    "interpretation": "The frozen zero-shot 0.5B constrained selector does not recover any N-best oracle headroom under this protocol. This does not establish that all language-model correction methods fail."
+  }
+}

@@ -1,0 +1,144 @@
+/usr/local/miniconda3/lib/python3.8/site-packages/torchvision/datapoints/__init__.py:12: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/usr/local/miniconda3/lib/python3.8/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:612: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
+  warnings.warn(
+已完成 8/625
+已完成 16/625
+已完成 24/625
+已完成 32/625
+已完成 40/625
+已完成 48/625
+已完成 56/625
+已完成 64/625
+已完成 72/625
+已完成 80/625
+已完成 88/625
+已完成 96/625
+已完成 104/625
+已完成 112/625
+已完成 120/625
+已完成 128/625
+已完成 136/625
+已完成 144/625
+已完成 152/625
+已完成 160/625
+已完成 168/625
+已完成 176/625
+已完成 184/625
+已完成 192/625
+已完成 200/625
+已完成 208/625
+已完成 216/625
+已完成 224/625
+已完成 232/625
+已完成 240/625
+已完成 248/625
+已完成 256/625
+已完成 264/625
+已完成 272/625
+已完成 280/625
+已完成 288/625
+已完成 296/625
+已完成 304/625
+已完成 312/625
+已完成 320/625
+已完成 328/625
+已完成 336/625
+已完成 344/625
+已完成 352/625
+已完成 360/625
+已完成 368/625
+已完成 376/625
+已完成 384/625
+已完成 392/625
+已完成 400/625
+已完成 408/625
+已完成 416/625
+已完成 424/625
+已完成 432/625
+已完成 440/625
+已完成 448/625
+已完成 456/625
+已完成 464/625
+已完成 472/625
+已完成 480/625
+已完成 488/625
+已完成 496/625
+已完成 504/625
+已完成 512/625
+已完成 520/625
+已完成 528/625
+已完成 536/625
+已完成 544/625
+已完成 552/625
+已完成 560/625
+已完成 568/625
+已完成 576/625
+已完成 584/625
+已完成 592/625
+已完成 600/625
+已完成 608/625
+已完成 616/625
+已完成 624/625
+已完成 625/625
+{
+  "baseline": {
+    "cer": 0.7750088818961579,
+    "edits": 15270
+  },
+  "characters": 19703,
+  "code_commit": "d123cf3cca7b900be0c8baa6538fd6237081be14",
+  "input_sha256": "a7eff26328a8ba136e575efa5c775a17e941743297a74014adb5f4303c6f3c69",
+  "model_artifacts_sha256": "386922dfd7f4cbc5077110759dff68d12b4f219bf898d6512a2a4cba0e19ab0c",
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "oracle": {
+    "cer": 0.744708927574481,
+    "edits": 14673
+  },
+  "paired_bootstrap": {
+    "ci95": [
+      0.0,
+      0.0
+    ],
+    "samples": 10000,
+    "seed": 42
+  },
+  "parsing": {
+    "failed": 378,
+    "parsed": 247,
+    "rate": 0.3952
+  },
+  "phase0_gate": {
+    "ci_below_zero": false,
+    "material_delta": false,
+    "parse_complete": false,
+    "passed": false
+  },
+  "prompt_sha256": "a5467e1489c0126aec10d19bf0c915f5b22bd036fce7ed5df16b098ea3231264",
+  "prompt_version": "dev8-constrained-choice-v1",
+  "results_sha256": "713ce67530ae6460065c55e7e353607de57e7a6385e24076927dbc4bbbeec14b",
+  "samples": 625,
+  "schema_version": 1,
+  "selected": {
+    "cer": 0.7750088818961579,
+    "edits": 15270
+  },
+  "selected_minus_baseline_cer": 0.0,
+  "selection": {
+    "changed": 0,
+    "changed_rate": 0.0,
+    "equal": 625,
+    "improved": 0,
+    "improvement_precision": 0.0,
+    "unchanged": 625,
+    "worsened": 0
+  },
+  "status": "COMPLETE"
+}

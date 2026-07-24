@@ -1,0 +1,110 @@
+/usr/local/miniconda3/lib/python3.8/site-packages/torchvision/datapoints/__init__.py:12: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/usr/local/miniconda3/lib/python3.8/site-packages/torchvision/transforms/v2/__init__.py:54: UserWarning: The torchvision.datapoints and torchvision.transforms.v2 namespaces are still Beta. While we do not expect major breaking changes, some APIs may still change according to user feedback. Please submit any feedback you may have in this issue: https://github.com/pytorch/vision/issues/6753, and you can also check out https://github.com/pytorch/vision/issues/7319 to learn more about the APIs that we suspect might involve future changes. You can silence this warning by calling torchvision.disable_beta_transforms_warning().
+  warnings.warn(_BETA_TRANSFORMS_WARNING)
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/hy-tmp/envs/rsp-vsr-lm-qwen25/lib/python3.8/site-packages/transformers/generation/configuration_utils.py:612: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
+  warnings.warn(
+已完成 8/356
+已完成 16/356
+已完成 24/356
+已完成 32/356
+已完成 40/356
+已完成 48/356
+已完成 56/356
+已完成 64/356
+已完成 72/356
+已完成 80/356
+已完成 88/356
+已完成 96/356
+已完成 104/356
+已完成 112/356
+已完成 120/356
+已完成 128/356
+已完成 136/356
+已完成 144/356
+已完成 152/356
+已完成 160/356
+已完成 168/356
+已完成 176/356
+已完成 184/356
+已完成 192/356
+已完成 200/356
+已完成 208/356
+已完成 216/356
+已完成 224/356
+已完成 232/356
+已完成 240/356
+已完成 248/356
+已完成 256/356
+已完成 264/356
+已完成 272/356
+已完成 280/356
+已完成 288/356
+已完成 296/356
+已完成 304/356
+已完成 312/356
+已完成 320/356
+已完成 328/356
+已完成 336/356
+已完成 344/356
+已完成 352/356
+已完成 356/356
+{
+  "baseline": {
+    "cer": 0.6883216663821069,
+    "edits": 8063
+  },
+  "characters": 11714,
+  "code_commit": "d123cf3cca7b900be0c8baa6538fd6237081be14",
+  "input_sha256": "2570f297331281b6dec5389546bad75de36d35de51c86bdc65d32903c1035922",
+  "model_artifacts_sha256": "386922dfd7f4cbc5077110759dff68d12b4f219bf898d6512a2a4cba0e19ab0c",
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "oracle": {
+    "cer": 0.6579306812361277,
+    "edits": 7707
+  },
+  "paired_bootstrap": {
+    "ci95": [
+      0.0,
+      0.0
+    ],
+    "samples": 10000,
+    "seed": 42
+  },
+  "parsing": {
+    "failed": 185,
+    "parsed": 171,
+    "rate": 0.4803370786516854
+  },
+  "phase0_gate": {
+    "ci_below_zero": false,
+    "material_delta": false,
+    "parse_complete": false,
+    "passed": false
+  },
+  "prompt_sha256": "a5467e1489c0126aec10d19bf0c915f5b22bd036fce7ed5df16b098ea3231264",
+  "prompt_version": "dev8-constrained-choice-v1",
+  "results_sha256": "260c2e2bc74ebc3479e848804b36ba58d7a43b2fd9a017d6ac45009317b376e4",
+  "samples": 356,
+  "schema_version": 1,
+  "selected": {
+    "cer": 0.6883216663821069,
+    "edits": 8063
+  },
+  "selected_minus_baseline_cer": 0.0,
+  "selection": {
+    "changed": 0,
+    "changed_rate": 0.0,
+    "equal": 356,
+    "improved": 0,
+    "improvement_precision": 0.0,
+    "unchanged": 356,
+    "worsened": 0
+  },
+  "status": "COMPLETE"
+}

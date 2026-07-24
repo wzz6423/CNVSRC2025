@@ -1,6 +1,6 @@
 # Dev8 Phase-0: Constrained Small-LM N-best Selection
 
-Status: frozen before model inference.
+Status: frozen before model inference; completed as `PHASE0_NO_GO`.
 
 ## Question
 
@@ -60,3 +60,19 @@ The evaluator records the input SHA, exact model artifact manifest, revision,
 prompt hash, raw response, parser path, selected rank, candidate edit counts,
 paired bootstrap, code commit, and resumable per-row JSONL. Dev6 and Dev7 run on
 separate GPUs only to reduce wall-clock time; they use the same frozen selector.
+
+## Strict Result
+
+Both frozen inputs completed and passed the independent final row-level audit.
+On Dev6, 171/356 responses parsed and all selected rank 1; the other 185 were
+the unparsable string `!!!!!!!!`. On primary Dev7, 247/625 responses parsed and
+all selected rank 1; the other 378 had the same unparsable response. The
+pre-registered fallback therefore exactly reproduces rank-1 on every row.
+
+Selected-minus-baseline CER is `0.0` with paired-bootstrap CI `[0.0, 0.0]` on
+both inputs. Dev6 remains at 0.6883217 CER and Dev7 at 0.7750089 CER, despite
+oracle CERs of 0.6579307 and 0.7447089. Parsing completeness, materiality, and
+the primary interval gate all fail. No disjoint visual stream, prompt/model
+search, extra seed, or holdout2 read is authorized. This result rejects only
+the frozen zero-shot 0.5B constrained selector, not all possible language-model
+correction designs.

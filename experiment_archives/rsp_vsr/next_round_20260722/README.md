@@ -37,8 +37,12 @@ Git; their final hashes and sizes are recorded under `provenance/`.
    with speakers 188/011/036. Matched replay and the single frozen candidate use
    the same 62 feedback positions and top-10 decoder evidence; only the candidate
    adds one hard-negative sequence-margin term at feedback updates.
+9. A frozen constrained small-language-model Phase-0 on the already consumed
+   Dev6 and Dev7 N-best evidence. Qwen2.5-0.5B-Instruct may select one original
+   candidate but cannot rewrite text; targets are supplied only after selection
+   for paired CER evaluation.
 
-Tracks 2--8 are development-only. The train pool was not used by the documented
+Tracks 2--9 are development-only. The train pool was not used by the documented
 source checkpoint, but this reuse is a protocol change and is not described as
 the official validation split. They must not be described as test results. A
 disjoint train-pool holdout is already hash-locked and remains untouched until
@@ -77,8 +81,9 @@ substitution coverage is only 0.07871. Even perfect coverage on every remaining
 substitution could raise final coverage to at most 0.45162, below the 0.55 gate.
 This is an `EARLY_NO_GO` for direct repair from the existing beam candidates,
 not a completed 681-sample run and not a test of training-time counterfactual
-visual learning. No language model is downloaded or trained, and holdout2
-remains frozen and unread.
+visual learning. No language model was downloaded or trained as part of dev6,
+and holdout2 remained frozen and unread. The later dev8 Phase-0 downloads a
+frozen model but does not train it.
 
 Both target-dev7 arms completed 625 samples and passed final strict acceptance
 at attempt 1 with 25 history rows, 62 fixed queries, three checkpoints, matching
@@ -91,6 +96,15 @@ allowed +0.002. All 62 feedback points have valid negatives and positive
 pre-update violations, but the aggregate violation reduction is only 1.929%
 (95% CI [1.712%, 2.154%]), below the required 20%. Dev7 is therefore `NO_GO`:
 no additional seed, parameter sweep, or holdout2 read is performed.
+
+The dev8 constrained-selector Phase-0 completed all 356 Dev6-prefix rows and
+625 Dev7 rows and passed the independent final row-level audit. The model parsed
+171/356 and 247/625 responses, respectively, but every parsed response selected
+rank 1; all remaining responses were `!!!!!!!!` and fell back to rank 1 under
+the frozen protocol. Both selected-minus-baseline CER differences and paired
+intervals are exactly zero. The parsing, materiality, and interval gates fail,
+so this fixed 0.5B zero-shot selector is `PHASE0_NO_GO`. No prompt/model search,
+new visual stream, extra seed, or holdout2 read is performed.
 
 ## Layout
 
@@ -115,6 +129,8 @@ no additional seed, parameter sweep, or holdout2 read is performed.
   analysis with 10,000 paired bootstrap replicates.
 - `analysis/dev7_decision_resources.json`: dev7 integrity, mechanism, resource,
   and component-gate decision summary.
+- `analysis/dev8_qwen_nbest_phase0_decision.json`: strict Dev6/Dev7 constrained
+  selector result and the explicit `PHASE0_NO_GO` decision.
 - `provenance/dev3_audit.json`: hash, disjointness, video-existence, and
   deterministic-regeneration audit for target-dev3.
 - `provenance/dev4_audit.json`: source, manifest, stream-order, vocabulary, and
@@ -149,6 +165,12 @@ no additional seed, parameter sweep, or holdout2 read is performed.
   `67fc4056466f1a1f72e2b79527748b219aec76ebd45c151ff936d5df64e35f1c`.
 - `provenance/launch_dev7_wave.sh`: hash-locked two-GPU launcher for the sole
   matched replay and counterfactual-margin comparison.
+- `research/dev8_llm_nbest_phase0_preregistration.md`: frozen single-model,
+  single-prompt protocol and strict post-run result.
+- `provenance/audit_dev8_phase0.py` and `launch_dev8_phase0.sh`: row-level final
+  auditor and hash-locked two-GPU Phase-0 launcher.
+- `provenance/dev8_artifacts.sha256`: immutable hashes for the frozen selector,
+  decision, provenance tools, and both accepted Phase-0 result directories.
 - `provenance/dev4_artifacts.sha256`: immutable hashes for dev4 analyses,
   provenance inputs/tools, and accepted run artifacts; process IDs and lock
   files are intentionally excluded. Manifest SHA-256:

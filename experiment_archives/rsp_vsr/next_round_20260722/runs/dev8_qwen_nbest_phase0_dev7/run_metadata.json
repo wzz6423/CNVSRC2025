@@ -1,0 +1,83 @@
+{
+  "bootstrap_samples": 10000,
+  "code_commit": "d123cf3cca7b900be0c8baa6538fd6237081be14",
+  "device": "cuda:0",
+  "expected_samples": 625,
+  "generation": {
+    "batch_size": 8,
+    "do_sample": false,
+    "max_new_tokens": 8,
+    "seed": 42
+  },
+  "input": "/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/stream_results.jsonl",
+  "input_sha256": "a7eff26328a8ba136e575efa5c775a17e941743297a74014adb5f4303c6f3c69",
+  "model": {
+    "artifacts": [
+      {
+        "bytes": 1519,
+        "path": ".gitattributes",
+        "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+      },
+      {
+        "bytes": 11343,
+        "path": "LICENSE",
+        "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+      },
+      {
+        "bytes": 4917,
+        "path": "README.md",
+        "sha256": "b19c806a904db6dc878a0462e70b551f6b7ac78dfbb88c2eb966ca2b9109ae15"
+      },
+      {
+        "bytes": 659,
+        "path": "config.json",
+        "sha256": "18e18afcaccafade98daf13a54092927904649e1dd4eba8299ab717d5d94ff45"
+      },
+      {
+        "bytes": 242,
+        "path": "generation_config.json",
+        "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6"
+      },
+      {
+        "bytes": 1671839,
+        "path": "merges.txt",
+        "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3"
+      },
+      {
+        "bytes": 988097824,
+        "path": "model.safetensors",
+        "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+      },
+      {
+        "bytes": 7031645,
+        "path": "tokenizer.json",
+        "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+      },
+      {
+        "bytes": 7305,
+        "path": "tokenizer_config.json",
+        "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      },
+      {
+        "bytes": 2776833,
+        "path": "vocab.json",
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+      }
+    ],
+    "artifacts_sha256": "386922dfd7f4cbc5077110759dff68d12b4f219bf898d6512a2a4cba0e19ab0c",
+    "directory": "/hy-tmp/models/Qwen2.5-0.5B-Instruct-7ae5576",
+    "id": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775"
+  },
+  "prompt": {
+    "output_contract": "one rank from 1..top_k; no rewrite",
+    "sha256": "a5467e1489c0126aec10d19bf0c915f5b22bd036fce7ed5df16b098ea3231264",
+    "system": "你是中文句子判别器。下面的候选来自同一段无声唇语视频，可能只有少量字不同。结合语法、语义、常识和句子完整性，选出最可能正确的一条。不得改写、补充或合并候选，只输出一个阿拉伯数字作为候选序号。",
+    "version": "dev8-constrained-choice-v1"
+  },
+  "results_sha256": "713ce67530ae6460065c55e7e353607de57e7a6385e24076927dbc4bbbeec14b",
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "summary_sha256": "2c3debdedf2739664499aee1f2699a6f3f54abb52622e0ba4fa48301759048fe",
+  "top_k": 10
+}
