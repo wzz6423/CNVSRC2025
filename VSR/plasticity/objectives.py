@@ -51,6 +51,22 @@ def ctc_sequence_loss(log_probs, target_tokens, blank_id=0):
     return loss.to(log_probs.device)
 
 
+def ctc_sequence_margin_loss(
+    log_probs,
+    positive_tokens,
+    negative_tokens,
+    margin=0.2,
+    blank_id=0,
+):
+    margin = float(margin)
+    if not torch.isfinite(torch.tensor(margin)) or margin < 0:
+        raise ValueError("CTC sequence margin 必须为非负有限值")
+    positive_loss = ctc_sequence_loss(log_probs, positive_tokens, blank_id)
+    negative_loss = ctc_sequence_loss(log_probs, negative_tokens, blank_id)
+    violation = F.relu(positive_loss - negative_loss + margin)
+    return violation, positive_loss, negative_loss
+
+
 def posterior_kl(teacher_log_probs, student_log_probs, frame_mask=None):
     length = min(teacher_log_probs.size(1), student_log_probs.size(1))
     teacher = teacher_log_probs[:, :length].detach()

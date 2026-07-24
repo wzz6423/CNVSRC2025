@@ -344,12 +344,16 @@ def _experiment_config_sha256(cfg):
     # 默认关闭时沿用旧哈希，保证既有 checkpoint 仍可精确恢复。
     if decoder.get("nbest_size", 0) == 0:
         decoder.pop("nbest_size", None)
+    plasticity = OmegaConf.to_container(cfg.plasticity, resolve=True)
+    counterfactual = plasticity.get("counterfactual_margin")
+    if isinstance(counterfactual, dict) and not counterfactual.get("enabled", False):
+        plasticity.pop("counterfactual_margin")
     value = {
         "seed": int(cfg.seed),
         "model": OmegaConf.to_container(cfg.model, resolve=True),
         "decoder": decoder,
         "feedback": OmegaConf.to_container(cfg.feedback, resolve=True),
-        "plasticity": OmegaConf.to_container(cfg.plasticity, resolve=True),
+        "plasticity": plasticity,
     }
     payload = json.dumps(
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
@@ -462,6 +466,20 @@ def _build_engine(cfg, model, token_list, device):
         eta_entropy_margin=cfg.plasticity.eta.entropy_margin,
         eta_redundancy_margin=cfg.plasticity.eta.redundancy_margin,
         eta_momentum=cfg.plasticity.eta.momentum,
+        counterfactual_margin_enabled=OmegaConf.select(
+            cfg, "plasticity.counterfactual_margin.enabled", default=False
+        ),
+        counterfactual_margin=OmegaConf.select(
+            cfg, "plasticity.counterfactual_margin.margin", default=0.2
+        ),
+        counterfactual_margin_weight=OmegaConf.select(
+            cfg, "plasticity.counterfactual_margin.weight", default=0.25
+        ),
+        counterfactual_margin_rollback_tolerance=OmegaConf.select(
+            cfg,
+            "plasticity.counterfactual_margin.rollback_tolerance",
+            default=1e-6,
+        ),
     )
 
 
@@ -699,6 +717,8 @@ def main(cfg: DictConfig):
     summary = metrics.summary()
     summary["expert_bank"] = engine.expert_bank.summary()
     summary["parameter_adaptation"] = engine.adaptation_summary()
+    if engine.counterfactual_margin_enabled:
+        summary["counterfactual_margin"] = engine.counterfactual_summary()
     summary["mode"] = str(cfg.plasticity.mode)
     summary["adaptation_objective"] = str(cfg.plasticity.adaptation_objective)
     summary["feedback_update_strategy"] = str(

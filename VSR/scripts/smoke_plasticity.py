@@ -9,12 +9,14 @@ from pathlib import Path
 
 import torch
 from torch import nn
+from omegaconf import OmegaConf
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from continual_adapt import (
     _effective_stream_samples,
+    _experiment_config_sha256,
     _file_sha256,
     _prepare_result_file,
     _resource_summary,
@@ -45,6 +47,7 @@ from plasticity.feedback import FeedbackQueryPolicy
 from plasticity.metrics import StreamMetrics
 from plasticity.objectives import (
     ctc_posterior_entropy,
+    ctc_sequence_margin_loss,
     ctc_sequence_loss,
     ctc_target_error,
     occupancy_weighted_blank_loss,
@@ -196,6 +199,22 @@ class CountingDecoder:
         return "1", [1]
 
 
+class NBestDecoder:
+    nbest_size = 3
+
+    def __init__(self):
+        self.calls = 0
+
+    def decode_with_nbest(self, _features):
+        self.calls += 1
+        candidates = (
+            {"rank": 1, "transcript": "1", "tokens": [1]},
+            {"rank": 2, "transcript": "3", "tokens": [3]},
+            {"rank": 3, "transcript": "2", "tokens": [2]},
+        )
+        return "1", [1], candidates
+
+
 class EmptyReliabilityGate:
     def evaluate(self, _clean_log_probs, _augmented_log_probs, decoder_tokens=None):
         return [], ReliabilityDecision(
@@ -213,6 +232,51 @@ class EmptyReliabilityGate:
 
 def main():
     torch.manual_seed(7)
+    legacy_hash_config = OmegaConf.create(
+        {
+            "seed": 42,
+            "model": {"name": "mock"},
+            "decoder": {"beam_size": 12, "ctc_weight": 0.3},
+            "feedback": {"strategy": "periodic", "every": 10},
+            "plasticity": {"mode": "single_adapter"},
+        }
+    )
+    disabled_hash_config = OmegaConf.create(
+        OmegaConf.to_container(legacy_hash_config, resolve=True)
+    )
+    disabled_hash_config.plasticity.counterfactual_margin = {
+        "enabled": False,
+        "margin": 0.2,
+        "weight": 0.25,
+        "rollback_tolerance": 1e-6,
+    }
+    enabled_hash_config = OmegaConf.create(
+        OmegaConf.to_container(disabled_hash_config, resolve=True)
+    )
+    enabled_hash_config.plasticity.counterfactual_margin.enabled = True
+    assert _experiment_config_sha256(legacy_hash_config) == (
+        _experiment_config_sha256(disabled_hash_config)
+    )
+    assert _experiment_config_sha256(enabled_hash_config) != (
+        _experiment_config_sha256(disabled_hash_config)
+    )
+
+    margin_logits = torch.randn(1, 6, 5, requires_grad=True)
+    margin_log_probs = torch.log_softmax(margin_logits, dim=-1)
+    margin_loss, positive_loss, negative_loss = ctc_sequence_margin_loss(
+        margin_log_probs,
+        [2],
+        [1],
+        margin=0.2,
+        blank_id=0,
+    )
+    assert torch.allclose(
+        margin_loss,
+        torch.relu(positive_loss - negative_loss + 0.2),
+    )
+    margin_loss.backward()
+    assert torch.isfinite(margin_logits.grad).all()
+
     film = FeatureWiseAffineAdapter(feature_dim=8)
     film_features = torch.randn(1, 5, 8)
     film_output = film(film_features)
@@ -475,6 +539,76 @@ def main():
     assert feedback_outcome.update.status == "accepted"
     assert feedback_outcome.update.correction is not None
     assert feedback_outcome.to_dict()["update"]["correction"]["target_tokens"] == 1
+
+    counterfactual_model = MockModel()
+    counterfactual_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    counterfactual_engine = ContinualAdaptationEngine(
+        counterfactual_model,
+        counterfactual_bank,
+        gate,
+        device="cpu",
+        decoder=NBestDecoder(),
+        counterfactual_margin_enabled=True,
+        counterfactual_margin=0.2,
+        counterfactual_margin_weight=1.0,
+        learning_rate=0.01,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+        max_anchor_kl=100.0,
+        max_target_loss_increase=100.0,
+    )
+    no_feedback_counterfactual = counterfactual_engine.process(video)
+    assert "counterfactual" not in no_feedback_counterfactual.to_dict()["update"]
+    counterfactual_prediction = counterfactual_engine.predict(video)
+    counterfactual_outcome = counterfactual_engine.adapt(
+        counterfactual_prediction,
+        feedback_tokens=[2],
+        sample_key="counterfactual",
+    )
+    counterfactual = counterfactual_outcome.update.counterfactual
+    assert counterfactual_outcome.update.status == "accepted"
+    assert counterfactual["status"] == "applied"
+    assert counterfactual["negative_rank"] == 1
+    assert counterfactual["negative_tokens"] == [1]
+    assert counterfactual["violation_before"] > 0
+    assert counterfactual["violation_after"] <= counterfactual["violation_before"]
+    counterfactual_summary = counterfactual_engine.counterfactual_summary()
+    assert counterfactual_summary["feedback_attempts"] == 1
+    assert counterfactual_summary["valid_negatives"] == 1
+    assert counterfactual_summary["positive_violations_before"] == 1
+    restored_counterfactual_model = MockModel()
+    restored_counterfactual_bank = ExpertBank(
+        feature_dim=8,
+        bottleneck_dim=4,
+        max_experts=1,
+        allow_growth=False,
+    )
+    restored_counterfactual_engine = ContinualAdaptationEngine(
+        restored_counterfactual_model,
+        restored_counterfactual_bank,
+        gate,
+        device="cpu",
+        decoder=NBestDecoder(),
+        counterfactual_margin_enabled=True,
+        counterfactual_margin=0.2,
+        counterfactual_margin_weight=1.0,
+        rollback_enabled=False,
+        view_noise_std=0.0,
+        temporal_mask_ratio=0.0,
+    )
+    restored_counterfactual_engine.load_adaptation_state_dict(
+        counterfactual_engine.adaptation_state_dict()
+    )
+    assert (
+        restored_counterfactual_engine.counterfactual_summary()
+        == counterfactual_summary
+    )
 
     tent_model = MockModel()
     tent_bank = ExpertBank(

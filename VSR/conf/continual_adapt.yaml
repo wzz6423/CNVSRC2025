@@ -73,6 +73,11 @@ plasticity:
     insertion_blank_weight: 1.0
     matched_kl_weight: 0.5
     random_control_seed: ${seed}
+  counterfactual_margin:
+    enabled: false
+    margin: 0.2
+    weight: 0.25
+    rollback_tolerance: 0.000001
   tent:
     frame_selection: nonblank
   eta:

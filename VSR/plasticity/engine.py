@@ -14,6 +14,7 @@ from .corrections import (
 )
 from .objectives import (
     ctc_posterior_entropy,
+    ctc_sequence_margin_loss,
     ctc_sequence_loss,
     ctc_target_error,
     feature_anchor_loss,
@@ -45,10 +46,13 @@ class UpdateOutcome:
     objective_before: float | None = None
     objective_after: float | None = None
     localization: dict | None = None
+    counterfactual: dict | None = None
 
     def to_dict(self):
         value = asdict(self)
         value["reasons"] = list(self.reasons)
+        if self.counterfactual is None:
+            value.pop("counterfactual")
         return value
 
 
@@ -134,6 +138,10 @@ class ContinualAdaptationEngine:
         eta_entropy_margin=None,
         eta_redundancy_margin=0.05,
         eta_momentum=0.9,
+        counterfactual_margin_enabled=False,
+        counterfactual_margin=0.2,
+        counterfactual_margin_weight=0.25,
+        counterfactual_margin_rollback_tolerance=1e-6,
     ):
         self.device = torch.device(device)
         self.base_model = base_model.to(self.device)
@@ -268,6 +276,45 @@ class ContinualAdaptationEngine:
             and not self.non_feedback_updates_enabled
         ):
             raise ValueError("BN-TENT/ETA 必须启用无反馈更新")
+        self.counterfactual_margin_enabled = bool(counterfactual_margin_enabled)
+        self.counterfactual_margin = float(counterfactual_margin)
+        self.counterfactual_margin_weight = float(counterfactual_margin_weight)
+        self.counterfactual_margin_rollback_tolerance = float(
+            counterfactual_margin_rollback_tolerance
+        )
+        counterfactual_values = (
+            self.counterfactual_margin,
+            self.counterfactual_margin_weight,
+            self.counterfactual_margin_rollback_tolerance,
+        )
+        if not all(math.isfinite(value) for value in counterfactual_values):
+            raise ValueError("反事实 margin 配置必须为有限值")
+        if self.counterfactual_margin < 0:
+            raise ValueError("反事实 margin 不能为负数")
+        if self.counterfactual_margin_weight < 0:
+            raise ValueError("反事实 margin 权重不能为负数")
+        if self.counterfactual_margin_rollback_tolerance < 0:
+            raise ValueError("反事实 margin 回滚容差不能为负数")
+        if self.counterfactual_margin_enabled:
+            if self.adaptation_objective != "rsp":
+                raise ValueError("反事实 margin 仅支持 RSP 适应目标")
+            if self.parameter_update_mode != "adapter":
+                raise ValueError("反事实 margin 仅支持 adapter 参数更新")
+            if self.feedback_update_strategy != "full_sequence":
+                raise ValueError("反事实 margin 仅支持 full_sequence 反馈更新")
+            if self.decoder is None or int(getattr(self.decoder, "nbest_size", 0)) < 1:
+                raise ValueError("反事实 margin 需要启用 decoder N-best")
+        self._counterfactual_stats = {
+            "feedback_attempts": 0,
+            "valid_negatives": 0,
+            "positive_violations_before": 0,
+            "applied": 0,
+            "rolled_back": 0,
+            "failed": 0,
+            "no_valid_negative": 0,
+            "violation_before_sum": 0.0,
+            "violation_after_sum": 0.0,
+        }
         self._eta_reference = None
         self._eta_resolved_entropy_margin = None
         self._eta_reliable_samples = 0
@@ -329,7 +376,7 @@ class ContinualAdaptationEngine:
         return tuple(parameter for _, parameter in self._named_adaptation_parameters)
 
     def adaptation_summary(self):
-        return {
+        summary = {
             "parameter_update_mode": self.parameter_update_mode,
             "parameter_count": sum(
                 parameter.numel() for parameter in self.adaptation_parameters()
@@ -351,9 +398,21 @@ class ContinualAdaptationEngine:
             "eta_reliable_samples": self._eta_reliable_samples,
             "eta_nonredundant_samples": self._eta_nonredundant_samples,
         }
+        if self.counterfactual_margin_enabled:
+            summary["counterfactual_margin"] = self.counterfactual_summary()
+        return summary
+
+    def counterfactual_summary(self):
+        return {
+            "enabled": self.counterfactual_margin_enabled,
+            "margin": self.counterfactual_margin,
+            "weight": self.counterfactual_margin_weight,
+            "rollback_tolerance": self.counterfactual_margin_rollback_tolerance,
+            **copy.deepcopy(self._counterfactual_stats),
+        }
 
     def adaptation_state_dict(self):
-        return {
+        state = {
             "parameter_update_mode": self.parameter_update_mode,
             "parameters": parameter_state(self._named_adaptation_parameters),
             "eta_reference": (
@@ -365,6 +424,9 @@ class ContinualAdaptationEngine:
             "eta_reliable_samples": self._eta_reliable_samples,
             "eta_nonredundant_samples": self._eta_nonredundant_samples,
         }
+        if self.counterfactual_margin_enabled:
+            state["counterfactual_margin"] = self.counterfactual_summary()
+        return state
 
     def load_adaptation_state_dict(self, state):
         if not isinstance(state, dict):
@@ -404,6 +466,43 @@ class ContinualAdaptationEngine:
             raise ValueError("checkpoint 的 ETA 样本计数无效")
         if self._eta_nonredundant_samples > self._eta_reliable_samples:
             raise ValueError("checkpoint 的 ETA 样本计数不守恒")
+        counterfactual = state.get("counterfactual_margin")
+        if self.counterfactual_margin_enabled:
+            if not isinstance(counterfactual, dict):
+                raise ValueError("checkpoint 缺少反事实 margin 状态")
+            expected_config = {
+                "enabled": True,
+                "margin": self.counterfactual_margin,
+                "weight": self.counterfactual_margin_weight,
+                "rollback_tolerance": self.counterfactual_margin_rollback_tolerance,
+            }
+            if any(counterfactual.get(key) != value for key, value in expected_config.items()):
+                raise ValueError("checkpoint 反事实 margin 配置与当前运行不一致")
+            count_keys = {
+                "feedback_attempts",
+                "valid_negatives",
+                "positive_violations_before",
+                "applied",
+                "rolled_back",
+                "failed",
+                "no_valid_negative",
+            }
+            restored = {}
+            for key in count_keys:
+                value = int(counterfactual.get(key, -1))
+                if value < 0:
+                    raise ValueError("checkpoint 反事实 margin 计数无效")
+                restored[key] = value
+            for key in {"violation_before_sum", "violation_after_sum"}:
+                value = float(counterfactual.get(key, float("nan")))
+                if not math.isfinite(value) or value < 0:
+                    raise ValueError("checkpoint 反事实 margin 统计无效")
+                restored[key] = value
+            if restored["valid_negatives"] > restored["feedback_attempts"]:
+                raise ValueError("checkpoint 反事实 margin 计数不守恒")
+            self._counterfactual_stats = restored
+        elif counterfactual is not None and counterfactual.get("enabled"):
+            raise ValueError("checkpoint 启用了当前配置禁用的反事实 margin")
 
     def _optimizer_for(self, expert_index):
         if expert_index not in self._optimizers:
@@ -688,6 +787,89 @@ class ContinualAdaptationEngine:
             localization=localization,
         )
 
+    def _prepare_counterfactual(self, prediction, target_tokens):
+        self._counterfactual_stats["feedback_attempts"] += 1
+        target = tuple(int(token) for token in target_tokens)
+        seen = set()
+        valid = []
+        for fallback_rank, candidate in enumerate(
+            prediction.decoder_nbest, start=1
+        ):
+            if not isinstance(candidate, dict):
+                continue
+            try:
+                tokens = tuple(int(token) for token in candidate.get("tokens", ()))
+                rank = int(candidate.get("rank", fallback_rank))
+            except (TypeError, ValueError):
+                continue
+            if not tokens or tokens == target or tokens in seen or rank < 1:
+                continue
+            seen.add(tokens)
+            if ctc_target_error(
+                prediction.clean_log_probs, tokens, self.blank_id
+            ) is not None:
+                continue
+            with torch.no_grad():
+                loss = float(
+                    ctc_sequence_loss(
+                        prediction.clean_log_probs, tokens, self.blank_id
+                    ).item()
+                )
+            if math.isfinite(loss):
+                valid.append((loss, rank, tokens))
+
+        diagnostic = {
+            "status": "no_valid_negative",
+            "candidate_count": len(prediction.decoder_nbest),
+            "valid_candidate_count": len(valid),
+        }
+        if not valid:
+            self._counterfactual_stats["no_valid_negative"] += 1
+            return diagnostic, None
+
+        negative_loss, negative_rank, negative_tokens = min(
+            valid, key=lambda item: (item[0], item[1], item[2])
+        )
+        with torch.no_grad():
+            violation, positive_loss, _ = ctc_sequence_margin_loss(
+                prediction.clean_log_probs,
+                target,
+                negative_tokens,
+                margin=self.counterfactual_margin,
+                blank_id=self.blank_id,
+            )
+        violation_before = float(violation.item())
+        positive_loss_before = float(positive_loss.item())
+        diagnostic.update(
+            {
+                "status": "prepared",
+                "negative_rank": negative_rank,
+                "negative_tokens": list(negative_tokens),
+                "target_loss_before": positive_loss_before,
+                "negative_loss_before": negative_loss,
+                "gap_before": negative_loss - positive_loss_before,
+                "violation_before": violation_before,
+            }
+        )
+        self._counterfactual_stats["valid_negatives"] += 1
+        self._counterfactual_stats["violation_before_sum"] += violation_before
+        if violation_before > 0:
+            self._counterfactual_stats["positive_violations_before"] += 1
+        return diagnostic, list(negative_tokens)
+
+    def _record_counterfactual_result(self, update):
+        diagnostic = update.counterfactual
+        if not isinstance(diagnostic, dict):
+            return
+        status = diagnostic.get("status")
+        if status in {"applied", "rolled_back", "failed"}:
+            self._counterfactual_stats[status] += 1
+        violation_after = diagnostic.get("violation_after")
+        if violation_after is not None:
+            self._counterfactual_stats["violation_after_sum"] += float(
+                violation_after
+            )
+
     def _transactional_update(
         self,
         expert_index,
@@ -699,6 +881,8 @@ class ContinualAdaptationEngine:
         pre_reliability,
         supervision,
         localization=None,
+        counterfactual=None,
+        counterfactual_negative_tokens=None,
     ):
         adapter = self.expert_bank.experts[expert_index]
         optimizer = self._optimizer_for(expert_index)
@@ -711,6 +895,9 @@ class ContinualAdaptationEngine:
             localization["localization_summary"]
             if localization is not None
             else None
+        )
+        counterfactual_diagnostic = (
+            copy.deepcopy(counterfactual) if counterfactual is not None else None
         )
         consistency_mask = None
         if supervision == "feedback" and localization is None:
@@ -733,6 +920,17 @@ class ContinualAdaptationEngine:
                 teacher_log_probs,
                 target_tokens,
                 localization,
+            )
+
+        def counterfactual_objective(log_probs):
+            if counterfactual_negative_tokens is None:
+                return None
+            return ctc_sequence_margin_loss(
+                log_probs,
+                target_tokens,
+                counterfactual_negative_tokens,
+                margin=self.counterfactual_margin,
+                blank_id=self.blank_id,
             )
 
         with torch.no_grad():
@@ -780,6 +978,12 @@ class ContinualAdaptationEngine:
             auxiliary_loss = localized_objective(clean_log_probs)
             if auxiliary_loss is not None:
                 total_loss = total_loss + auxiliary_loss
+            counterfactual_losses = counterfactual_objective(clean_log_probs)
+            if counterfactual_losses is not None:
+                total_loss = (
+                    total_loss
+                    + self.counterfactual_margin_weight * counterfactual_losses[0]
+                )
             if not torch.isfinite(total_loss):
                 failure_reason = "non_finite_loss"
                 break
@@ -794,6 +998,8 @@ class ContinualAdaptationEngine:
 
         if failure_reason:
             restore_snapshot()
+            if counterfactual_diagnostic is not None:
+                counterfactual_diagnostic["status"] = "failed"
             return UpdateOutcome(
                 status="failed",
                 supervision=supervision,
@@ -804,6 +1010,7 @@ class ContinualAdaptationEngine:
                 correction=correction,
                 objective_before=objective_before,
                 localization=localization_summary,
+                counterfactual=counterfactual_diagnostic,
             )
 
         adapter.eval()
@@ -825,6 +1032,23 @@ class ContinualAdaptationEngine:
                 if objective_after_tensor is not None
                 else None
             )
+            counterfactual_after = counterfactual_objective(post_clean_log_probs)
+            if counterfactual_after is not None:
+                violation_after = float(counterfactual_after[0].item())
+                target_loss_after = float(counterfactual_after[1].item())
+                negative_loss_after = float(counterfactual_after[2].item())
+                counterfactual_diagnostic.update(
+                    {
+                        "target_loss_after": target_loss_after,
+                        "negative_loss_after": negative_loss_after,
+                        "gap_after": negative_loss_after - target_loss_after,
+                        "violation_after": violation_after,
+                        "violation_reduction": (
+                            counterfactual_diagnostic["violation_before"]
+                            - violation_after
+                        ),
+                    }
+                )
             anchor_kl = float(
                 posterior_kl(base_log_probs, post_clean_log_probs).item()
             )
@@ -843,8 +1067,21 @@ class ContinualAdaptationEngine:
         finite_metrics = [loss_before, loss_after, anchor_kl, post_reliability.score]
         if objective_before is not None:
             finite_metrics.extend((objective_before, objective_after))
+        if counterfactual_negative_tokens is not None:
+            finite_metrics.extend(
+                (
+                    counterfactual_diagnostic["target_loss_before"],
+                    counterfactual_diagnostic["negative_loss_before"],
+                    counterfactual_diagnostic["violation_before"],
+                    counterfactual_diagnostic["target_loss_after"],
+                    counterfactual_diagnostic["negative_loss_after"],
+                    counterfactual_diagnostic["violation_after"],
+                )
+            )
         if not all(math.isfinite(value) for value in finite_metrics):
             restore_snapshot()
+            if counterfactual_diagnostic is not None:
+                counterfactual_diagnostic["status"] = "failed"
             return UpdateOutcome(
                 status="failed",
                 supervision=supervision,
@@ -856,6 +1093,7 @@ class ContinualAdaptationEngine:
                 objective_before=objective_before,
                 objective_after=objective_after,
                 localization=localization_summary,
+                counterfactual=counterfactual_diagnostic,
             )
 
         rejection_reasons = []
@@ -876,9 +1114,21 @@ class ContinualAdaptationEngine:
             < pre_reliability.score - self.max_reliability_drop
         ):
             rejection_reasons.append("reliability_regressed")
+        counterfactual_regressed = bool(
+            counterfactual_negative_tokens is not None
+            and counterfactual_diagnostic["violation_after"]
+            > counterfactual_diagnostic["violation_before"]
+            + self.counterfactual_margin_rollback_tolerance
+        )
+        if counterfactual_regressed:
+            rejection_reasons.append("counterfactual_violation_regressed")
 
-        if rejection_reasons and self.rollback_enabled:
+        if counterfactual_regressed or (
+            rejection_reasons and self.rollback_enabled
+        ):
             restore_snapshot()
+            if counterfactual_diagnostic is not None:
+                counterfactual_diagnostic["status"] = "rolled_back"
             return UpdateOutcome(
                 status="rolled_back",
                 supervision=supervision,
@@ -890,8 +1140,14 @@ class ContinualAdaptationEngine:
                 objective_before=objective_before,
                 objective_after=objective_after,
                 localization=localization_summary,
+                counterfactual=counterfactual_diagnostic,
             )
 
+        if (
+            counterfactual_diagnostic is not None
+            and counterfactual_negative_tokens is not None
+        ):
+            counterfactual_diagnostic["status"] = "applied"
         return UpdateOutcome(
             status="accepted",
             supervision=supervision,
@@ -903,6 +1159,7 @@ class ContinualAdaptationEngine:
             objective_before=objective_before,
             objective_after=objective_after,
             localization=localization_summary,
+            counterfactual=counterfactual_diagnostic,
         )
 
     def _prepare_ctc_error_localization(
@@ -1494,6 +1751,13 @@ class ContinualAdaptationEngine:
                     adaptation_expert_index, prediction.signature
                 )
         else:
+            counterfactual = None
+            counterfactual_negative_tokens = None
+            if has_feedback and self.counterfactual_margin_enabled:
+                (
+                    counterfactual,
+                    counterfactual_negative_tokens,
+                ) = self._prepare_counterfactual(prediction, target_tokens)
             update = self._transactional_update(
                 adaptation_expert_index,
                 prediction.clean_features,
@@ -1503,7 +1767,11 @@ class ContinualAdaptationEngine:
                 target_tokens,
                 prediction.reliability,
                 supervision,
+                counterfactual=counterfactual,
+                counterfactual_negative_tokens=counterfactual_negative_tokens,
             )
+            if has_feedback and self.counterfactual_margin_enabled:
+                self._record_counterfactual_result(update)
             if update.status == "accepted":
                 self.expert_bank.mark_accepted(
                     adaptation_expert_index, prediction.signature
