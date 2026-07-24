@@ -7,7 +7,7 @@ if (( $# != 0 )); then
 fi
 
 expected_commit="d123cf3cca7b900be0c8baa6538fd6237081be14"
-code_root="/hy-tmp/rsp-vsr-dev8-d123cf3"
+code_root="/hy-tmp/rsp-vsr-dev8-d123cf3-bundle"
 code_dir="${code_root}/VSR"
 python_bin="/hy-tmp/envs/rsp-vsr-lm-qwen25/bin/python"
 model_dir="/hy-tmp/models/Qwen2.5-0.5B-Instruct-7ae5576"
@@ -15,8 +15,10 @@ output_root="/hy-tmp/experiments/rsp_vsr/dev8_qwen_nbest_phase0_d123cf3"
 dev6_input="/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev6_grounded_repair_8f28af0/dev6_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/stream_results.jsonl"
 dev7_input="/hy-tmp/experiments/rsp_vsr/chinese_lips_trainpool_dev7_counterfactual_margin_b9d6d49/dev7_revisit_replay_adapter_nbest10_periodic_feedback10_seed42/stream_results.jsonl"
 
-[[ "$(git -C "${code_root}" rev-parse HEAD)" == "${expected_commit}" ]]
-[[ -z "$(git -C "${code_root}" status --porcelain)" ]]
+[[ "$(sha256sum "${code_dir}/scripts/evaluate_llm_nbest_selector.py" | cut -d' ' -f1)" == \
+  "4d13c4bfb9eabe5929911425d6321c71fe5906a94a6267d3c0dc4bc9294f5517" ]]
+[[ "$(sha256sum "${code_dir}/scripts/smoke_llm_nbest_selector.py" | cut -d' ' -f1)" == \
+  "154346f2c1fc559736071be3e93d62bbe4b7fc8bbad72e99228a863782f837e5" ]]
 [[ -x "${python_bin}" ]]
 [[ "$(${python_bin} -c 'import transformers; print(transformers.__version__)')" == "4.46.3" ]]
 [[ "$(sha256sum "${model_dir}/config.json" | cut -d' ' -f1)" == \
